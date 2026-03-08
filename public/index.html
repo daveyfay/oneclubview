@@ -339,23 +339,24 @@ function OnboardClubs({userId,kids,onDone}){
 function Hub({user,profile,onRefresh,onLogout}){
   const[tab,setTab]=useState("week");const[filter,setFilter]=useState("all");
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
-  const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);
+  const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[holidays,setHolidays]=useState([]);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
   const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[showInvite,setShowInvite]=useState(false);const[loading,setLoading]=useState(true);
 
   async function load(){
     setLoading(true);
-    const[k,c,r,m,p,ca]=await Promise.all([
+    const[k,c,r,m,p,ca,hols]=await Promise.all([
       db("dependants","GET",{filters:["parent_user_id=eq."+user.id],order:"created_at.asc"}),
       db("hub_subscriptions","GET",{select:"id,club_id,dependant_id,colour,clubs(id,name,address,location,phone,rating)",filters:["user_id=eq."+user.id]}),
       db("recurring_events","GET",{filters:["user_id=eq."+user.id]}),
       db("manual_events","GET",{filters:["user_id=eq."+user.id]}),
       db("payment_reminders","GET",{filters:["user_id=eq."+user.id],order:"due_date.asc"}),
-      db("camps","GET",{select:"id,title,camp_type,start_date,end_date,daily_start_time,daily_end_time,age_min,age_max,cost_eur,cost_notes,location_name,booking_url,source",filters:["status=eq.active"],order:"start_date.asc"})
+      db("camps","GET",{select:"id,title,camp_type,start_date,end_date,daily_start_time,daily_end_time,age_min,age_max,cost_eur,cost_notes,location_name,booking_url,source",filters:["status=eq.active"],order:"start_date.asc"}),
+      db("school_holidays","GET",{order:"start_date.asc"})
     ]);
     setKids(k||[]);
     setClubs((c||[]).map(s=>({...s,club_id:s.club_id||s.clubs?.id,club_name:s.clubs?.name||"?",club_addr:s.clubs?.address})));
-    setRecs(r||[]);setMans(m||[]);setPays(p||[]);setCamps(ca||[]);
+    setRecs(r||[]);setMans(m||[]);setPays(p||[]);setCamps(ca||[]);setHolidays(hols||[]);
     setLoading(false);
   }
   useEffect(()=>{load()},[]);
@@ -514,41 +515,70 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       {/* CAMPS */}
       {tab==="camps"&&<div>
-        <div style={{marginBottom:16}}>
-          <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>
-            {filter!=="all"&&filter!=="self"?("Camps for "+(kids.find(k=>k.id===filter)?.first_name||"")):"Easter Camps 2026"}
-          </h3>
-          <p style={{fontSize:13,color:"var(--mt)",marginTop:4}}>{filtCamps.length} camps found{filter!=="all"&&filter!=="self"&&kids.find(k=>k.id===filter)?.date_of_birth?" for age "+getAge(kids.find(k=>k.id===filter).date_of_birth):""}</p>
-        </div>
-        {filtCamps.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"var(--mt)"}}><div style={{fontSize:36,marginBottom:8}}>🏕️</div><p>No camps match</p></div>
-        :filtCamps.map(c=>{
-          const ct=CT[c.camp_type]||CT.other;
-          const coversWork=c.daily_end_time&&c.daily_end_time>="15:00";
-          return <div key={c.id} style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:10}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-              <div style={{flex:1}}>
-                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
-                  <span style={{fontSize:16}}>{ct.i}</span>
-                  <span style={{fontSize:14,fontWeight:700}}>{c.title}</span>
-                </div>
-                <div style={{fontSize:12,color:"var(--mt)"}}>{c.location_name}</div>
-                <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>
-                  {c.start_date&&c.end_date?fmtDate(new Date(c.start_date+"T00:00"))+" – "+fmtDate(new Date(c.end_date+"T00:00")):""}
-                  {c.daily_start_time&&c.daily_end_time?" • "+c.daily_start_time?.slice(0,5)+"–"+c.daily_end_time?.slice(0,5):""}
-                </div>
-                <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
-                  <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#8a6d00"}}>€{c.cost_eur}</span>
-                  <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {c.age_min}–{c.age_max}</span>
-                  {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--gxl)",color:"var(--gl)"}}>✓ Covers work day</span>}
-                </div>
+        {(()=>{
+          const now=new Date();
+          const futureHols=holidays.filter(h=>new Date(h.end_date+"T23:59:59")>=now);
+          const kidName=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter)?.first_name:null;
+          const kidAge=filter!=="all"&&filter!=="self"?getAge(kids.find(k=>k.id===filter)?.date_of_birth):null;
+
+          if(futureHols.length===0) return <p style={{color:"var(--mt)",padding:20,textAlign:"center"}}>No upcoming school holidays found</p>;
+
+          return futureHols.map(hol=>{
+            const hs=new Date(hol.start_date+"T00:00:00"),he=new Date(hol.end_date+"T23:59:59");
+            const holCamps=filtCamps.filter(camp=>{
+              const cs=new Date(camp.start_date+"T00:00:00");
+              return cs>=hs&&cs<=he;
+            });
+            const holEmoji=hol.holiday_type==="easter"?"🐣":hol.holiday_type==="summer"?"☀️":hol.holiday_type==="christmas"?"🎄":"🍂";
+            const weeks=Math.max(1,Math.ceil((he-hs)/(7*86400000)));
+            
+            return <div key={hol.id} style={{marginBottom:24}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                <span style={{fontSize:20}}>{holEmoji}</span>
+                <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)"}}>{hol.name}</h3>
               </div>
+              <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>
+                {new Date(hol.start_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} – {new Date(hol.end_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} ({weeks} week{weeks>1?"s":""})
+                {kidName&&kidAge!=null?" · Showing camps for "+kidName+" (age "+kidAge+")":""}
+                {" · "+holCamps.length+" camp"+(holCamps.length!==1?"s":"")+" found"}
+              </p>
+
+              {holCamps.length===0?
+                <div style={{padding:20,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center",marginBottom:8}}>
+                  <div style={{fontSize:28,marginBottom:6}}>🔍</div>
+                  <p style={{fontSize:13,color:"var(--mt)"}}>No camps listed yet for this break</p>
+                  <p style={{fontSize:12,color:"var(--mt)",marginTop:2}}>We'll alert you when camps appear</p>
+                </div>
+              :holCamps.map(camp=>{
+                const ct=CT[camp.camp_type]||CT.other;
+                const coversWork=camp.daily_end_time&&camp.daily_end_time>="15:00";
+                return <div key={camp.id} style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:10}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                    <div style={{flex:1}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                        <span style={{fontSize:16}}>{ct.i}</span>
+                        <span style={{fontSize:14,fontWeight:700}}>{camp.title}</span>
+                      </div>
+                      <div style={{fontSize:12,color:"var(--mt)"}}>{camp.location_name}</div>
+                      <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>
+                        {camp.start_date&&camp.end_date?fmtDate(new Date(camp.start_date+"T00:00"))+" – "+fmtDate(new Date(camp.end_date+"T00:00")):""}
+                        {camp.daily_start_time&&camp.daily_end_time?" · "+camp.daily_start_time?.slice(0,5)+"–"+camp.daily_end_time?.slice(0,5):""}
+                      </div>
+                      <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
+                        <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#8a6d00"}}>€{camp.cost_eur}</span>
+                        <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {camp.age_min}–{camp.age_max}</span>
+                        {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--gxl)",color:"var(--gl)"}}>✓ Covers work day</span>}
+                      </div>
+                    </div>
+                  </div>
+                  {camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:10,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book now</a>}
+                </div>
+              })}
             </div>
-            {c.booking_url&&c.booking_url!=="#"&&<a href={c.booking_url} target="_blank" style={{display:"block",marginTop:10,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book now</a>}
-          </div>
-        })}
+          });
+        })()}
       </div>}
 
-      {/* CLUBS */}
       {tab==="clubs"&&<div>
         {clubs.map((c,i)=>{
           const kid=c.dependant_id?kids.find(k=>k.id===c.dependant_id):null;
