@@ -339,24 +339,25 @@ function OnboardClubs({userId,kids,onDone}){
 function Hub({user,profile,onRefresh,onLogout}){
   const[tab,setTab]=useState("week");const[filter,setFilter]=useState("all");
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
-  const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[holidays,setHolidays]=useState([]);
+  const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[holidays,setHolidays]=useState([]);const[userHolidays,setUserHolidays]=useState([]);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
-  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[showInvite,setShowInvite]=useState(false);const[loading,setLoading]=useState(true);
+  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[loading,setLoading]=useState(true);
 
   async function load(){
     setLoading(true);
-    const[k,c,r,m,p,ca,hols]=await Promise.all([
+    const[k,c,r,m,p,ca,hols,userHols]=await Promise.all([
       db("dependants","GET",{filters:["parent_user_id=eq."+user.id],order:"created_at.asc"}),
       db("hub_subscriptions","GET",{select:"id,club_id,dependant_id,colour,clubs(id,name,address,location,phone,rating)",filters:["user_id=eq."+user.id]}),
       db("recurring_events","GET",{filters:["user_id=eq."+user.id]}),
       db("manual_events","GET",{filters:["user_id=eq."+user.id]}),
       db("payment_reminders","GET",{filters:["user_id=eq."+user.id],order:"due_date.asc"}),
       db("camps","GET",{select:"id,title,camp_type,start_date,end_date,daily_start_time,daily_end_time,age_min,age_max,cost_eur,cost_notes,location_name,booking_url,source",filters:["status=eq.active"],order:"start_date.asc"}),
-      db("school_holidays","GET",{order:"start_date.asc"})
+      db("school_holidays","GET",{order:"start_date.asc"}),
+      db("user_school_holidays","GET",{filters:["user_id=eq."+user.id],order:"start_date.asc"})
     ]);
     setKids(k||[]);
     setClubs((c||[]).map(s=>({...s,club_id:s.club_id||s.clubs?.id,club_name:s.clubs?.name||"?",club_addr:s.clubs?.address})));
-    setRecs(r||[]);setMans(m||[]);setPays(p||[]);setCamps(ca||[]);setHolidays(hols||[]);
+    setRecs(r||[]);setMans(m||[]);setPays(p||[]);setCamps(ca||[]);setHolidays(hols||[]);setUserHolidays(userHols||[]);
     setLoading(false);
   }
   useEffect(()=>{load()},[]);
@@ -517,7 +518,20 @@ function Hub({user,profile,onRefresh,onLogout}){
       {tab==="camps"&&<div>
         {(()=>{
           const now=new Date();
-          const futureHols=holidays.filter(h=>new Date(h.end_date+"T23:59:59")>=now);
+          // Merge default + user overrides
+          const mergedHols=holidays.map(h=>{
+            const override=userHolidays.find(uh=>uh.base_holiday_id===h.id);
+            if(override){
+              if(override.holiday_type==="hidden")return null;
+              return {...override,is_user_override:true,holiday_type:override.holiday_type||h.holiday_type};
+            }
+            return {...h,is_user_override:false};
+          }).filter(Boolean);
+          // Add custom user holidays (no base_holiday_id)
+          userHolidays.filter(uh=>!uh.base_holiday_id&&uh.holiday_type!=="hidden").forEach(uh=>{
+            mergedHols.push({...uh,is_user_override:true});
+          });
+          const futureHols=mergedHols.filter(h=>new Date(h.end_date+"T23:59:59")>=now).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
           const kidName=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter)?.first_name:null;
           const kidAge=filter!=="all"&&filter!=="self"?getAge(kids.find(k=>k.id===filter)?.date_of_birth):null;
 
@@ -535,10 +549,11 @@ function Hub({user,profile,onRefresh,onLogout}){
             return <div key={hol.id} style={{marginBottom:24}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
                 <span style={{fontSize:20}}>{holEmoji}</span>
-                <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)"}}>{hol.name}</h3>
+                <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",flex:1}}>{hol.name}</h3>
+                <button onClick={(e)=>{e.stopPropagation();setEditHol(hol)}} style={{background:"var(--gxl)",border:"none",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700,color:"var(--gl)",cursor:"pointer",fontFamily:"var(--sn)"}}>\u270e Edit dates</button>
               </div>
               <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>
-                {new Date(hol.start_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} – {new Date(hol.end_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} ({weeks} week{weeks>1?"s":""})
+                {new Date(hol.start_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} – {new Date(hol.end_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} ({weeks} week{weeks>1?"s":""}){hol.is_user_override?" \u2022 customised":""}
                 {kidName&&kidAge!=null?" · Showing camps for "+kidName+" (age "+kidAge+")":""}
                 {" · "+holCamps.length+" camp"+(holCamps.length!==1?"s":"")+" found"}
               </p>
@@ -577,6 +592,7 @@ function Hub({user,profile,onRefresh,onLogout}){
             </div>
           });
         })()}
+        <button onClick={()=>setShowAddHol(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a school holiday or closure day</button>
       </div>}
 
       {tab==="clubs"&&<div>
@@ -601,6 +617,8 @@ function Hub({user,profile,onRefresh,onLogout}){
       {showAddPay&&<AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddPay(false)} onSaved={()=>{setShowAddPay(false);load()}}/>}
       {showAddKid&&<AddKidModal userId={user.id} onClose={()=>setShowAddKid(false)} onSaved={()=>{setShowAddKid(false);load()}}/>}
       {editClub&&<EditClubModal club={editClub} kids={kids} profile={profile} userId={user.id} onClose={()=>setEditClub(null)} onSaved={()=>{setEditClub(null);load()}} onDelete={()=>{setEditClub(null);load()}}/>}
+      {editHol&&<EditHolidayModal holiday={editHol} userId={user.id} onClose={()=>setEditHol(null)} onSaved={()=>{setEditHol(null);load()}}/>}
+      {showAddHol&&<AddHolidayModal userId={user.id} onClose={()=>setShowAddHol(false)} onSaved={()=>{setShowAddHol(false);load()}}/>}
       {showInvite&&<InviteAdultModal userId={user.id} familyId={profile?.family_id} onClose={()=>setShowInvite(false)} onSaved={()=>{setShowInvite(false);load()}}/>}
     </div>
   );
@@ -748,6 +766,86 @@ function InviteAdultModal({userId,familyId,onClose,onSaved}){
       <div><span className="lbl">Their name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="First name"/></div>
       <div><span className="lbl">Their email</span><input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="email@example.com"/></div>
       <button onClick={send} disabled={sv||!email.trim()} className="btn bp">{sv?"Sending...":"Send invite"}</button>
+    </div>
+  </div></div>;
+}
+
+
+function EditHolidayModal({holiday,userId,onClose,onSaved}){
+  const[name,setName]=useState(holiday.name);
+  const[start,setStart]=useState(holiday.start_date);
+  const[end,setEnd]=useState(holiday.end_date);
+  const[sv,setSv]=useState(false);
+
+  async function save(){
+    setSv(true);
+    if(holiday.is_user_override){
+      // Update existing user override
+      await db("user_school_holidays","PATCH",{body:{name,start_date:start,end_date:end},filters:["id=eq."+holiday.id]});
+    } else {
+      // Create a user override from the default
+      await db("user_school_holidays","POST",{body:{user_id:userId,base_holiday_id:holiday.id,name,start_date:start,end_date:end,holiday_type:holiday.holiday_type}});
+    }
+    setSv(false);onSaved();
+  }
+
+  async function reset(){
+    if(!holiday.is_user_override)return;
+    setSv(true);
+    await db("user_school_holidays","DELETE",{filters:["id=eq."+holiday.id]});
+    setSv(false);onSaved();
+  }
+
+  async function remove(){
+    if(!confirm("Remove this holiday from your calendar?"))return;
+    setSv(true);
+    if(holiday.is_user_override){
+      await db("user_school_holidays","DELETE",{filters:["id=eq."+holiday.id]});
+    } else {
+      // Create an override that marks it as hidden
+      await db("user_school_holidays","POST",{body:{user_id:userId,base_holiday_id:holiday.id,name:holiday.name+"_hidden",start_date:holiday.start_date,end_date:holiday.start_date,holiday_type:"hidden"}});
+    }
+    setSv(false);onSaved();
+  }
+
+  return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
+      <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Edit Holiday Dates</h3>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button>
+    </div>
+    <p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>Adjust to match your school\u2019s actual dates</p>
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <div><span className="lbl">Holiday name</span><input value={name} onChange={e=>setName(e.target.value)}/></div>
+      <div style={{display:"flex",gap:8}}>
+        <div style={{flex:1}}><span className="lbl">Starts</span><input type="date" value={start} onChange={e=>setStart(e.target.value)}/></div>
+        <div style={{flex:1}}><span className="lbl">Ends</span><input type="date" value={end} onChange={e=>setEnd(e.target.value)}/></div>
+      </div>
+      <button onClick={save} disabled={sv} className="btn bp">{sv?"Saving...":"Save dates"}</button>
+      {holiday.is_user_override&&<button onClick={reset} className="btn bs" style={{fontSize:13}}>Reset to default dates</button>}
+    </div>
+  </div></div>;
+}
+
+function AddHolidayModal({userId,onClose,onSaved}){
+  const[name,setName]=useState("");const[start,setStart]=useState("");const[end,setEnd]=useState("");const[sv,setSv]=useState(false);
+  async function save(){
+    if(!name.trim()||!start||!end)return;setSv(true);
+    await db("user_school_holidays","POST",{body:{user_id:userId,name:name.trim(),start_date:start,end_date:end,holiday_type:"custom"}});
+    setSv(false);onSaved();
+  }
+  return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
+      <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add School Holiday</h3>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button>
+    </div>
+    <p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>Add a holiday your school has that\u2019s not in the standard calendar</p>
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <div><span className="lbl">Name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. School closure day, Staff training day"/></div>
+      <div style={{display:"flex",gap:8}}>
+        <div style={{flex:1}}><span className="lbl">Starts</span><input type="date" value={start} onChange={e=>setStart(e.target.value)}/></div>
+        <div style={{flex:1}}><span className="lbl">Ends</span><input type="date" value={end} onChange={e=>setEnd(e.target.value)}/></div>
+      </div>
+      <button onClick={save} disabled={sv||!name.trim()||!start||!end} className="btn bp">{sv?"Saving...":"Add holiday"}</button>
     </div>
   </div></div>;
 }
