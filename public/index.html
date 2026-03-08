@@ -388,7 +388,9 @@ function Hub({user,profile,onRefresh,onLogout}){
         if(d.getDay()===re.day_of_week){
           const cl=clubs.find(c=>c.club_id===re.club_id);
           const kid=re.dependant_id?kids.find(k=>k.id===re.dependant_id):null;
-          evts.push({id:re.id+d.toISOString(),title:re.title,date:d,time:re.start_time?.slice(0,5)||"",club:cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self"});
+          evts.push({id:re.id+d.toISOString(),title:re.title,date:d,time:re.start_time?.slice(0,5)||"",
+            endTime:re.start_time&&re.duration_minutes?((h,m)=>{const t=parseInt(re.start_time.slice(0,2))*60+parseInt(re.start_time.slice(3,5))+re.duration_minutes;return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()||"":"",
+            club:cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self"});
         }
       });
     });
@@ -487,7 +489,7 @@ function Hub({user,profile,onRefresh,onLogout}){
                 <div style={{fontSize:14,fontWeight:600}}><span style={{color:"var(--mt)",fontWeight:500}}>{e.member}</span> — {e.title}</div>
                 <div style={{fontSize:12,color:"var(--mt)",marginTop:1}}>{e.club}</div>
               </div>
-              {e.time&&<span style={{fontSize:12,fontWeight:600,color:"var(--g)",background:"var(--gxl)",padding:"4px 10px",borderRadius:8,whiteSpace:"nowrap"}}>{e.time}</span>}
+              {e.time&&<span style={{fontSize:12,fontWeight:600,color:"var(--g)",background:"var(--gxl)",padding:"4px 10px",borderRadius:8,whiteSpace:"nowrap"}}>{e.time}{e.endTime?"–"+e.endTime:""}</span>}
             </div>)}
           </div>
         })}
@@ -613,13 +615,13 @@ function Hub({user,profile,onRefresh,onLogout}){
 function AddEventModal({clubs,userId,kids,profile,onClose,onSaved}){
   const[cid,setCid]=useState(clubs[0]?.club_id||"");const[mid,setMid]=useState("self");
   const[title,setTitle]=useState("");const[type,setType]=useState("recurring");
-  const[date,setDate]=useState("");const[time,setTime]=useState("18:00");const[dur,setDur]=useState(60);
+  const[date,setDate]=useState("");const[time,setTime]=useState("18:00");const[endTime,setEndTime]=useState("19:00");const[dur,setDur]=useState(60);
   const[dow,setDow]=useState(1);const[sv,setSv]=useState(false);
   async function save(){
     if(!title.trim()||!cid)return;setSv(true);const dep=mid==="self"?null:mid;
     let result;
     if(type==="recurring"){
-      result=await db("recurring_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),frequency:"weekly",day_of_week:parseInt(dow),start_time:time+":00",duration_minutes:parseInt(dur),starts_from:new Date().toISOString().split("T")[0],excluded_dates:[]}});
+      result=await db("recurring_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),frequency:"weekly",day_of_week:parseInt(dow),start_time:time+":00",duration_minutes:endTime?Math.max(30,Math.round((new Date("2000-01-01T"+endTime)-new Date("2000-01-01T"+time))/60000)):parseInt(dur),starts_from:new Date().toISOString().split("T")[0],excluded_dates:[]}});
     }else{
       if(!date){setSv(false);return}
       result=await db("manual_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),event_date:date+"T"+time+":00"}});
@@ -638,10 +640,19 @@ function AddEventModal({clubs,userId,kids,profile,onClose,onSaved}){
         <button onClick={()=>setType("recurring")} className={"pill "+(type==="recurring"?"pon":"poff")} style={{flex:1,padding:8}}>Every week</button>
         <button onClick={()=>setType("oneoff")} className={"pill "+(type==="oneoff"?"pon":"poff")} style={{flex:1,padding:8}}>One-off</button>
       </div>
-      {type==="recurring"?<div style={{display:"flex",gap:8}}>
-        <div style={{flex:1}}><span className="lbl">Day</span><select value={dow} onChange={e=>setDow(e.target.value)}>{DAYF.map((d,i)=><option key={i} value={i}>{d}</option>)}</select></div>
-        <div style={{flex:1}}><span className="lbl">Time</span><input type="time" value={time} onChange={e=>setTime(e.target.value)}/></div>
-      </div>:<div><span className="lbl">Date & Time</span><div style={{display:"flex",gap:8}}><input type="date" value={date} onChange={e=>setDate(e.target.value)} style={{flex:1}}/><input type="time" value={time} onChange={e=>setTime(e.target.value)} style={{flex:1}}/></div></div>}
+      {type==="recurring"?<div style={{display:"flex",flexDirection:"column",gap:8}}>
+        <div><span className="lbl">Day</span><select value={dow} onChange={e=>setDow(e.target.value)}>{DAYF.map((d,i)=><option key={i} value={i}>{d}</option>)}</select></div>
+        <div style={{display:"flex",gap:8}}>
+          <div style={{flex:1}}><span className="lbl">Start time</span><input type="time" value={time} onChange={e=>setTime(e.target.value)}/></div>
+          <div style={{flex:1}}><span className="lbl">End time</span><input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)}/></div>
+        </div>
+      </div>:<div style={{display:"flex",flexDirection:"column",gap:8}}>
+        <div><span className="lbl">Date</span><input type="date" value={date} onChange={e=>setDate(e.target.value)}/></div>
+        <div style={{display:"flex",gap:8}}>
+          <div style={{flex:1}}><span className="lbl">Start time</span><input type="time" value={time} onChange={e=>setTime(e.target.value)}/></div>
+          <div style={{flex:1}}><span className="lbl">End time</span><input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)}/></div>
+        </div>
+      </div>}
       <button onClick={save} disabled={sv||!title.trim()||!cid} className="btn bp">{sv?"Saving...":(clubs.length===0?"Add a club first":"Save event")}</button>
     </div>
   </div></div>;
@@ -771,10 +782,15 @@ function InviteAdultModal({userId,familyId,onClose,onSaved}){
     setSv(false);
   }
 
-  if(done)return <div className="mbg" onClick={onClose}><div className="mbox" style={{textAlign:"center",padding:32}}>
-    <div style={{fontSize:48,marginBottom:12}}>✉️</div>
-    <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Invite sent!</h3>
-    <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 20px"}}>Share this link with {name||email}:<br/><strong>moonlit-haupia-3c2f14.netlify.app</strong><br/>They can sign up and join your family calendar.</p>
+  if(done)return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox" style={{textAlign:"center",padding:32}}>
+    <div style={{fontSize:48,marginBottom:12}}>✅</div>
+    <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Invite recorded!</h3>
+    <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 12px"}}>Share this link with {name||email} so they can sign up:</p>
+    <div style={{background:"#f5f3ef",borderRadius:12,padding:12,marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
+      <span style={{flex:1,fontSize:13,fontWeight:600,color:"var(--tx)",wordBreak:"break-all"}}>moonlit-haupia-3c2f14.netlify.app</span>
+      <button onClick={()=>{navigator.clipboard?.writeText("https://moonlit-haupia-3c2f14.netlify.app");}} style={{padding:"6px 12px",borderRadius:8,border:"none",background:"var(--g)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",whiteSpace:"nowrap"}}>Copy link</button>
+    </div>
+    <p style={{fontSize:12,color:"var(--mt)",marginBottom:16}}>Once they create an account, they'll see your shared family calendar with all clubs, events, and camps.</p>
     <button onClick={onClose} className="btn bp">Done</button>
   </div></div>;
 
