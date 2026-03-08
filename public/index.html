@@ -341,7 +341,7 @@ function Hub({user,profile,onRefresh,onLogout}){
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
   const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
-  const[showAddKid,setShowAddKid]=useState(false);const[loading,setLoading]=useState(true);
+  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[showInvite,setShowInvite]=useState(false);const[loading,setLoading]=useState(true);
 
   async function load(){
     setLoading(true);
@@ -552,7 +552,7 @@ function Hub({user,profile,onRefresh,onLogout}){
       {tab==="clubs"&&<div>
         {clubs.map((c,i)=>{
           const kid=c.dependant_id?kids.find(k=>k.id===c.dependant_id):null;
-          return <div key={c.id} style={{background:"var(--card)",borderRadius:14,border:"1px solid var(--bd)",padding:16,marginBottom:8,display:"flex",alignItems:"center",gap:12}}>
+          return <div key={c.id} onClick={()=>setEditClub(c)} style={{background:"var(--card)",borderRadius:14,border:"1px solid var(--bd)",padding:16,marginBottom:8,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
             <div style={{width:40,height:40,borderRadius:10,background:c.colour||COLS[i%COLS.length],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:800,flexShrink:0}}>{c.club_name.split(" ").map(w=>w[0]).join("").substring(0,2)}</div>
             <div style={{flex:1}}>
               <div style={{fontSize:14,fontWeight:600}}>{c.club_name}</div>
@@ -561,6 +561,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           </div>
         })}
         <button onClick={()=>onRefresh("clubs")} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a club</button>
+        <button onClick={()=>setShowInvite(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--acc)",background:"var(--accl)",cursor:"pointer",fontSize:13,fontWeight:700,color:"#8a6d00",fontFamily:"var(--sn)",marginTop:8}}>\ud83d\udc65 Invite another adult</button>
       </div>}
 
       </div>
@@ -569,6 +570,8 @@ function Hub({user,profile,onRefresh,onLogout}){
       {showAddEv&&<AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddEv(false)} onSaved={()=>{setShowAddEv(false);load()}}/>}
       {showAddPay&&<AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddPay(false)} onSaved={()=>{setShowAddPay(false);load()}}/>}
       {showAddKid&&<AddKidModal userId={user.id} onClose={()=>setShowAddKid(false)} onSaved={()=>{setShowAddKid(false);load()}}/>}
+      {editClub&&<EditClubModal club={editClub} kids={kids} profile={profile} userId={user.id} onClose={()=>setEditClub(null)} onSaved={()=>{setEditClub(null);load()}} onDelete={()=>{setEditClub(null);load()}}/>}
+      {showInvite&&<InviteAdultModal userId={user.id} familyId={profile?.family_id} onClose={()=>setShowInvite(false)} onSaved={()=>{setShowInvite(false);load()}}/>}
     </div>
   );
 }
@@ -632,6 +635,89 @@ function AddKidModal({userId,onClose,onSaved}){
       <div><span className="lbl">Name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="First name"/></div>
       <div><span className="lbl">Date of birth</span><input type="date" value={dob} onChange={e=>setDob(e.target.value)}/></div>
       <button onClick={save} disabled={sv||!name.trim()} className="btn bp">{sv?"Saving...":"Add to family"}</button>
+    </div>
+  </div></div>;
+}
+
+
+function EditClubModal({club,kids,profile,userId,onClose,onSaved,onDelete}){
+  const[who,setWho]=useState(club.dependant_id||"self");
+  const[sv,setSv]=useState(false);
+
+  async function save(){
+    setSv(true);
+    const dep=who==="self"?null:who;
+    await db("hub_subscriptions","PATCH",{body:{dependant_id:dep},filters:["id=eq."+club.id]});
+    setSv(false);onSaved();
+  }
+
+  async function remove(){
+    if(!confirm("Remove "+club.club_name+" from your hub?"))return;
+    setSv(true);
+    await db("hub_subscriptions","DELETE",{filters:["id=eq."+club.id]});
+    setSv(false);onDelete();
+  }
+
+  return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
+      <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>{club.club_name}</h3>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button>
+    </div>
+    {club.club_addr&&<p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>{club.club_addr}</p>}
+    <div style={{marginBottom:16}}>
+      <span className="lbl">Who goes to this club?</span>
+      <div style={{display:"flex",flexDirection:"column",gap:6,marginTop:6}}>
+        <button onClick={()=>setWho("self")} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:12,border:who==="self"?"2px solid var(--g)":"2px solid var(--bd)",background:who==="self"?"var(--gxl)":"var(--card)",cursor:"pointer",fontFamily:"var(--sn)",fontSize:14,fontWeight:600}}>
+          \ud83d\udc64 {profile?.first_name||"Me"} {who==="self"&&<span style={{marginLeft:"auto",color:"var(--g)"}}>\u2713</span>}
+        </button>
+        {kids.map(k=>(
+          <button key={k.id} onClick={()=>setWho(k.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:12,border:who===k.id?"2px solid var(--g)":"2px solid var(--bd)",background:who===k.id?"var(--gxl)":"var(--card)",cursor:"pointer",fontFamily:"var(--sn)",fontSize:14,fontWeight:600}}>
+            \ud83d\udc67 {k.first_name} {who===k.id&&<span style={{marginLeft:"auto",color:"var(--g)"}}>\u2713</span>}
+          </button>
+        ))}
+      </div>
+    </div>
+    <button onClick={save} disabled={sv} className="btn bp" style={{marginBottom:8}}>{sv?"Saving...":"Save changes"}</button>
+    <button onClick={remove} className="btn bs" style={{color:"#dc2626",fontSize:13}}>Remove club</button>
+  </div></div>;
+}
+
+
+function InviteAdultModal({userId,familyId,onClose,onSaved}){
+  const[email,setEmail]=useState("");const[name,setName]=useState("");const[sv,setSv]=useState(false);const[done,setDone]=useState(false);
+
+  async function send(){
+    if(!email.trim())return;setSv(true);
+    // Ensure family exists
+    let fid=familyId;
+    if(!fid){
+      const fam=await db("families","POST",{body:{created_by:userId}});
+      if(fam&&fam[0]){fid=fam[0].id;await db("profiles","PATCH",{body:{family_id:fid},filters:["id=eq."+userId]})}
+    }
+    if(fid){
+      await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:email.trim(),invited_name:name.trim()||null}});
+      setDone(true);
+    }
+    setSv(false);
+  }
+
+  if(done)return <div className="mbg" onClick={onClose}><div className="mbox" style={{textAlign:"center",padding:32}}>
+    <div style={{fontSize:48,marginBottom:12}}>\u2709\ufe0f</div>
+    <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Invite sent!</h3>
+    <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 20px"}}>Share this link with {name||email}:<br/><strong>moonlit-haupia-3c2f14.netlify.app</strong><br/>They can sign up and join your family calendar.</p>
+    <button onClick={onClose} className="btn bp">Done</button>
+  </div></div>;
+
+  return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
+      <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Invite a family member</h3>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button>
+    </div>
+    <p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>Add your partner or another adult. They\u2019ll get their own login and see the same family calendar.</p>
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <div><span className="lbl">Their name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="First name"/></div>
+      <div><span className="lbl">Their email</span><input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="email@example.com"/></div>
+      <button onClick={send} disabled={sv||!email.trim()} className="btn bp">{sv?"Sending...":"Send invite"}</button>
     </div>
   </div></div>;
 }
