@@ -339,13 +339,13 @@ function OnboardClubs({userId,kids,onDone}){
 function Hub({user,profile,onRefresh,onLogout}){
   const[tab,setTab]=useState("week");const[filter,setFilter]=useState("all");
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
-  const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[holidays,setHolidays]=useState([]);const[userHolidays,setUserHolidays]=useState([]);
+  const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[campBookings,setCampBookings]=useState([]);const[holidays,setHolidays]=useState([]);const[userHolidays,setUserHolidays]=useState([]);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
   const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[loading,setLoading]=useState(true);
 
   async function load(){
     setLoading(true);
-    const[k,c,r,m,p,ca,hols,userHols]=await Promise.all([
+    const[k,c,r,m,p,ca,hols,userHols,cBooks]=await Promise.all([
       db("dependants","GET",{filters:["parent_user_id=eq."+user.id],order:"created_at.asc"}),
       db("hub_subscriptions","GET",{select:"id,club_id,dependant_id,colour,clubs(id,name,address,location,phone,rating)",filters:["user_id=eq."+user.id]}),
       db("recurring_events","GET",{filters:["user_id=eq."+user.id]}),
@@ -353,11 +353,12 @@ function Hub({user,profile,onRefresh,onLogout}){
       db("payment_reminders","GET",{filters:["user_id=eq."+user.id],order:"due_date.asc"}),
       db("camps","GET",{select:"id,title,camp_type,start_date,end_date,daily_start_time,daily_end_time,age_min,age_max,cost_eur,cost_notes,location_name,booking_url,source",filters:["status=eq.active"],order:"start_date.asc"}),
       db("school_holidays","GET",{order:"start_date.asc"}),
-      db("user_school_holidays","GET",{filters:["user_id=eq."+user.id],order:"start_date.asc"})
+      db("user_school_holidays","GET",{filters:["user_id=eq."+user.id],order:"start_date.asc"}),
+      db("camp_bookings","GET",{filters:["user_id=eq."+user.id]})
     ]);
     setKids(k||[]);
     setClubs((c||[]).map(s=>({...s,club_id:s.club_id||s.clubs?.id,club_name:s.clubs?.name||"?",club_addr:s.clubs?.address})));
-    setRecs(r||[]);setMans(m||[]);setPays(p||[]);setCamps(ca||[]);setHolidays(hols||[]);setUserHolidays(userHols||[]);
+    setRecs(r||[]);setMans(m||[]);setPays(p||[]);setCamps(ca||[]);setHolidays(hols||[]);setUserHolidays(userHols||[]);setCampBookings(cBooks||[]);
     setLoading(false);
   }
   useEffect(()=>{load()},[]);
@@ -437,6 +438,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           <div className="hsb" style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6}}>
             {members.map(m=><button key={m.id} onClick={()=>setFilter(m.id)} className={"pill "+(filter===m.id?"pon":"poff")}>{m.emoji} {m.name}{m.age!=null&&<span style={{opacity:.6,marginLeft:2}}>({m.age})</span>}</button>)}
             <button onClick={()=>setShowAddKid(true)} className="pill poff" style={{border:"2px dashed var(--bd)",background:"none"}}>+ kid</button>
+            {filter!=="all"&&filter!=="self"&&<button onClick={()=>{const kid=kids.find(k=>k.id===filter);if(kid)setShowAddKid(kid)}} className="pill poff" style={{fontSize:11}}>\u270e edit</button>}
           </div>
         </div>
         <div style={{maxWidth:520,margin:"0 auto",display:"flex"}}>
@@ -586,7 +588,28 @@ function Hub({user,profile,onRefresh,onLogout}){
                       </div>
                     </div>
                   </div>
-                  {camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:10,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book now</a>}
+                  {(()=>{
+                  const myBooking=campBookings.find(b=>b.camp_id===camp.id);
+                  const activeKid=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter):null;
+                  const hasSchool=activeKid?.school_name&&activeKid?.school_class;
+                  return <>
+                    <div style={{display:"flex",gap:6,marginTop:10}}>
+                      {!myBooking?<>
+                        <button onClick={async()=>{await db("camp_bookings","POST",{body:{user_id:user.id,dependant_id:activeKid?.id||null,camp_id:camp.id,status:"interested"}});load()}} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--bd)",background:"var(--card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--mt)",fontFamily:"var(--sn)"}}>\u2764\ufe0f Interested</button>
+                        <button onClick={async()=>{await db("camp_bookings","POST",{body:{user_id:user.id,dependant_id:activeKid?.id||null,camp_id:camp.id,status:"booked"}});load()}} style={{flex:1,padding:8,borderRadius:10,border:"none",background:"var(--g)",cursor:"pointer",fontSize:12,fontWeight:700,color:"#fff",fontFamily:"var(--sn)"}}>\u2713 Booked</button>
+                      </>:
+                        <div style={{flex:1,padding:8,borderRadius:10,background:myBooking.status==="booked"?"var(--gxl)":"var(--accl)",textAlign:"center",fontSize:12,fontWeight:700,color:myBooking.status==="booked"?"var(--gl)":"#8a6d00"}}>
+                          {myBooking.status==="booked"?"\u2713 Booked":"\u2764\ufe0f Interested"}
+                          <button onClick={async()=>{await db("camp_bookings","DELETE",{filters:["id=eq."+myBooking.id]});load()}} style={{marginLeft:8,background:"none",border:"none",fontSize:11,color:"var(--mt)",cursor:"pointer",textDecoration:"underline"}}>remove</button>
+                        </div>
+                      }
+                    </div>
+                    {hasSchool&&<div style={{marginTop:6,fontSize:11,color:"var(--gl)",fontStyle:"italic"}}>
+                      \ud83c\udfeb We\u2019ll notify you if classmates from {activeKid.school_class} at {activeKid.school_name} book this camp
+                    </div>}
+                    {camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site \u2192</a>}
+                  </>;
+                })()}
                 </div>
               })}
             </div>
@@ -615,7 +638,7 @@ function Hub({user,profile,onRefresh,onLogout}){
       {/* Modals */}
       {showAddEv&&<AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddEv(false)} onSaved={()=>{setShowAddEv(false);load()}}/>}
       {showAddPay&&<AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddPay(false)} onSaved={()=>{setShowAddPay(false);load()}}/>}
-      {showAddKid&&<AddKidModal userId={user.id} onClose={()=>setShowAddKid(false)} onSaved={()=>{setShowAddKid(false);load()}}/>}
+      {showAddKid&&<AddKidModal userId={user.id} editKid={typeof showAddKid==="object"?showAddKid:null} onClose={()=>setShowAddKid(false)} onSaved={()=>{setShowAddKid(false);load()}}/>}
       {editClub&&<EditClubModal club={editClub} kids={kids} profile={profile} userId={user.id} onClose={()=>setEditClub(null)} onSaved={()=>{setEditClub(null);load()}} onDelete={()=>{setEditClub(null);load()}}/>}
       {editHol&&<EditHolidayModal holiday={editHol} userId={user.id} onClose={()=>setEditHol(null)} onSaved={()=>{setEditHol(null);load()}}/>}
       {showAddHol&&<AddHolidayModal userId={user.id} onClose={()=>setShowAddHol(false)} onSaved={()=>{setShowAddHol(false);load()}}/>}
@@ -674,7 +697,51 @@ function AddPaymentModal({clubs,userId,kids,profile,onClose,onSaved}){
   </div></div>;
 }
 
-function AddKidModal({userId,onClose,onSaved}){
+function AddKidModal({userId,onClose,onSaved,editKid}){
+  const[name,setName]=useState(editKid?.first_name||"");
+  const[dob,setDob]=useState(editKid?.date_of_birth||"");
+  const[school,setSchool]=useState(editKid?.school_name||"");
+  const[cls,setCls]=useState(editKid?.school_class||"");
+  const[teacher,setTeacher]=useState(editKid?.teacher_name||"");
+  const[showSchool,setShowSchool]=useState(!!(editKid?.school_name));
+  const[sv,setSv]=useState(false);
+
+  async function save(){
+    if(!name.trim())return;setSv(true);
+    const body={first_name:name.trim(),date_of_birth:dob||null,school_name:school.trim()||null,school_class:cls.trim()||null,teacher_name:teacher.trim()||null};
+    if(editKid){
+      await db("dependants","PATCH",{body,filters:["id=eq."+editKid.id]});
+    } else {
+      body.parent_user_id=userId;
+      await db("dependants","POST",{body});
+    }
+    setSv(false);onSaved();
+  }
+
+  return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
+      <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>{editKid?"Edit "+editKid.first_name:"Add Family Member"}</h3>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button>
+    </div>
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <div><span className="lbl">Name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="First name"/></div>
+      <div><span className="lbl">Date of birth</span><input type="date" value={dob} onChange={e=>setDob(e.target.value)}/></div>
+      {!showSchool?
+        <button onClick={()=>setShowSchool(true)} style={{padding:10,borderRadius:12,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)"}}>+ Add school info (optional)</button>
+      :<div style={{background:"#f8f7f4",borderRadius:14,padding:14,border:"1px solid var(--bd)"}}>
+        <span className="lbl" style={{marginBottom:8}}>School (optional — helps match classmates at camps)</span>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          <input value={school} onChange={e=>setSchool(e.target.value)} placeholder="School name, e.g. Scoil Bhride"/>
+          <div style={{display:"flex",gap:8}}>
+            <input value={cls} onChange={e=>setCls(e.target.value)} placeholder="Class, e.g. 2nd Class" style={{flex:1}}/>
+            <input value={teacher} onChange={e=>setTeacher(e.target.value)} placeholder="Teacher (optional)" style={{flex:1}}/>
+          </div>
+        </div>
+      </div>}
+      <button onClick={save} disabled={sv||!name.trim()} className="btn bp">{sv?"Saving...":(editKid?"Save changes":"Add to family")}</button>
+    </div>
+  </div></div>;
+}){
   const[name,setName]=useState("");const[dob,setDob]=useState("");const[sv,setSv]=useState(false);
   async function save(){if(!name.trim())return;setSv(true);await db("dependants","POST",{body:{parent_user_id:userId,first_name:name.trim(),date_of_birth:dob||null}});setSv(false);onSaved()}
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
