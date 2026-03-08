@@ -1,28 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>OneClubView — All your clubs. One view.</title>
-  <meta name="description" content="Stop juggling club schedules, fees, and camps. OneClubView gives busy parents one place to see everything.">
-  <meta name="theme-color" content="#1B4332">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'DM Sans',-apple-system,sans-serif}
-    body{background:#f5f5f4;min-height:100vh;-webkit-font-smoothing:antialiased}
-    .hsb::-webkit-scrollbar{display:none}.hsb{-ms-overflow-style:none;scrollbar-width:none}
-    input[type=range]{-webkit-appearance:none;height:6px;border-radius:3px;background:#e7e5e4;outline:none;width:100%}
-    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#1B4332;cursor:pointer}
-    @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.fi{animation:fi .4s ease-out}
-    @keyframes pu{0%,100%{opacity:1}50%{opacity:.5}}.pu{animation:pu 1.5s infinite}
-    @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-    .su{animation:slideUp .6s ease-out both}.su2{animation:slideUp .6s ease-out .15s both}.su3{animation:slideUp .6s ease-out .3s both}.su4{animation:slideUp .6s ease-out .45s both}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>OneClubView — All your clubs. One view.</title>
+<meta name="description" content="The family hub for clubs, camps, and fees. Stop juggling schedules — see everything in one place. €7.99/month.">
+<meta name="theme-color" content="#1a3a2a">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>
+:root{--green:#1a3a2a;--green-l:#2d5a3f;--green-xl:#e8f5e9;--accent:#f0a500;--accent-l:#fff3d0;--warm:#faf7f2;--card:#ffffff;--text:#1a1a1a;--muted:#6b7280;--border:#e8e4df;--serif:'Fraunces',Georgia,serif;--sans:'Plus Jakarta Sans',-apple-system,sans-serif;--radius:16px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--warm);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.hsb::-webkit-scrollbar{display:none}.hsb{-ms-overflow-style:none;scrollbar-width:none}
+input[type=range]{-webkit-appearance:none;height:5px;border-radius:3px;background:var(--border);outline:none;width:100%}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--green);cursor:pointer}
+::selection{background:var(--green-xl);color:var(--green)}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.r{animation:rise .7s cubic-bezier(.16,1,.3,1) both}
+.r2{animation:rise .7s cubic-bezier(.16,1,.3,1) .12s both}
+.r3{animation:rise .7s cubic-bezier(.16,1,.3,1) .24s both}
+.r4{animation:rise .7s cubic-bezier(.16,1,.3,1) .36s both}
+.r5{animation:rise .7s cubic-bezier(.16,1,.3,1) .48s both}
+@keyframes fi{from{opacity:0}to{opacity:1}}.fi{animation:fi .5s ease both}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+</style>
 </head>
 <body>
 <div id="root"></div>
@@ -32,71 +38,160 @@ const SB="https://uqihwazheypvmrcrqklg.supabase.co",SK="eyJhbGciOiJIUzI1NiIsInR5
 let _t=null;
 function hd(){return{apikey:SK,"Content-Type":"application/json",Authorization:"Bearer "+(_t||SK)}}
 async function au(a,b){const ep={signup:"/auth/v1/signup",login:"/auth/v1/token?grant_type=password",user:"/auth/v1/user"};const r=await fetch(SB+ep[a],{method:a==="user"?"GET":"POST",headers:hd(),body:a==="user"?undefined:JSON.stringify(b)});const d=await r.json();if(!r.ok)throw new Error(d.msg||d.error_description||d.message||"Error");if(d.access_token)_t=d.access_token;return d}
-async function db(t,m,o={}){let u=SB+"/rest/v1/"+t;const p=[];if(o.select)p.push("select="+encodeURIComponent(o.select));if(o.filters)o.filters.forEach(f=>p.push(f));if(o.order)p.push("order="+o.order);if(o.limit)p.push("limit="+o.limit);if(p.length)u+="?"+p.join("&");const h=hd();if(m==="POST")h["Prefer"]="return=representation";if(m==="PATCH")h["Prefer"]="return=representation";if(o.single)h["Accept"]="application/vnd.pgrst.object+json";const r=await fetch(u,{method:m,headers:h,body:o.body?JSON.stringify(o.body):undefined});if(!r.ok){console.error("DB error:",await r.text());return null}const txt=await r.text();return txt?JSON.parse(txt):null}
+async function db(t,m,o={}){let u=SB+"/rest/v1/"+t;const p=[];if(o.select)p.push("select="+encodeURIComponent(o.select));if(o.filters)o.filters.forEach(f=>p.push(f));if(o.order)p.push("order="+o.order);if(o.limit)p.push("limit="+o.limit);if(p.length)u+="?"+p.join("&");const h=hd();if(m==="POST")h.Prefer="return=representation";if(m==="PATCH")h.Prefer="return=representation";if(o.single)h.Accept="application/vnd.pgrst.object+json";const r=await fetch(u,{method:m,headers:h,body:o.body?JSON.stringify(o.body):undefined});if(!r.ok){console.error("DB:",await r.text());return null}const txt=await r.text();return txt?JSON.parse(txt):null}
 
-const CT={sport:{l:"Sport",i:"⚽",bg:"#ecfdf5",tx:"#047857",bd:"#a7f3d0"},arts:{l:"Arts",i:"🎨",bg:"#faf5ff",tx:"#7c3aed",bd:"#ddd6fe"},stem:{l:"STEM",i:"🤖",bg:"#eff6ff",tx:"#1d4ed8",bd:"#bfdbfe"},outdoor:{l:"Outdoor",i:"🏔️",bg:"#f0fdfa",tx:"#0f766e",bd:"#99f6e4"},drama:{l:"Drama",i:"🎭",bg:"#fffbeb",tx:"#b45309",bd:"#fde68a"},multi_activity:{l:"Multi",i:"🎪",bg:"#fff7ed",tx:"#c2410c",bd:"#fed7aa"},music:{l:"Music",i:"🎵",bg:"#fdf2f8",tx:"#be185d",bd:"#fbcfe8"},other:{l:"Other",i:"📌",bg:"#f9fafb",tx:"#374151",bd:"#e5e7eb"}};
+const CT={sport:{l:"Sport",i:"⚽",bg:"#e8f5e9",tx:"#1a3a2a",bd:"#c8e6c9"},arts:{l:"Arts",i:"🎨",bg:"#f3e5f5",tx:"#6a1b9a",bd:"#ce93d8"},stem:{l:"STEM",i:"🤖",bg:"#e3f2fd",tx:"#1565c0",bd:"#90caf9"},outdoor:{l:"Outdoor",i:"🏔️",bg:"#e0f2f1",tx:"#00695c",bd:"#80cbc4"},drama:{l:"Drama",i:"🎭",bg:"#fff8e1",tx:"#e65100",bd:"#ffe082"},multi_activity:{l:"Multi",i:"🎪",bg:"#fbe9e7",tx:"#bf360c",bd:"#ffab91"},music:{l:"Music",i:"🎵",bg:"#fce4ec",tx:"#ad1457",bd:"#f48fb1"},other:{l:"Other",i:"📌",bg:"#f5f5f5",tx:"#424242",bd:"#e0e0e0"}};
 function age(d){if(!d)return null;const t=new Date(),b=new Date(d);let a=t.getFullYear()-b.getFullYear();if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))a--;return a}
 function fdr(s,e){const sd=new Date(s+"T00:00:00"),ed=new Date(e+"T00:00:00");if(sd.getMonth()===ed.getMonth())return sd.getDate()+"–"+ed.getDate()+" "+sd.toLocaleDateString("en-IE",{month:"short"});return sd.toLocaleDateString("en-IE",{day:"numeric",month:"short"})+" – "+ed.toLocaleDateString("en-IE",{day:"numeric",month:"short"})}
-const IS={width:"100%",padding:"11px 14px",borderRadius:12,border:"1px solid #d6d3d1",fontSize:14,outline:"none",background:"#fff"};
-const Btn=({children,onClick,disabled,primary,style:s})=><button onClick={onClick} disabled={disabled} style={{width:"100%",padding:13,borderRadius:12,border:"none",fontSize:14,fontWeight:700,cursor:disabled?"wait":"pointer",opacity:disabled?.6:1,color:primary?"#fff":"#57534e",background:primary?"#1B4332":"#f5f5f4",...s}}>{children}</button>;
-const Logo=({s})=><span style={{fontSize:s==="lg"?"28px":s==="md"?"20px":"15px",fontWeight:900,letterSpacing:"-0.5px"}}><span style={{color:"#2D6A4F"}}>One</span><span style={{color:"#1B4332"}}>Club</span><span style={{color:"#40916C"}}>View</span></span>;
 
-// =========== LANDING ===========
-function Landing({onGo}){
-  return <div className="fi" style={{minHeight:"100vh",background:"linear-gradient(180deg,#f0fdf4 0%,#fafaf9 40%)"}}>
-    <div style={{maxWidth:480,margin:"0 auto",padding:"0 20px"}}>
-      <div style={{paddingTop:60,textAlign:"center"}} className="su">
-        <Logo s="lg"/>
-        <h1 style={{fontSize:32,fontWeight:900,color:"#1c1917",lineHeight:1.15,marginTop:20}}>Stop juggling.<br/>Start seeing.</h1>
-        <p style={{fontSize:16,color:"#78716c",marginTop:12,lineHeight:1.5}}>Swimming on Tuesday. GAA fees due. Easter camps to book. <strong style={{color:"#1c1917"}}>All your family's clubs in one place.</strong></p>
+const Logo=({dark})=><div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:32,height:32,borderRadius:10,background:dark?"rgba(255,255,255,.15)":"var(--green)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:16}}>◉</span></div><span style={{fontFamily:"var(--serif)",fontSize:18,fontWeight:700,color:dark?"#fff":"var(--green)",letterSpacing:"-.3px"}}>OneClubView</span></div>;
+
+// =========== LANDING PAGE ===========
+function Landing({onGo,onLogin}){
+  const [email,setEmail]=useState("");
+  return <div style={{background:"var(--warm)"}}>
+    {/* Nav */}
+    <nav className="r" style={{maxWidth:1100,margin:"0 auto",padding:"20px 24px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+      <Logo/>
+      <div style={{display:"flex",alignItems:"center",gap:16}}>
+        <a onClick={onLogin} style={{fontSize:14,fontWeight:600,color:"var(--muted)",cursor:"pointer",textDecoration:"none"}}>Log in</a>
+        <button onClick={onGo} style={{padding:"10px 20px",borderRadius:100,border:"none",background:"var(--green)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:".2px"}}>Get started</button>
       </div>
-      <div className="su2" style={{marginTop:32,background:"#fff",borderRadius:24,border:"1px solid #e7e5e4",padding:16,boxShadow:"0 8px 30px rgba(0,0,0,.06)"}}>
-        <div style={{display:"flex",gap:8,marginBottom:12}}>
-          {["👧 Emma","👦 Jack","🧒 Lily"].map((n,i)=><span key={i} style={{padding:"4px 10px",borderRadius:16,fontSize:11,fontWeight:600,background:i===0?"#1c1917":"#f5f5f4",color:i===0?"#fff":"#78716c"}}>{n}</span>)}
+    </nav>
+
+    {/* Hero */}
+    <section style={{maxWidth:1100,margin:"0 auto",padding:"60px 24px 40px",textAlign:"center"}}>
+      <div className="r" style={{display:"inline-block",padding:"6px 16px",borderRadius:100,background:"var(--accent-l)",border:"1px solid #f0d078",marginBottom:20}}>
+        <span style={{fontSize:13,fontWeight:600,color:"#8a6d00"}}>✦ Built for busy Irish families</span>
+      </div>
+      <h1 className="r2" style={{fontFamily:"var(--serif)",fontSize:"clamp(36px,6vw,56px)",fontWeight:800,lineHeight:1.1,color:"var(--green)",maxWidth:700,margin:"0 auto",letterSpacing:"-1px"}}>
+        Every club. Every fee.<br/>Every camp. <span style={{color:"var(--accent)"}}>One view.</span>
+      </h1>
+      <p className="r3" style={{fontSize:18,color:"var(--muted)",maxWidth:520,margin:"20px auto 0",lineHeight:1.6}}>
+        Your kids have swimming, GAA, scouts, and tennis. You have a headache. OneClubView puts every schedule, payment, and camp in one place.
+      </p>
+      <div className="r4" style={{marginTop:32,display:"flex",justifyContent:"center",gap:12,flexWrap:"wrap"}}>
+        <button onClick={onGo} style={{padding:"14px 32px",borderRadius:100,border:"none",background:"var(--green)",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 14px rgba(26,58,42,.25)",letterSpacing:".2px"}}>Start your free trial →</button>
+      </div>
+      <p className="r5" style={{fontSize:13,color:"var(--muted)",marginTop:12}}>14 days free, then €7.99/month. Cancel anytime.</p>
+    </section>
+
+    {/* App Preview */}
+    <section className="r3" style={{maxWidth:480,margin:"0 auto",padding:"0 24px 60px"}}>
+      <div style={{background:"var(--card)",borderRadius:24,border:"1px solid var(--border)",padding:20,boxShadow:"0 20px 60px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+          <span style={{fontFamily:"var(--serif)",fontSize:15,fontWeight:700,color:"var(--green)"}}>This Week</span>
+          <div style={{display:"flex",gap:6}}>
+            {["Emma","Jack","Lily"].map((n,i)=><span key={i} style={{padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:i===0?"var(--green)":"#f5f3ef",color:i===0?"#fff":"var(--muted)"}}>{n}</span>)}
+          </div>
         </div>
-        {[{t:"Swimming Training",c:"Raheny Swimming",d:"Tue 6pm",col:"#457B9D"},{t:"Hurling Training",c:"Clontarf GAA",d:"Wed 4:30pm",col:"#2D6A4F"},{t:"Scout Meeting",c:"7th Dublin Scouts",d:"Fri 7pm",col:"#E9C46A"}].map((e,i)=>
-          <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:i<2?"1px solid #f5f5f4":"none"}}>
-            <div style={{width:28,height:28,borderRadius:6,background:e.col,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700}}>{e.c.substring(0,2).toUpperCase()}</div>
-            <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:"#1c1917"}}>{e.t}</div><div style={{fontSize:11,color:"#a8a29e"}}>{e.c}</div></div>
-            <span style={{fontSize:11,fontWeight:600,color:"#78716c"}}>{e.d}</span>
+        {[{t:"Swimming Training",c:"Raheny Swimming",d:"Tue 6:00pm",col:"#2d7cb5"},{t:"Hurling Training",c:"Clontarf GAA",d:"Wed 4:30pm",col:"#2d5a3f"},{t:"Scout Meeting",c:"7th Dublin Scouts",d:"Fri 7:00pm",col:"#c4960c"}].map((e,i)=>
+          <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderTop:i===0?"none":"1px solid #f5f3ef"}}>
+            <div style={{width:36,height:36,borderRadius:10,background:e.col,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:".5px"}}>{e.c.split(" ").map(w=>w[0]).join("")}</div>
+            <div style={{flex:1}}><div style={{fontSize:14,fontWeight:600,color:"var(--text)"}}>{e.t}</div><div style={{fontSize:12,color:"var(--muted)",marginTop:1}}>{e.c}</div></div>
+            <span style={{fontSize:12,fontWeight:600,color:"var(--green)",background:"var(--green-xl)",padding:"4px 10px",borderRadius:8}}>{e.d}</span>
           </div>)}
-        <div style={{marginTop:12,display:"flex",gap:8}}>
-          <div style={{flex:1,background:"#fffbeb",borderRadius:10,padding:10,textAlign:"center",border:"1px solid #fde68a"}}><div style={{fontSize:18,fontWeight:900,color:"#b45309"}}>€295</div><div style={{fontSize:9,color:"#b45309",fontWeight:600}}>Fees due</div></div>
-          <div style={{flex:1,background:"#ecfdf5",borderRadius:10,padding:10,textAlign:"center",border:"1px solid #a7f3d0"}}><div style={{fontSize:18,fontWeight:900,color:"#059669"}}>3</div><div style={{fontSize:9,color:"#059669",fontWeight:600}}>Camps found</div></div>
+        <div style={{marginTop:16,display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <div style={{background:"var(--accent-l)",borderRadius:14,padding:14,border:"1px solid #f0d078"}}>
+            <div style={{fontSize:22,fontWeight:800,color:"#8a6d00",fontFamily:"var(--serif)"}}>€295</div>
+            <div style={{fontSize:11,fontWeight:600,color:"#a68600",marginTop:2}}>Club fees due</div>
+          </div>
+          <div style={{background:"var(--green-xl)",borderRadius:14,padding:14,border:"1px solid #c8e6c9"}}>
+            <div style={{fontSize:22,fontWeight:800,color:"var(--green)",fontFamily:"var(--serif)"}}>3</div>
+            <div style={{fontSize:11,fontWeight:600,color:"var(--green-l)",marginTop:2}}>Easter camps found</div>
+          </div>
         </div>
       </div>
-      <div className="su3" style={{marginTop:32}}>
-        {[{e:"📅",t:"One weekly view",d:"Every club, every kid, every event"},{e:"💳",t:"Track every fee",d:"Know what's paid, what's due, total spend"},{e:"🏕️",t:"Find camps automatically",d:"Matched to your kids' ages"},{e:"⏰",t:"Fits your work day?",d:"Filter camps by times that work for you"}].map((v,i)=>
-          <div key={i} style={{display:"flex",gap:14,padding:"12px 0",borderBottom:i<3?"1px solid #e7e5e4":"none"}}>
-            <span style={{fontSize:24}}>{v.e}</span>
-            <div><div style={{fontSize:14,fontWeight:700,color:"#1c1917"}}>{v.t}</div><div style={{fontSize:12,color:"#78716c",marginTop:1}}>{v.d}</div></div>
-          </div>)}
+    </section>
+
+    {/* Features */}
+    <section style={{background:"var(--green)",padding:"80px 24px"}}>
+      <div style={{maxWidth:900,margin:"0 auto"}}>
+        <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(28px,4vw,40px)",fontWeight:800,color:"#fff",textAlign:"center",letterSpacing:"-0.5px"}}>What parents actually need</h2>
+        <p style={{fontSize:16,color:"rgba(255,255,255,.6)",textAlign:"center",marginTop:12,maxWidth:500,margin:"12px auto 0"}}>Not another family calendar. A hub built specifically for club-active families.</p>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:20,marginTop:48}}>
+          {[{i:"📅",t:"Weekly family view",d:"Every club, every kid, colour-coded. Sunday evening — open the app, see the week."},{i:"💳",t:"Fee tracker",d:"Know exactly what you owe across every club. Annual fees, camp costs, kit money — tracked."},{i:"🏕️",t:"Camp discovery",d:"Easter and summer camps matched to your kids' ages. Filter by cost, times, and location."},{i:"⏰",t:"Work-day filter",d:"Show me camps that run 9–3 so I can actually work. That filter doesn't exist anywhere else."},{i:"👧",t:"Per-child view",d:"Tap Emma — see only Emma's clubs, Emma's camps, Emma's fees. Instant clarity."},{i:"🔔",t:"Smart nudges",d:"'GAA fees due in 7 days.' 'New swimming camp suits Jack.' Exactly when you need it."}].map((f,i)=>
+            <div key={i} style={{background:"rgba(255,255,255,.07)",borderRadius:20,padding:24,border:"1px solid rgba(255,255,255,.1)"}}>
+              <span style={{fontSize:28}}>{f.i}</span>
+              <h3 style={{fontSize:16,fontWeight:700,color:"#fff",marginTop:12}}>{f.t}</h3>
+              <p style={{fontSize:13,color:"rgba(255,255,255,.55)",marginTop:6,lineHeight:1.5}}>{f.d}</p>
+            </div>)}
+        </div>
       </div>
-      <div className="su4" style={{marginTop:32,paddingBottom:40}}>
-        <Btn primary onClick={onGo} style={{fontSize:16,padding:16}}>Get started — it's free</Btn>
-        <p style={{textAlign:"center",fontSize:11,color:"#a8a29e",marginTop:8}}>Takes 30 seconds. No credit card.</p>
-        <button onClick={onGo} style={{width:"100%",marginTop:12,background:"none",border:"none",fontSize:13,color:"#78716c",cursor:"pointer",textDecoration:"underline"}}>Already have an account? Log in</button>
+    </section>
+
+    {/* How it works */}
+    <section style={{padding:"80px 24px",background:"var(--warm)"}}>
+      <div style={{maxWidth:600,margin:"0 auto",textAlign:"center"}}>
+        <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(28px,4vw,36px)",fontWeight:800,color:"var(--green)",letterSpacing:"-0.5px"}}>Ready in 30 seconds</h2>
+        <div style={{marginTop:40,display:"flex",flexDirection:"column",gap:24,textAlign:"left"}}>
+          {[{n:"1",t:"Sign up",d:"Email and password. That's it. No long forms."},{n:"2",t:"Add your kids",d:"Just first names. We'll ask for ages later, only when it matters for camp matching."},{n:"3",t:"Add your clubs",d:"Type the club name — swimming, GAA, scouts, whatever. No club cooperation needed."},{n:"4",t:"See everything",d:"Your hub shows the week ahead, fees due, and camps matched to your kids. Done."}].map((s,i)=>
+            <div key={i} style={{display:"flex",gap:16,alignItems:"flex-start"}}>
+              <div style={{width:40,height:40,borderRadius:12,background:"var(--green)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontFamily:"var(--serif)",fontSize:16,fontWeight:800,flexShrink:0}}>{s.n}</div>
+              <div><div style={{fontSize:16,fontWeight:700,color:"var(--text)"}}>{s.t}</div><div style={{fontSize:14,color:"var(--muted)",marginTop:2,lineHeight:1.5}}>{s.d}</div></div>
+            </div>)}
+        </div>
       </div>
-    </div>
+    </section>
+
+    {/* Pricing */}
+    <section style={{padding:"80px 24px",background:"#fff"}}>
+      <div style={{maxWidth:480,margin:"0 auto",textAlign:"center"}}>
+        <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(28px,4vw,36px)",fontWeight:800,color:"var(--green)",letterSpacing:"-0.5px"}}>Simple pricing</h2>
+        <p style={{fontSize:15,color:"var(--muted)",marginTop:8}}>Less than a coffee a week.</p>
+        <div style={{marginTop:32,background:"var(--warm)",borderRadius:24,padding:32,border:"1px solid var(--border)"}}>
+          <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:4}}>
+            <span style={{fontFamily:"var(--serif)",fontSize:48,fontWeight:800,color:"var(--green)"}}>€7.99</span>
+            <span style={{fontSize:16,color:"var(--muted)",fontWeight:500}}>/month</span>
+          </div>
+          <p style={{fontSize:14,color:"var(--muted)",marginTop:8}}>14-day free trial. Cancel anytime.</p>
+          <div style={{marginTop:24,textAlign:"left",display:"flex",flexDirection:"column",gap:10}}>
+            {["Unlimited clubs and kids","Weekly family dashboard","Full camp discovery with age matching","Fee tracking across all clubs","Payment reminders and alerts","Per-child filtered views","Works with any club — no signup required from them"].map((f,i)=>
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{width:22,height:22,borderRadius:6,background:"var(--green-xl)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"var(--green)",flexShrink:0}}>✓</span>
+                <span style={{fontSize:14,color:"var(--text)"}}>{f}</span>
+              </div>)}
+          </div>
+          <button onClick={onGo} style={{marginTop:28,width:"100%",padding:16,borderRadius:100,border:"none",background:"var(--green)",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 14px rgba(26,58,42,.25)"}}>Start free trial →</button>
+        </div>
+      </div>
+    </section>
+
+    {/* CTA */}
+    <section style={{padding:"80px 24px",background:"var(--green)"}}>
+      <div style={{maxWidth:500,margin:"0 auto",textAlign:"center"}}>
+        <h2 style={{fontFamily:"var(--serif)",fontSize:"clamp(24px,4vw,32px)",fontWeight:800,color:"#fff"}}>Your family's clubs deserve better than a WhatsApp group</h2>
+        <p style={{fontSize:15,color:"rgba(255,255,255,.6)",marginTop:12,lineHeight:1.6}}>Join families across Ireland who've replaced the mental load with one simple hub.</p>
+        <button onClick={onGo} style={{marginTop:28,padding:"14px 36px",borderRadius:100,border:"2px solid rgba(255,255,255,.3)",background:"transparent",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer"}}>Get started →</button>
+      </div>
+    </section>
+
+    {/* Footer */}
+    <footer style={{padding:"32px 24px",background:"#0f1f17",textAlign:"center"}}>
+      <Logo dark/>
+      <p style={{fontSize:12,color:"rgba(255,255,255,.3)",marginTop:12}}>© 2026 OneClubView. All your clubs. One view.</p>
+    </footer>
   </div>;
 }
 
 // =========== AUTH ===========
 function Auth({onAuth,mode:initMode}){
-  const[mode,setMode]=useState(initMode||"signup");const[email,setEmail]=useState("");const[pw,setPw]=useState("");const[err,setErr]=useState(null);const[loading,setLoading]=useState(false);
-  async function go(){setLoading(true);setErr(null);try{if(mode==="signup"){const d=await au("signup",{email,password:pw,data:{}});onAuth(d.user||d)}else{const d=await au("login",{email,password:pw});onAuth(d.user)}}catch(e){setErr(e.message)}setLoading(false)}
-  return <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:16,background:"#fafaf9"}}>
-    <div style={{width:"100%",maxWidth:380}}>
-      <div style={{textAlign:"center",marginBottom:24}}><Logo s="lg"/></div>
-      <div style={{background:"#fff",borderRadius:20,border:"1px solid #e7e5e4",padding:24}}>
-        <div style={{display:"flex",background:"#f5f5f4",borderRadius:12,padding:4,marginBottom:20}}>
-          {["signup","login"].map(m=><button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:"8px 0",borderRadius:8,border:"none",cursor:"pointer",fontSize:13,fontWeight:700,background:mode===m?"#fff":"transparent",color:mode===m?"#1c1917":"#a8a29e"}}>{m==="signup"?"Sign up":"Log in"}</button>)}
+  const[mode,setMode]=useState(initMode||"signup");const[email,setEmail]=useState("");const[pw,setPw]=useState("");const[err,setErr]=useState(null);const[ld,setLd]=useState(false);
+  async function go(){setLd(true);setErr(null);try{if(mode==="signup"){const d=await au("signup",{email,password:pw,data:{}});onAuth(d.user||d)}else{const d=await au("login",{email,password:pw});onAuth(d.user)}}catch(e){setErr(e.message)}setLd(false)}
+  const IS={width:"100%",padding:"13px 16px",borderRadius:12,border:"1px solid var(--border)",fontSize:14,outline:"none",background:"#fff",fontFamily:"var(--sans)"};
+  return <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:16,background:"var(--warm)"}}>
+    <div style={{width:"100%",maxWidth:400}}>
+      <div style={{textAlign:"center",marginBottom:32}}><Logo/><p style={{fontSize:14,color:"var(--muted)",marginTop:8}}>All your clubs. One view.</p></div>
+      <div style={{background:"var(--card)",borderRadius:24,border:"1px solid var(--border)",padding:28,boxShadow:"0 4px 20px rgba(0,0,0,.04)"}}>
+        <div style={{display:"flex",background:"#f5f3ef",borderRadius:12,padding:4,marginBottom:24}}>
+          {["signup","login"].map(m=><button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:"9px 0",borderRadius:8,border:"none",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"var(--sans)",background:mode===m?"#fff":"transparent",color:mode===m?"var(--green)":"var(--muted)",boxShadow:mode===m?"0 1px 3px rgba(0,0,0,.06)":"none",transition:"all .2s"}}>{m==="signup"?"Sign up":"Log in"}</button>)}
         </div>
-        {err&&<div style={{marginBottom:16,padding:12,borderRadius:12,background:"#fef2f2",color:"#b91c1c",fontSize:12,fontWeight:500}}>{err}</div>}
-        <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" style={IS}/>
+        {err&&<div style={{marginBottom:16,padding:12,borderRadius:12,background:"#fef2f2",color:"#b91c1c",fontSize:13}}>{err}</div>}
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email address" style={IS}/>
           <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Password" style={IS} onKeyDown={e=>e.key==="Enter"&&go()}/>
-          <Btn primary onClick={go} disabled={loading}>{loading?"...":mode==="signup"?"Create my hub":"Log in"}</Btn>
+          <button onClick={go} disabled={ld} style={{width:"100%",padding:14,borderRadius:100,border:"none",fontSize:14,fontWeight:700,cursor:ld?"wait":"pointer",color:"#fff",background:"var(--green)",fontFamily:"var(--sans)",opacity:ld?.6:1}}>{ld?"...":mode==="signup"?"Start free trial":"Log in"}</button>
+          {mode==="signup"&&<p style={{fontSize:12,color:"var(--muted)",textAlign:"center"}}>14 days free, then €7.99/month</p>}
         </div>
       </div>
     </div>
@@ -107,32 +202,31 @@ function Auth({onAuth,mode:initMode}){
 function Onboard({userId,onDone}){
   const[step,setStep]=useState(1);const[kidName,setKidName]=useState("");const[kids,setKids]=useState([]);
   const[clubName,setClubName]=useState("");const[clubs,setClubs]=useState([]);const[saving,setSaving]=useState(false);
-  const colours=["#E63946","#457B9D","#2D6A4F","#E9C46A","#264653","#F4A261"];
+  const colours=["#2d7cb5","#2d5a3f","#c4960c","#9b4dca","#d64545","#1a8a7d"];
+  const IS={width:"100%",padding:"13px 16px",borderRadius:12,border:"1px solid var(--border)",fontSize:14,outline:"none",background:"#fff",fontFamily:"var(--sans)"};
   async function addKid(){if(!kidName.trim())return;setSaving(true);await db("dependants","POST",{body:{parent_user_id:userId,first_name:kidName.trim()}});setKids([...kids,kidName.trim()]);setKidName("");setSaving(false)}
   async function addClub(){if(!clubName.trim())return;setSaving(true);try{const ex=await db("clubs","GET",{select:"id,name",filters:["name=ilike.*"+clubName.trim()+"*"],limit:1});let cid;if(ex&&ex.length){cid=ex[0].id}else{let sl=clubName.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");if(sl.length<3)sl=sl+"-club";sl=sl+"-"+Math.random().toString(36).substring(2,6);const r=await db("clubs","POST",{body:{name:clubName.trim(),slug:sl,source:"external"}});cid=r?.[0]?.id}if(cid){await db("hub_subscriptions","POST",{body:{user_id:userId,club_id:cid,colour:colours[clubs.length%6]}});setClubs([...clubs,{id:cid,name:clubName.trim()}])}}catch(e){console.error(e)}setClubName("");setSaving(false)}
   async function finish(){await db("profiles","PATCH",{body:{onboarding_step:"done",onboarding_completed:true},filters:["id=eq."+userId]});onDone()}
 
-  if(step===1)return <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:16,background:"#fafaf9"}}>
-    <div style={{width:"100%",maxWidth:380,textAlign:"center"}}>
-      <div style={{fontSize:48,marginBottom:8}}>👋</div>
-      <h2 style={{fontSize:22,fontWeight:900,color:"#1c1917"}}>Who's in your family?</h2>
-      <p style={{fontSize:13,color:"#a8a29e",marginTop:6}}>Just first names — that's all we need right now</p>
-      {kids.length>0&&<div style={{margin:"16px 0",display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center"}}>{kids.map((k,i)=><span key={i} style={{padding:"6px 14px",borderRadius:20,background:"#ecfdf5",border:"1px solid #a7f3d0",fontSize:13,fontWeight:600,color:"#059669"}}>✓ {k}</span>)}</div>}
-      <div style={{display:"flex",gap:8,marginTop:16}}><input value={kidName} onChange={e=>setKidName(e.target.value)} placeholder="Child's first name" onKeyDown={e=>e.key==="Enter"&&addKid()} style={{...IS,flex:1}}/><button onClick={addKid} disabled={saving||!kidName.trim()} style={{padding:"0 20px",borderRadius:12,border:"none",background:"#1B4332",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",opacity:(!kidName.trim()||saving)?.4:1}}>Add</button></div>
-      <Btn onClick={()=>setStep(2)} primary={kids.length>0} style={{marginTop:24,...(kids.length===0?{background:"#e7e5e4",color:"#78716c"}:{})}}>{kids.length===0?"Skip — just me":"Next →"}</Btn>
-    </div>
-  </div>;
+  const Wrap=({children})=><div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}><div style={{width:"100%",maxWidth:420,textAlign:"center"}}>{children}</div></div>;
 
-  return <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:16,background:"#fafaf9"}}>
-    <div style={{width:"100%",maxWidth:380,textAlign:"center"}}>
-      <div style={{fontSize:48,marginBottom:8}}>🏠</div>
-      <h2 style={{fontSize:22,fontWeight:900,color:"#1c1917"}}>What clubs are you in?</h2>
-      <p style={{fontSize:13,color:"#a8a29e",marginTop:6}}>Swimming, GAA, tennis, scouts — any club</p>
-      {clubs.length>0&&<div style={{margin:"16px 0",display:"flex",flexDirection:"column",gap:8}}>{clubs.map((c,i)=><div key={c.id} style={{display:"flex",alignItems:"center",gap:10,background:"#ecfdf5",borderRadius:12,padding:"8px 14px",border:"1px solid #a7f3d0"}}><div style={{width:28,height:28,borderRadius:6,background:colours[i%6],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700}}>{c.name.substring(0,2).toUpperCase()}</div><span style={{fontSize:13,fontWeight:600,color:"#1c1917"}}>{c.name}</span><span style={{marginLeft:"auto",fontSize:11,color:"#059669",fontWeight:700}}>✓</span></div>)}</div>}
-      <div style={{display:"flex",gap:8,marginTop:16}}><input value={clubName} onChange={e=>setClubName(e.target.value)} placeholder="Club name" onKeyDown={e=>e.key==="Enter"&&addClub()} style={{...IS,flex:1}}/><button onClick={addClub} disabled={saving||!clubName.trim()} style={{padding:"0 20px",borderRadius:12,border:"none",background:"#1B4332",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",opacity:(!clubName.trim()||saving)?.4:1}}>Add</button></div>
-      <Btn primary onClick={finish} style={{marginTop:24}}>{clubs.length===0?"Skip — I'll add later":"Go to my hub →"}</Btn>
-    </div>
-  </div>;
+  if(step===1)return <Wrap>
+    <div style={{fontSize:48,marginBottom:12}}>👋</div>
+    <h2 style={{fontFamily:"var(--serif)",fontSize:24,fontWeight:800,color:"var(--green)"}}>Who's in your family?</h2>
+    <p style={{fontSize:14,color:"var(--muted)",marginTop:6}}>Just first names — we keep it simple</p>
+    {kids.length>0&&<div style={{margin:"20px 0",display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center"}}>{kids.map((k,i)=><span key={i} style={{padding:"6px 16px",borderRadius:100,background:"var(--green-xl)",border:"1px solid #c8e6c9",fontSize:14,fontWeight:600,color:"var(--green)"}}>✓ {k}</span>)}</div>}
+    <div style={{display:"flex",gap:8,marginTop:20}}><input value={kidName} onChange={e=>setKidName(e.target.value)} placeholder="Child's first name" onKeyDown={e=>e.key==="Enter"&&addKid()} style={{...IS,flex:1}}/><button onClick={addKid} disabled={saving||!kidName.trim()} style={{padding:"0 24px",borderRadius:100,border:"none",background:"var(--green)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",opacity:(!kidName.trim()||saving)?.4:1}}>Add</button></div>
+    <button onClick={()=>setStep(2)} style={{marginTop:28,width:"100%",padding:14,borderRadius:100,border:"none",fontSize:14,fontWeight:700,cursor:"pointer",color:kids.length>0?"#fff":"var(--muted)",background:kids.length>0?"var(--green)":"#e8e4df",fontFamily:"var(--sans)"}}>{kids.length===0?"Skip — just me":"Next →"}</button>
+  </Wrap>;
+
+  return <Wrap>
+    <div style={{fontSize:48,marginBottom:12}}>🏠</div>
+    <h2 style={{fontFamily:"var(--serif)",fontSize:24,fontWeight:800,color:"var(--green)"}}>What clubs are you in?</h2>
+    <p style={{fontSize:14,color:"var(--muted)",marginTop:6}}>Swimming, GAA, tennis, scouts — any club</p>
+    {clubs.length>0&&<div style={{margin:"20px 0",display:"flex",flexDirection:"column",gap:8}}>{clubs.map((c,i)=><div key={c.id} style={{display:"flex",alignItems:"center",gap:10,background:"var(--green-xl)",borderRadius:14,padding:"10px 16px",border:"1px solid #c8e6c9"}}><div style={{width:30,height:30,borderRadius:8,background:colours[i%6],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:800}}>{c.name.split(" ").map(w=>w[0]).join("").substring(0,2)}</div><span style={{fontSize:14,fontWeight:600,color:"var(--green)"}}>{c.name}</span><span style={{marginLeft:"auto",fontSize:12,color:"var(--green-l)"}}>✓</span></div>)}</div>}
+    <div style={{display:"flex",gap:8,marginTop:20}}><input value={clubName} onChange={e=>setClubName(e.target.value)} placeholder="Club name" onKeyDown={e=>e.key==="Enter"&&addClub()} style={{...IS,flex:1}}/><button onClick={addClub} disabled={saving||!clubName.trim()} style={{padding:"0 24px",borderRadius:100,border:"none",background:"var(--green)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",opacity:(!clubName.trim()||saving)?.4:1}}>Add</button></div>
+    <button onClick={finish} style={{marginTop:28,width:"100%",padding:14,borderRadius:100,border:"none",fontSize:14,fontWeight:700,cursor:"pointer",color:"#fff",background:"var(--green)",fontFamily:"var(--sans)"}}>{clubs.length===0?"Skip — I'll add later":"Go to my hub →"}</button>
+  </Wrap>;
 }
 
 // =========== HUB ===========
@@ -142,55 +236,53 @@ function Hub({profile,kids,clubs,onNav}){
   const tabs=[{id:"week",l:"This Week",i:"📅"},{id:"money",l:"Money",i:"💳"},{id:"camps",l:"Camps",i:"🏕️"},{id:"clubs",l:"Clubs",i:"🏠"}];
   const kidsNoAge=kids.filter(k=>!k.date_of_birth);
 
-  return <div className="fi">
-    <div style={{background:"#fff",borderBottom:"1px solid #e7e5e4"}}>
-      <div style={{maxWidth:480,margin:"0 auto",padding:"14px 16px 8px"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}><Logo s="md"/><div style={{width:30,height:30,borderRadius:"50%",background:"#1c1917",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700}}>{(profile?.first_name||"U")[0]}</div></div>
-        {members.length>1&&<div className="hsb" style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>{members.map(m=><button key={m.id} onClick={()=>setFilter(m.id)} style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:14,fontSize:11,fontWeight:600,border:"none",cursor:"pointer",whiteSpace:"nowrap",background:filter===m.id?"#1c1917":"#f5f5f4",color:filter===m.id?"#fff":"#78716c"}}>{m.emoji} {m.name}{m.a!=null&&<span style={{opacity:.6}}>({m.a})</span>}</button>)}</div>}
+  return <div className="fi" style={{background:"var(--warm)",minHeight:"100vh"}}>
+    <div style={{background:"var(--card)",borderBottom:"1px solid var(--border)"}}>
+      <div style={{maxWidth:520,margin:"0 auto",padding:"14px 16px 8px"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}><Logo/><div style={{width:32,height:32,borderRadius:10,background:"var(--green)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700,fontFamily:"var(--sans)"}}>{(profile?.first_name||"U")[0]}</div></div>
+        {members.length>1&&<div className="hsb" style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6}}>{members.map(m=><button key={m.id} onClick={()=>setFilter(m.id)} style={{display:"flex",alignItems:"center",gap:4,padding:"5px 12px",borderRadius:100,fontSize:12,fontWeight:600,border:"none",cursor:"pointer",whiteSpace:"nowrap",fontFamily:"var(--sans)",background:filter===m.id?"var(--green)":"#f5f3ef",color:filter===m.id?"#fff":"var(--muted)",transition:"all .2s"}}>{m.emoji} {m.name}{m.a!=null&&<span style={{opacity:.6}}>({m.a})</span>}</button>)}</div>}
       </div>
-      <div style={{maxWidth:480,margin:"0 auto",display:"flex"}}>{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:3,padding:"8px 0",fontSize:11,fontWeight:600,border:"none",borderBottom:tab===t.id?"2.5px solid #1B4332":"2.5px solid transparent",cursor:"pointer",background:"none",color:tab===t.id?"#1c1917":"#a8a29e"}}>{t.i} {t.l}</button>)}</div>
+      <div style={{maxWidth:520,margin:"0 auto",display:"flex"}}>{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,padding:"10px 0",fontSize:12,fontWeight:600,border:"none",borderBottom:tab===t.id?"2.5px solid var(--green)":"2.5px solid transparent",cursor:"pointer",background:"none",color:tab===t.id?"var(--green)":"var(--muted)",fontFamily:"var(--sans)",transition:"all .15s"}}>{t.i} {t.l}</button>)}</div>
     </div>
-
-    <div style={{maxWidth:480,margin:"0 auto",padding:16,paddingBottom:80}}>
-      {kidsNoAge.length>0&&tab!=="camps"&&<div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:12,padding:10,marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
-        <span>💡</span><div style={{flex:1,fontSize:12,fontWeight:600,color:"#1e40af"}}>Add {kidsNoAge[0].first_name}'s age to find camps</div>
-        <button onClick={()=>onNav("addAge",kidsNoAge[0].id)} style={{padding:"5px 10px",borderRadius:8,border:"none",background:"#1d4ed8",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer"}}>Add</button>
+    <div style={{maxWidth:520,margin:"0 auto",padding:16,paddingBottom:80}}>
+      {kidsNoAge.length>0&&tab!=="camps"&&<div style={{background:"#e8f4fd",border:"1px solid #b6d9f2",borderRadius:14,padding:12,marginBottom:14,display:"flex",alignItems:"center",gap:10}}>
+        <span>💡</span><div style={{flex:1,fontSize:13,fontWeight:600,color:"#1565c0"}}>Add {kidsNoAge[0].first_name}'s age to find camps</div>
+        <button onClick={()=>onNav("addAge",kidsNoAge[0].id)} style={{padding:"6px 14px",borderRadius:100,border:"none",background:"#1565c0",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>Add</button>
       </div>}
 
       {tab==="week"&&<div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
-          <div style={{background:"#fff",borderRadius:12,padding:12,textAlign:"center",border:"1px solid #f5f5f4"}}><div style={{fontSize:22,fontWeight:900}}>{clubs.length}</div><div style={{fontSize:10,color:"#78716c",fontWeight:500}}>Clubs</div></div>
-          <div style={{background:"#fff",borderRadius:12,padding:12,textAlign:"center",border:"1px solid #f5f5f4"}}><div style={{fontSize:22,fontWeight:900}}>{kids.length}</div><div style={{fontSize:10,color:"#78716c",fontWeight:500}}>Kids</div></div>
-          <div style={{background:"#fffbeb",borderRadius:12,padding:12,textAlign:"center",border:"1px solid #fde68a"}}><div style={{fontSize:22,fontWeight:900,color:"#b45309"}}>—</div><div style={{fontSize:10,color:"#b45309",fontWeight:500}}>Fees due</div></div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
+          {[[clubs.length,"Clubs","var(--card)","var(--text)"],[kids.length,"Kids","var(--card)","var(--text)"],["—","Fees due","var(--accent-l)","#8a6d00"]].map(([v,l,bg,c],i)=>
+            <div key={i} style={{background:bg,borderRadius:14,padding:14,textAlign:"center",border:"1px solid var(--border)"}}><div style={{fontSize:22,fontWeight:800,color:c,fontFamily:"var(--serif)"}}>{v}</div><div style={{fontSize:10,fontWeight:600,color:"var(--muted)",marginTop:2}}>{l}</div></div>)}
         </div>
-        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e7e5e4",padding:24,textAlign:"center"}}>
-          <div style={{fontSize:36,marginBottom:8}}>📅</div>
-          <p style={{fontSize:14,fontWeight:600,color:"#44403c"}}>Your week will show here</p>
-          <p style={{fontSize:12,color:"#a8a29e",marginTop:4,lineHeight:1.5}}>Add events to your clubs and they'll appear here. Check out <strong style={{color:"#1c1917"}}>Camps</strong> to find Easter activities!</p>
-          <button onClick={()=>setTab("camps")} style={{marginTop:14,padding:"9px 20px",borderRadius:10,border:"none",fontSize:13,fontWeight:700,color:"#fff",background:"#1B4332",cursor:"pointer"}}>🏕️ Browse Easter Camps</button>
+        <div style={{background:"var(--card)",borderRadius:20,border:"1px solid var(--border)",padding:28,textAlign:"center"}}>
+          <div style={{fontSize:36,marginBottom:10}}>📅</div>
+          <p style={{fontFamily:"var(--serif)",fontSize:16,fontWeight:700,color:"var(--green)"}}>Your week will appear here</p>
+          <p style={{fontSize:13,color:"var(--muted)",marginTop:6,lineHeight:1.6}}>Add events to your clubs and they'll show up. In the meantime — check out Easter camps!</p>
+          <button onClick={()=>setTab("camps")} style={{marginTop:16,padding:"11px 24px",borderRadius:100,border:"none",fontSize:13,fontWeight:700,color:"#fff",background:"var(--green)",cursor:"pointer"}}>🏕️ Browse Easter Camps</button>
         </div>
       </div>}
 
       {tab==="money"&&<div>
-        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e7e5e4",padding:18,marginBottom:12}}>
-          <div style={{fontSize:10,fontWeight:700,color:"#a8a29e",textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>2026 Overview</div>
-          {[["Total club fees","—","#1c1917"],["Paid so far","—","#059669"],["Outstanding","—","#b45309"]].map(([l,v,c],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:i<2?"1px solid #f5f5f4":"none"}}><span style={{fontSize:13,color:"#57534e"}}>{l}</span><span style={{fontSize:16,fontWeight:900,color:c}}>{v}</span></div>)}
+        <div style={{background:"var(--card)",borderRadius:20,border:"1px solid var(--border)",padding:20,marginBottom:14}}>
+          <div style={{fontSize:11,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>2026 Overview</div>
+          {[["Total club fees","—","var(--text)"],["Paid so far","—","#2d5a3f"],["Outstanding","—","#c4960c"]].map(([l,v,c],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:i<2?"1px solid #f5f3ef":"none"}}><span style={{fontSize:14,color:"var(--muted)"}}>{l}</span><span style={{fontSize:18,fontWeight:800,color:c,fontFamily:"var(--serif)"}}>{v}</span></div>)}
         </div>
-        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e7e5e4",padding:24,textAlign:"center"}}>
-          <div style={{fontSize:36,marginBottom:8}}>💳</div>
-          <p style={{fontSize:14,fontWeight:600,color:"#44403c"}}>Track your club fees here</p>
-          <p style={{fontSize:12,color:"#a8a29e",marginTop:4,lineHeight:1.5}}>Add payment reminders for each club — annual fees, camp costs, kit money.</p>
+        <div style={{background:"var(--card)",borderRadius:20,border:"1px solid var(--border)",padding:28,textAlign:"center"}}>
+          <div style={{fontSize:36,marginBottom:10}}>💳</div>
+          <p style={{fontFamily:"var(--serif)",fontSize:16,fontWeight:700,color:"var(--green)"}}>Track fees here</p>
+          <p style={{fontSize:13,color:"var(--muted)",marginTop:6,lineHeight:1.6}}>Add payment reminders for each club — annual fees, camp costs, kit money.</p>
         </div>
       </div>}
 
       {tab==="camps"&&<CampsList kids={kids} filter={filter}/>}
 
-      {tab==="clubs"&&<div style={{display:"flex",flexDirection:"column",gap:8}}>
-        {clubs.map(c=><div key={c.club_id||c.id} style={{display:"flex",alignItems:"center",gap:10,background:"#fff",borderRadius:12,padding:12,border:"1px solid #f5f5f4"}}>
-          <div style={{width:34,height:34,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,background:c.colour||"#457B9D"}}>{(c.club_name||"?").substring(0,2).toUpperCase()}</div>
-          <div><div style={{fontSize:13,fontWeight:700,color:"#1c1917"}}>{c.club_name}</div><div style={{fontSize:11,color:"#a8a29e"}}>{c.club_source==="external"?"Added by you":"Hosted"}</div></div>
+      {tab==="clubs"&&<div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {clubs.map(c=><div key={c.club_id||c.id} style={{display:"flex",alignItems:"center",gap:12,background:"var(--card)",borderRadius:14,padding:14,border:"1px solid var(--border)"}}>
+          <div style={{width:38,height:38,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:800,background:c.colour||"#2d5a3f"}}>{(c.club_name||"?").split(" ").map(w=>w[0]).join("").substring(0,2)}</div>
+          <div><div style={{fontSize:14,fontWeight:700,color:"var(--text)"}}>{c.club_name}</div><div style={{fontSize:12,color:"var(--muted)"}}>{c.club_source==="external"?"Added by you":"Hosted"}</div></div>
         </div>)}
-        <button onClick={()=>onNav("addClub")} style={{width:"100%",padding:12,borderRadius:12,border:"2px dashed #d6d3d1",background:"none",fontSize:13,fontWeight:600,color:"#a8a29e",cursor:"pointer"}}>+ Add a club</button>
+        <button onClick={()=>onNav("addClub")} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--border)",background:"none",fontSize:13,fontWeight:600,color:"var(--muted)",cursor:"pointer",fontFamily:"var(--sans)"}}>+ Add a club</button>
       </div>}
     </div>
   </div>;
@@ -204,48 +296,51 @@ function CampsList({kids,filter}){
   const tg=id=>setInt(p=>({...p,[id]:!p[id]}));const ic=Object.values(int).filter(Boolean).length;const it=camps.filter(c=>int[c.id]).reduce((s,c)=>s+parseFloat(c.cost_eur||0),0);
 
   return <div>
-    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-      <div><div style={{fontSize:14,fontWeight:800,color:"#1c1917"}}>🏕️ Easter Camps 2026</div><div style={{fontSize:11,color:"#a8a29e"}}>{fl.length} camps · Dublin</div></div>
-      <button onClick={()=>setSf(!sf)} style={{padding:"4px 10px",borderRadius:8,fontSize:11,fontWeight:700,border:"none",cursor:"pointer",background:sf?"#1c1917":"#f5f5f4",color:sf?"#fff":"#78716c"}}>⚙</button>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+      <div><div style={{fontFamily:"var(--serif)",fontSize:16,fontWeight:700,color:"var(--green)"}}>🏕️ Easter Camps 2026</div><div style={{fontSize:12,color:"var(--muted)"}}>{fl.length} camps · Dublin area</div></div>
+      <button onClick={()=>setSf(!sf)} style={{padding:"6px 12px",borderRadius:100,fontSize:12,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"var(--sans)",background:sf?"var(--green)":"#f5f3ef",color:sf?"#fff":"var(--muted)"}}>⚙ Filter</button>
     </div>
-    {sf&&<div style={{background:"#fff",borderRadius:10,border:"1px solid #e7e5e4",padding:10,marginBottom:10}}>
-      <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:10,fontWeight:700,color:"#a8a29e",textTransform:"uppercase"}}>Max budget</span><span style={{fontSize:13,fontWeight:700}}>€{mc}</span></div>
+    {sf&&<div style={{background:"var(--card)",borderRadius:14,border:"1px solid var(--border)",padding:14,marginBottom:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:11,fontWeight:700,color:"var(--muted)",textTransform:"uppercase"}}>Max budget</span><span style={{fontSize:14,fontWeight:700,fontFamily:"var(--serif)"}}>€{mc}</span></div>
       <input type="range" min={30} max={300} step={10} value={mc} onChange={e=>setMc(+e.target.value)}/>
     </div>}
-    {ic>0&&<div style={{background:"#1B4332",color:"#fff",borderRadius:10,padding:"7px 12px",marginBottom:10,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:12,fontWeight:600}}>{ic} camp{ic>1?"s":""} shortlisted</span><span style={{fontSize:13,fontWeight:900}}>Total: €{it}</span></div>}
-    {ld?<div style={{textAlign:"center",padding:40}}><div className="pu" style={{fontSize:36}}>🏕️</div><p style={{fontSize:12,color:"#a8a29e",marginTop:10}}>Loading camps...</p></div>
-    :fl.length===0?<div style={{textAlign:"center",padding:40}}><div style={{fontSize:36}}>🔍</div><p style={{fontSize:12,fontWeight:600,color:"#78716c",marginTop:8}}>No camps match</p></div>
-    :<div style={{display:"flex",flexDirection:"column",gap:10}}>{fl.map(c=>{
+    {ic>0&&<div style={{background:"var(--green)",color:"#fff",borderRadius:14,padding:"10px 16px",marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <span style={{fontSize:13,fontWeight:600}}>{ic} camp{ic>1?"s":""} shortlisted</span>
+      <span style={{fontSize:15,fontWeight:800,fontFamily:"var(--serif)"}}>Total: €{it}</span>
+    </div>}
+    {ld?<div style={{textAlign:"center",padding:48}}><div style={{fontSize:36,opacity:.5}}>🏕️</div><p style={{fontSize:13,color:"var(--muted)",marginTop:12}}>Loading camps...</p></div>
+    :fl.length===0?<div style={{textAlign:"center",padding:48}}><div style={{fontSize:36}}>🔍</div><p style={{fontSize:13,fontWeight:600,color:"var(--muted)",marginTop:8}}>No camps match your filters</p></div>
+    :<div style={{display:"flex",flexDirection:"column",gap:12}}>{fl.map(c=>{
       const tc=CT[c.camp_type]||CT.other;const ii=!!int[c.id];
       const ek=kids.filter(k=>{if(!k.date_of_birth)return true;const a2=age(k.date_of_birth);return(!c.age_min||a2>=c.age_min)&&(!c.age_max||a2<=c.age_max)});
-      return <div key={c.id} style={{borderRadius:14,border:ii?"1.5px solid #86efac":"1px solid #e7e5e4",overflow:"hidden",background:ii?"#f0fdf4":"#fff"}}>
-        <div style={{padding:"6px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",background:tc.bg,borderBottom:"1px solid "+tc.bd}}>
-          <span style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:tc.tx}}>{tc.i} {tc.l}</span>
-          {c.source==="scraped"&&<span style={{fontSize:8,padding:"2px 5px",borderRadius:4,background:"#eff6ff",color:"#3b82f6",fontWeight:600}}>AI found</span>}
+      return <div key={c.id} style={{borderRadius:18,border:ii?"2px solid #a5d6a7":"1px solid var(--border)",overflow:"hidden",background:ii?"#f1f8e9":"var(--card)",transition:"all .2s"}}>
+        <div style={{padding:"8px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",background:tc.bg,borderBottom:"1px solid "+tc.bd}}>
+          <span style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,color:tc.tx}}>{tc.i} {tc.l}</span>
+          {c.source==="scraped"&&<span style={{fontSize:9,padding:"3px 8px",borderRadius:100,background:"rgba(21,101,192,.1)",color:"#1565c0",fontWeight:700}}>AI found</span>}
         </div>
-        <div style={{padding:12}}>
-          <div style={{display:"flex",justifyContent:"space-between",gap:8}}>
+        <div style={{padding:16}}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:10}}>
             <div style={{flex:1}}>
-              <div style={{fontSize:13,fontWeight:700,color:"#1c1917",lineHeight:1.3}}>{c.title}</div>
-              <div style={{marginTop:5,display:"flex",flexDirection:"column",gap:2,fontSize:12,color:"#57534e"}}>
-                <div>📅 <strong>{fdr(c.start_date,c.end_date)}</strong></div>
-                {c.daily_start_time&&<div style={{display:"flex",alignItems:"center",gap:4}}>🕐 {c.daily_start_time?.slice(0,5)}–{c.daily_end_time?.slice(0,5)}{c.daily_end_time>="15:00"&&<span style={{fontSize:8,padding:"1px 4px",borderRadius:3,background:"#dcfce7",color:"#15803d",fontWeight:600}}>Work day ✓</span>}</div>}
+              <div style={{fontSize:15,fontWeight:700,color:"var(--text)",lineHeight:1.3}}>{c.title}</div>
+              <div style={{marginTop:6,display:"flex",flexDirection:"column",gap:3,fontSize:13,color:"var(--muted)"}}>
+                <div>📅 <strong style={{color:"var(--text)"}}>{fdr(c.start_date,c.end_date)}</strong></div>
+                {c.daily_start_time&&<div style={{display:"flex",alignItems:"center",gap:6}}>🕐 {c.daily_start_time?.slice(0,5)}–{c.daily_end_time?.slice(0,5)}{c.daily_end_time>="15:00"&&<span style={{fontSize:9,padding:"2px 8px",borderRadius:100,background:"var(--green-xl)",color:"var(--green)",fontWeight:700}}>Covers work day</span>}</div>}
                 <div>📍 {c.location_name}</div>
                 <div>👶 Ages {c.age_min||"?"}–{c.age_max||"?"}</div>
               </div>
             </div>
             <div style={{textAlign:"right",flexShrink:0}}>
-              <div style={{fontSize:18,fontWeight:900,color:"#1c1917"}}>{c.cost_eur?"€"+parseFloat(c.cost_eur):"Free"}</div>
-              {c.cost_notes&&<div style={{fontSize:8,color:"#a8a29e",marginTop:2,maxWidth:80,lineHeight:1.3}}>{c.cost_notes}</div>}
+              <div style={{fontSize:20,fontWeight:800,color:"var(--green)",fontFamily:"var(--serif)"}}>{c.cost_eur?"€"+parseFloat(c.cost_eur):"Free"}</div>
+              {c.cost_notes&&<div style={{fontSize:10,color:"var(--muted)",marginTop:2,maxWidth:90,lineHeight:1.3}}>{c.cost_notes}</div>}
             </div>
           </div>
-          {ek.length>0&&<div style={{marginTop:6,display:"flex",alignItems:"center",gap:4,flexWrap:"wrap"}}>
-            <span style={{fontSize:8,color:"#a8a29e",fontWeight:600,textTransform:"uppercase",letterSpacing:.5}}>Suits:</span>
-            {ek.map(k=><span key={k.id} style={{fontSize:10,padding:"1px 6px",borderRadius:6,background:"#eff6ff",color:"#1d4ed8",fontWeight:500}}>👧 {k.first_name}</span>)}
+          {ek.length>0&&<div style={{marginTop:8,display:"flex",alignItems:"center",gap:4,flexWrap:"wrap"}}>
+            <span style={{fontSize:9,color:"var(--muted)",fontWeight:700,textTransform:"uppercase",letterSpacing:.5}}>Suits:</span>
+            {ek.map(k=><span key={k.id} style={{fontSize:11,padding:"2px 10px",borderRadius:100,background:"#e3f2fd",color:"#1565c0",fontWeight:600}}>👧 {k.first_name}</span>)}
           </div>}
-          <div style={{marginTop:8,display:"flex",gap:6}}>
-            <button onClick={()=>tg(c.id)} style={{flex:1,padding:8,borderRadius:10,border:"none",fontSize:12,fontWeight:700,cursor:"pointer",background:ii?"#16a34a":"#f5f5f4",color:ii?"#fff":"#57534e"}}>{ii?"✓ Interested":"☆ Interested"}</button>
-            {c.booking_url&&<a href={c.booking_url} target="_blank" rel="noopener" style={{padding:"8px 12px",borderRadius:10,fontSize:12,fontWeight:700,background:"#1c1917",color:"#fff",textDecoration:"none"}}>Book →</a>}
+          <div style={{marginTop:12,display:"flex",gap:8}}>
+            <button onClick={()=>tg(c.id)} style={{flex:1,padding:10,borderRadius:100,border:"none",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sans)",background:ii?"var(--green)":"#f5f3ef",color:ii?"#fff":"var(--muted)",transition:"all .2s"}}>{ii?"✓ Shortlisted":"☆ Shortlist"}</button>
+            {c.booking_url&&<a href={c.booking_url} target="_blank" rel="noopener" style={{padding:"10px 16px",borderRadius:100,fontSize:13,fontWeight:700,background:"var(--green)",color:"#fff",textDecoration:"none"}}>Book →</a>}
           </div>
         </div>
       </div>})}</div>}
@@ -254,14 +349,18 @@ function CampsList({kids,filter}){
 
 // =========== ADD AGE ===========
 function AddAge({kid,onDone}){const[dob,setDob]=useState("");const[s,setS]=useState(false);
+  const IS={width:"100%",padding:"13px 16px",borderRadius:12,border:"1px solid var(--border)",fontSize:14,outline:"none",background:"#fff",fontFamily:"var(--sans)"};
   async function save(){if(!dob)return;setS(true);await db("dependants","PATCH",{body:{date_of_birth:dob},filters:["id=eq."+kid.id]});setS(false);onDone()}
-  return <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:16,background:"#fafaf9"}}>
-    <div style={{width:"100%",maxWidth:340,textAlign:"center"}}>
-      <div style={{fontSize:48,marginBottom:8}}>🎂</div>
-      <h2 style={{fontSize:20,fontWeight:900,color:"#1c1917"}}>When was {kid.first_name} born?</h2>
-      <p style={{fontSize:12,color:"#a8a29e",marginTop:4}}>Helps us find camps matched to their age</p>
-      <input type="date" value={dob} onChange={e=>setDob(e.target.value)} style={{...IS,marginTop:16,display:"block"}}/>
-      <div style={{display:"flex",gap:8,marginTop:16}}><Btn onClick={onDone}>Skip</Btn><Btn primary onClick={save} disabled={s||!dob}>{s?"...":"Save"}</Btn></div>
+  return <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
+    <div style={{width:"100%",maxWidth:360,textAlign:"center"}}>
+      <div style={{fontSize:48,marginBottom:12}}>🎂</div>
+      <h2 style={{fontFamily:"var(--serif)",fontSize:22,fontWeight:800,color:"var(--green)"}}>When was {kid.first_name} born?</h2>
+      <p style={{fontSize:13,color:"var(--muted)",marginTop:6}}>Helps us find camps matched to their age</p>
+      <input type="date" value={dob} onChange={e=>setDob(e.target.value)} style={{...IS,marginTop:20,display:"block"}}/>
+      <div style={{display:"flex",gap:10,marginTop:20}}>
+        <button onClick={onDone} style={{flex:1,padding:13,borderRadius:100,border:"none",fontSize:14,fontWeight:700,cursor:"pointer",background:"#f5f3ef",color:"var(--muted)",fontFamily:"var(--sans)"}}>Skip</button>
+        <button onClick={save} disabled={s||!dob} style={{flex:1,padding:13,borderRadius:100,border:"none",fontSize:14,fontWeight:700,cursor:"pointer",background:"var(--green)",color:"#fff",fontFamily:"var(--sans)",opacity:(s||!dob)?.5:1}}>{s?"...":"Save"}</button>
+      </div>
     </div>
   </div>;
 }
@@ -270,20 +369,16 @@ function AddAge({kid,onDone}){const[dob,setDob]=useState("");const[s,setS]=useSt
 function App(){
   const[scr,setScr]=useState("loading");const[user,setUser]=useState(null);const[profile,setProfile]=useState(null);
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[ageKid,setAgeKid]=useState(null);
-
-  async function load(uid){
-    const[p,k,c]=await Promise.all([db("profiles","GET",{filters:["id=eq."+uid],single:true}),db("dependants","GET",{filters:["parent_user_id=eq."+uid]}),db("hub_subscriptions","GET",{select:"id,club_id,colour,clubs(name,source)",filters:["user_id=eq."+uid]})]);
-    setProfile(p);setKids(k||[]);setClubs((c||[]).map(x=>({...x,club_name:x.clubs?.name,club_source:x.clubs?.source})));
-    if(!p?.onboarding_completed)setScr("onboard");else setScr("hub");
-  }
+  async function load(uid){const[p,k,c]=await Promise.all([db("profiles","GET",{filters:["id=eq."+uid],single:true}),db("dependants","GET",{filters:["parent_user_id=eq."+uid]}),db("hub_subscriptions","GET",{select:"id,club_id,colour,clubs(name,source)",filters:["user_id=eq."+uid]})]);setProfile(p);setKids(k||[]);setClubs((c||[]).map(x=>({...x,club_name:x.clubs?.name,club_source:x.clubs?.source})));if(!p?.onboarding_completed)setScr("onboard");else setScr("hub")}
   useEffect(()=>{(async()=>{try{const d=await au("user");if(d?.id){setUser(d);await load(d.id)}else setScr("landing")}catch{setScr("landing")}})()},[]);
   async function onAuth(u){setUser(u);await new Promise(r=>setTimeout(r,600));await load(u.id)}
   async function refresh(){if(user)await load(user.id)}
   function nav(a,d){if(a==="addClub")setScr("onboard");else if(a==="addAge"){const k=kids.find(x=>x.id===d);if(k){setAgeKid(k);setScr("addAge")}}}
 
-  if(scr==="loading")return<div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}><Logo s="lg"/><p className="pu" style={{fontSize:12,color:"#a8a29e",marginTop:12}}>Loading...</p></div>;
-  if(scr==="landing")return<Landing onGo={()=>setScr("auth")}/>;
-  if(scr==="auth")return<Auth onAuth={onAuth}/>;
+  if(scr==="loading")return<div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"var(--warm)"}}><Logo/><p style={{fontSize:13,color:"var(--muted)",marginTop:16}}>Loading...</p></div>;
+  if(scr==="landing")return<Landing onGo={()=>setScr("auth")} onLogin={()=>setScr("login")}/>;
+  if(scr==="auth")return<Auth onAuth={onAuth} mode="signup"/>;
+  if(scr==="login")return<Auth onAuth={onAuth} mode="login"/>;
   if(scr==="onboard")return<Onboard userId={user?.id} onDone={async()=>{await refresh();setScr("hub")}}/>;
   if(scr==="addAge"&&ageKid)return<AddAge kid={ageKid} onDone={async()=>{setAgeKid(null);await refresh();setScr("hub")}}/>;
   if(scr==="hub")return<Hub profile={profile} kids={kids} clubs={clubs} onNav={nav}/>;
@@ -293,4 +388,3 @@ ReactDOM.render(<App/>,document.getElementById("root"));
 </script>
 </body>
 </html>
-<!-- v3 -->
