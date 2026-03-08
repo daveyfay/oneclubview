@@ -69,12 +69,12 @@ function getAge(d){if(!d)return null;const t=new Date(),b=new Date(d);let a=t.ge
 function weekDates(){const n=new Date(),d=n.getDay(),m=new Date(n);m.setDate(n.getDate()-((d+6)%7));return Array.from({length:7},(_,i)=>{const x=new Date(m);x.setDate(m.getDate()+i);return x})}
 function isToday(d){const n=new Date();return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate()}
 function fmtDate(d){return d.toLocaleDateString("en-IE",{weekday:"short",day:"numeric",month:"short"})}
-const CT={sport:{i:"\u26bd"},arts:{i:"\ud83c\udfa8"},stem:{i:"\ud83e\udd16"},outdoor:{i:"\ud83c\udfd4"},drama:{i:"\ud83c\udfad"},multi_activity:{i:"\ud83c\udfaa"},music:{i:"\ud83c\udfb5"},other:{i:"\ud83d\udccc"}};
+const CT={sport:{i:"⚽"},arts:{i:"🎨"},stem:{i:"🤖"},outdoor:{i:"🏔"},drama:{i:"🎭"},multi_activity:{i:"🎪"},music:{i:"🎵"},other:{i:"📌"}};
 
 const Logo=({dark})=>(
   <div style={{display:"flex",alignItems:"center",gap:8}}>
     <div style={{width:32,height:32,borderRadius:10,background:dark?"rgba(255,255,255,.15)":"var(--g)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <span style={{fontSize:16,color:dark?"#fff":"var(--gxl)"}}>\u25c9</span>
+      <span style={{fontSize:16,color:dark?"#fff":"var(--gxl)"}}>◉</span>
     </div>
     <span style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:dark?"#fff":"var(--g)"}}>OneClubView</span>
   </div>
@@ -91,7 +91,7 @@ function Landing({onGo,onLogin}){
     </nav>
     <section style={{maxWidth:1100,margin:"0 auto",padding:"60px 24px 40px",textAlign:"center"}}>
       <div className="r" style={{display:"inline-block",padding:"6px 16px",borderRadius:100,background:"var(--accl)",border:"1px solid #f0d078",marginBottom:20}}>
-        <span style={{fontSize:13,fontWeight:600,color:"#8a6d00"}}>\u2726 Built for busy Irish families</span>
+        <span style={{fontSize:13,fontWeight:600,color:"#8a6d00"}}>✦ Built for busy Irish families</span>
       </div>
       <h1 className="r2" style={{fontFamily:"var(--sr)",fontSize:"clamp(36px,6vw,56px)",fontWeight:800,lineHeight:1.1,color:"var(--g)",maxWidth:700,margin:"0 auto"}}>
         Every club. Every fee.<br/>Every camp. <span style={{color:"var(--acc)"}}>One view.</span>
@@ -100,9 +100,9 @@ function Landing({onGo,onLogin}){
         Your kids have swimming, GAA, scouts, and tennis. You have a headache. OneClubView puts every schedule, payment, and camp in one place.
       </p>
       <div className="r4" style={{marginTop:32}}>
-        <button onClick={onGo} className="btn bp" style={{width:"auto",padding:"14px 32px",fontSize:15,boxShadow:"0 4px 14px rgba(26,58,42,.25)"}}>Start your free trial \u2192</button>
+        <button onClick={onGo} className="btn bp" style={{width:"auto",padding:"14px 32px",fontSize:15,boxShadow:"0 4px 14px rgba(26,58,42,.25)"}}>Start your free trial →</button>
       </div>
-      <p className="r4" style={{fontSize:13,color:"var(--mt)",marginTop:12}}>14 days free, then \u20ac7.99/month</p>
+      <p className="r4" style={{fontSize:13,color:"var(--mt)",marginTop:12}}>14 days free, then €7.99/month</p>
     </section>
     {/* Preview card */}
     <section className="r3" style={{maxWidth:480,margin:"0 auto",padding:"0 24px 60px"}}>
@@ -120,7 +120,7 @@ function Landing({onGo,onLogin}){
           <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderTop:i?"1px solid #f5f3ef":"none"}}>
             <div style={{width:4,height:36,borderRadius:2,background:e.col,flexShrink:0}}/>
             <div style={{flex:1}}>
-              <div style={{fontSize:14,fontWeight:600}}><span style={{color:"var(--mt)",fontWeight:500}}>{e.w}</span> \u2014 {e.t}</div>
+              <div style={{fontSize:14,fontWeight:600}}><span style={{color:"var(--mt)",fontWeight:500}}>{e.w}</span> — {e.t}</div>
               <div style={{fontSize:12,color:"var(--mt)",marginTop:1}}>{e.c}</div>
             </div>
             <span style={{fontSize:12,fontWeight:600,color:"var(--g)",background:"var(--gxl)",padding:"4px 10px",borderRadius:8}}>{e.d}</span>
@@ -128,7 +128,7 @@ function Landing({onGo,onLogin}){
         ))}
         <div style={{marginTop:16,display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           <div style={{background:"var(--accl)",borderRadius:14,padding:14,border:"1px solid #f0d078"}}>
-            <div style={{fontSize:22,fontWeight:800,color:"#8a6d00",fontFamily:"var(--sr)"}}>\u20ac810</div>
+            <div style={{fontSize:22,fontWeight:800,color:"#8a6d00",fontFamily:"var(--sr)"}}>€810</div>
             <div style={{fontSize:11,fontWeight:600,color:"#a68600",marginTop:2}}>Family fees/year</div>
           </div>
           <div style={{background:"var(--gxl)",borderRadius:14,padding:14,border:"1px solid #c8e6c9"}}>
@@ -143,12 +143,12 @@ function Landing({onGo,onLogin}){
       <div style={{maxWidth:900,margin:"0 auto"}}>
         <h2 style={{fontFamily:"var(--sr)",fontSize:"clamp(28px,4vw,40px)",fontWeight:800,color:"#fff",textAlign:"center"}}>What parents actually need</h2>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:20,marginTop:48}}>
-          {[{i:"\ud83d\udcc5",t:"Weekly family view",d:"Every club, every kid, colour-coded."},
-            {i:"\ud83d\udcb3",t:"Fee tracker",d:"Total spend across every club, per kid."},
-            {i:"\ud83c\udfd5\ufe0f",t:"Camp discovery",d:"Matched to your kids\u2019 ages automatically."},
-            {i:"\ud83d\udc67",t:"Per-child view",d:"Tap a name \u2014 see only their stuff."},
-            {i:"\ud83d\udd0d",t:"Smart club search",d:"Type a name, find real clubs near you."},
-            {i:"\u23f0",t:"Work-day filter",d:"Camps that run 9\u20133 so you can work."}
+          {[{i:"📅",t:"Weekly family view",d:"Every club, every kid, colour-coded."},
+            {i:"💳",t:"Fee tracker",d:"Total spend across every club, per kid."},
+            {i:"🏕️",t:"Camp discovery",d:"Matched to your kids’ ages automatically."},
+            {i:"👧",t:"Per-child view",d:"Tap a name — see only their stuff."},
+            {i:"🔍",t:"Smart club search",d:"Type a name, find real clubs near you."},
+            {i:"⏰",t:"Work-day filter",d:"Camps that run 9–3 so you can work."}
           ].map((f,i)=>(
             <div key={i} style={{background:"rgba(255,255,255,.07)",borderRadius:20,padding:24,border:"1px solid rgba(255,255,255,.1)"}}>
               <span style={{fontSize:28}}>{f.i}</span>
@@ -162,14 +162,14 @@ function Landing({onGo,onLogin}){
     {/* Pricing */}
     <section style={{padding:"80px 24px",background:"#fff"}}>
       <div style={{maxWidth:480,margin:"0 auto",textAlign:"center"}}>
-        <h2 style={{fontFamily:"var(--sr)",fontSize:36,fontWeight:800,color:"var(--g)"}}>\u20ac7.99<span style={{fontSize:16,color:"var(--mt)",fontWeight:500}}>/month</span></h2>
+        <h2 style={{fontFamily:"var(--sr)",fontSize:36,fontWeight:800,color:"var(--g)"}}>€7.99<span style={{fontSize:16,color:"var(--mt)",fontWeight:500}}>/month</span></h2>
         <p style={{fontSize:14,color:"var(--mt)",marginTop:8}}>14-day free trial. Cancel anytime.</p>
-        <button onClick={onGo} className="btn bp" style={{marginTop:24}}>Start free trial \u2192</button>
+        <button onClick={onGo} className="btn bp" style={{marginTop:24}}>Start free trial →</button>
       </div>
     </section>
     <footer style={{padding:"28px 24px",background:"#0f1f17",textAlign:"center"}}>
       <Logo dark/>
-      <p style={{fontSize:12,color:"rgba(255,255,255,.3)",marginTop:10}}>\u00a9 2026 OneClubView</p>
+      <p style={{fontSize:12,color:"rgba(255,255,255,.3)",marginTop:10}}>© 2026 OneClubView</p>
     </footer>
   </div>);
 }
@@ -207,7 +207,7 @@ function Auth({onAuth,mode:im}){
             <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email"/>
             <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Password" onKeyDown={e=>e.key==="Enter"&&go()}/>
             <button onClick={go} disabled={ld} className="btn bp">{ld?"...":mode==="signup"?"Start free trial":"Log in"}</button>
-            {mode==="signup"&&<p style={{fontSize:12,color:"var(--mt)",textAlign:"center"}}>14 days free, then \u20ac7.99/month</p>}
+            {mode==="signup"&&<p style={{fontSize:12,color:"var(--mt)",textAlign:"center"}}>14 days free, then €7.99/month</p>}
           </div>
         </div>
       </div>
@@ -221,24 +221,24 @@ function OnboardKids({userId,onDone}){
   return (
     <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
       <div style={{width:"100%",maxWidth:420,textAlign:"center"}}>
-        <div style={{fontSize:48,marginBottom:12}}>\ud83d\udc4b</div>
-        <h2 style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800,color:"var(--g)"}}>Who\u2019s in your family?</h2>
+        <div style={{fontSize:48,marginBottom:12}}>👋</div>
+        <h2 style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800,color:"var(--g)"}}>Who’s in your family?</h2>
         <p style={{fontSize:14,color:"var(--mt)",marginTop:6}}>Add your kids so we can match clubs and camps to them</p>
         {kids.length>0&&<div style={{margin:"20px 0",display:"flex",flexDirection:"column",gap:8}}>
           {kids.map(k=><div key={k.id} style={{display:"flex",alignItems:"center",gap:10,background:"var(--gxl)",borderRadius:14,padding:"10px 16px",border:"1px solid #c8e6c9"}}>
-            <span>\ud83d\udc67</span><span style={{fontSize:14,fontWeight:600,color:"var(--g)"}}>{k.name}</span>
+            <span>👧</span><span style={{fontSize:14,fontWeight:600,color:"var(--g)"}}>{k.name}</span>
             {k.dob&&<span style={{fontSize:12,color:"var(--gl)",marginLeft:"auto"}}>age {getAge(k.dob)}</span>}
           </div>)}
         </div>}
         <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:16,textAlign:"left"}}>
-          <input value={name} onChange={e=>setName(e.target.value)} placeholder="Child\u2019s first name" onKeyDown={e=>e.key==="Enter"&&add()}/>
+          <input value={name} onChange={e=>setName(e.target.value)} placeholder="Child’s first name" onKeyDown={e=>e.key==="Enter"&&add()}/>
           <div style={{display:"flex",gap:8}}>
             <input type="date" value={dob} onChange={e=>setDob(e.target.value)} style={{flex:1}}/>
             <button onClick={add} disabled={sv||!name.trim()} className="btn bp" style={{width:"auto",padding:"0 24px",opacity:(!name.trim()||sv)?.4:1}}>Add</button>
           </div>
         </div>
         <button onClick={onDone} className={"btn "+(kids.length?"bp":"bs")} style={{marginTop:24}}>
-          {kids.length?"Next \u2014 add clubs \u2192":"Skip \u2014 just me"}
+          {kids.length?"Next — add clubs →":"Skip — just me"}
         </button>
       </div>
     </div>
@@ -297,15 +297,15 @@ function OnboardClubs({userId,kids,onDone}){
     <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
       <div style={{width:"100%",maxWidth:440}}>
         <div style={{textAlign:"center",marginBottom:20}}>
-          <div style={{fontSize:48,marginBottom:12}}>\ud83c\udfe0</div>
+          <div style={{fontSize:48,marginBottom:12}}>🏠</div>
           <h2 style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800,color:"var(--g)"}}>What clubs are you in?</h2>
-          <p style={{fontSize:14,color:"var(--mt)",marginTop:6}}>Search for your club \u2014 we\u2019ll find it</p>
+          <p style={{fontSize:14,color:"var(--mt)",marginTop:6}}>Search for your club — we’ll find it</p>
         </div>
         {added.length>0&&<div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:8}}>
           {added.map((c,i)=><div key={c.id+"-"+i} style={{display:"flex",alignItems:"center",gap:10,background:"var(--gxl)",borderRadius:14,padding:"10px 16px",border:"1px solid #c8e6c9"}}>
             <div style={{width:30,height:30,borderRadius:8,background:COLS[i%COLS.length],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:800}}>{initials(c.name)}</div>
             <div style={{flex:1}}><div style={{fontSize:14,fontWeight:600,color:"var(--g)"}}>{c.name}</div><div style={{fontSize:11,color:"var(--gl)"}}>{c.who}</div></div>
-            <span style={{color:"var(--gl)"}}>\u2713</span>
+            <span style={{color:"var(--gl)"}}>✓</span>
           </div>)}
         </div>}
         <div style={{position:"relative"}}>
@@ -316,21 +316,21 @@ function OnboardClubs({userId,kids,onDone}){
           {res.map(c=><button key={c.id} onClick={()=>pick(c)} style={{width:"100%",padding:"12px 16px",border:"none",borderBottom:"1px solid #f5f3ef",background:"none",cursor:"pointer",textAlign:"left",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:10}}>
             <div style={{width:36,height:36,borderRadius:8,background:"var(--gxl)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:"var(--g)",flexShrink:0}}>{initials(c.name)}</div>
             <div><div style={{fontSize:14,fontWeight:600}}>{c.name}</div>{(c.address||c.location)&&<div style={{fontSize:11,color:"var(--mt)"}}>{c.address||c.location}</div>}</div>
-            {c.rating&&<span style={{marginLeft:"auto",fontSize:11,color:"var(--acc)",fontWeight:700}}>\u2605 {c.rating}</span>}
+            {c.rating&&<span style={{marginLeft:"auto",fontSize:11,color:"var(--acc)",fontWeight:700}}>★ {c.rating}</span>}
           </button>)}
         </div>}
-        {q.length>=2&&res.length===0&&!searching&&<button onClick={addNew} style={{width:"100%",marginTop:8,padding:12,borderRadius:12,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)"}}>+ Add \u201c{q}\u201d as a new club</button>}
+        {q.length>=2&&res.length===0&&!searching&&<button onClick={addNew} style={{width:"100%",marginTop:8,padding:12,borderRadius:12,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)"}}>+ Add “{q}” as a new club</button>}
         {assign&&<div className="mbg" onClick={e=>e.target===e.currentTarget&&setAssign(null)}>
           <div className="mbox" style={{textAlign:"center",padding:32}}>
             <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)",marginBottom:4}}>Who goes to {assign.name}?</h3>
             <p style={{fontSize:13,color:"var(--mt)",marginBottom:20}}>Tap each family member who attends</p>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              <button onClick={()=>doAssign(assign,null,"You")} className="btn bs" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>\ud83d\udc64 Me</button>
-              {kids.map(k=><button key={k.id} onClick={()=>doAssign(assign,k.id,k.first_name)} className="btn bs" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>\ud83d\udc67 {k.first_name}</button>)}
+              <button onClick={()=>doAssign(assign,null,"You")} className="btn bs" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>👤 Me</button>
+              {kids.map(k=><button key={k.id} onClick={()=>doAssign(assign,k.id,k.first_name)} className="btn bs" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>👧 {k.first_name}</button>)}
             </div>
           </div>
         </div>}
-        <button onClick={finish} className={"btn "+(added.length?"bp":"bs")} style={{marginTop:24}}>{added.length?"Go to my hub \u2192":"Skip"}</button>
+        <button onClick={finish} className={"btn "+(added.length?"bp":"bs")} style={{marginTop:24}}>{added.length?"Go to my hub →":"Skip"}</button>
       </div>
     </div>
   );
@@ -361,9 +361,9 @@ function Hub({user,profile,onRefresh,onLogout}){
   useEffect(()=>{load()},[]);
 
   const members=useMemo(()=>{
-    const m=[{id:"all",name:"Everyone",emoji:"\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc66",type:"all"}];
-    kids.forEach(k=>m.push({id:k.id,name:k.first_name,emoji:"\ud83d\udc67",type:"kid",age:getAge(k.date_of_birth),dob:k.date_of_birth}));
-    if(kids.length>0)m.push({id:"self",name:profile?.first_name||"Me",emoji:"\ud83d\udc64",type:"self"});
+    const m=[{id:"all",name:"Everyone",emoji:"👨‍👩‍👧‍👦",type:"all"}];
+    kids.forEach(k=>m.push({id:k.id,name:k.first_name,emoji:"👧",type:"kid",age:getAge(k.date_of_birth),dob:k.date_of_birth}));
+    if(kids.length>0)m.push({id:"self",name:profile?.first_name||"Me",emoji:"👤",type:"self"});
     return m;
   },[kids,profile]);
 
@@ -407,7 +407,7 @@ function Hub({user,profile,onRefresh,onLogout}){
     return camps.filter(c=>age>=c.age_min&&age<=c.age_max);
   },[camps,filter,kids]);
 
-  const tabs=[{id:"week",l:"This Week",i:"\ud83d\udcc5"},{id:"money",l:"Money",i:"\ud83d\udcb3"},{id:"camps",l:"Camps",i:"\ud83c\udfd5\ufe0f"},{id:"clubs",l:"Clubs",i:"\ud83c\udfe0"}];
+  const tabs=[{id:"week",l:"This Week",i:"📅"},{id:"money",l:"Money",i:"💳"},{id:"camps",l:"Camps",i:"🏕️"},{id:"clubs",l:"Clubs",i:"🏠"}];
 
   if(loading)return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--warm)"}}><p style={{color:"var(--mt)"}}>Loading...</p></div>;
 
@@ -415,7 +415,7 @@ function Hub({user,profile,onRefresh,onLogout}){
   if(clubs.length===0)return (
     <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
       <div style={{textAlign:"center",maxWidth:360}}>
-        <div style={{fontSize:48,marginBottom:16}}>\ud83c\udfe0</div>
+        <div style={{fontSize:48,marginBottom:16}}>🏠</div>
         <h2 style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>No clubs yet</h2>
         <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 24px"}}>Add your first club to get started</p>
         <button onClick={()=>onRefresh("clubs")} className="btn bp">+ Add a club</button>
@@ -452,7 +452,7 @@ function Hub({user,profile,onRefresh,onLogout}){
             <div style={{fontSize:11,color:"var(--mt)",fontWeight:600}}>events</div>
           </div>
           <div style={{background:"var(--accl)",borderRadius:14,padding:12,border:"1px solid #f0d078",textAlign:"center"}}>
-            <div style={{fontSize:20,fontWeight:800,color:"#8a6d00",fontFamily:"var(--sr)"}}>\u20ac{totalDue.toFixed(0)}</div>
+            <div style={{fontSize:20,fontWeight:800,color:"#8a6d00",fontFamily:"var(--sr)"}}>€{totalDue.toFixed(0)}</div>
             <div style={{fontSize:11,color:"#a68600",fontWeight:600}}>due</div>
           </div>
           <div style={{background:"var(--gxl)",borderRadius:14,padding:12,border:"1px solid #c8e6c9",textAlign:"center"}}>
@@ -472,7 +472,7 @@ function Hub({user,profile,onRefresh,onLogout}){
             :dayEvts.map(e=><div key={e.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:"var(--card)",borderRadius:14,border:"1px solid var(--bd)",marginBottom:6}}>
               <div style={{width:4,height:36,borderRadius:2,background:e.colour,flexShrink:0}}/>
               <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:600}}><span style={{color:"var(--mt)",fontWeight:500}}>{e.member}</span> \u2014 {e.title}</div>
+                <div style={{fontSize:14,fontWeight:600}}><span style={{color:"var(--mt)",fontWeight:500}}>{e.member}</span> — {e.title}</div>
                 <div style={{fontSize:12,color:"var(--mt)",marginTop:1}}>{e.club}</div>
               </div>
               {e.time&&<span style={{fontSize:12,fontWeight:600,color:"var(--g)",background:"var(--gxl)",padding:"4px 10px",borderRadius:8,whiteSpace:"nowrap"}}>{e.time}</span>}
@@ -486,25 +486,25 @@ function Hub({user,profile,onRefresh,onLogout}){
       {tab==="money"&&<div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
           <div style={{background:"var(--accl)",borderRadius:14,padding:16,border:"1px solid #f0d078"}}>
-            <div style={{fontSize:28,fontWeight:800,color:"#8a6d00",fontFamily:"var(--sr)"}}>\u20ac{totalDue.toFixed(0)}</div>
+            <div style={{fontSize:28,fontWeight:800,color:"#8a6d00",fontFamily:"var(--sr)"}}>€{totalDue.toFixed(0)}</div>
             <div style={{fontSize:12,fontWeight:600,color:"#a68600",marginTop:2}}>Outstanding</div>
           </div>
           <div style={{background:"var(--gxl)",borderRadius:14,padding:16,border:"1px solid #c8e6c9"}}>
-            <div style={{fontSize:28,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)"}}>\u20ac{totalPaid.toFixed(0)}</div>
+            <div style={{fontSize:28,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)"}}>€{totalPaid.toFixed(0)}</div>
             <div style={{fontSize:12,fontWeight:600,color:"var(--gl)",marginTop:2}}>Paid</div>
           </div>
         </div>
-        {filtPays.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"var(--mt)"}}><div style={{fontSize:36,marginBottom:8}}>\ud83d\udcb3</div><p style={{fontSize:14}}>No payment reminders yet</p></div>
+        {filtPays.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"var(--mt)"}}><div style={{fontSize:36,marginBottom:8}}>💳</div><p style={{fontSize:14}}>No payment reminders yet</p></div>
         :filtPays.map(p=>{
           const overdue=!p.paid&&new Date(p.due_date)<new Date();
           const kid=p.dependant_id?kids.find(k=>k.id===p.dependant_id):null;
           const cl=clubs.find(c=>c.club_id===p.club_id);
           return <div key={p.id} style={{background:"var(--card)",borderRadius:14,border:"1px solid var(--bd)",padding:16,marginBottom:8}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div><div style={{fontSize:14,fontWeight:600}}>{kid?.first_name||profile?.first_name||"You"} \u2014 {p.description}</div><div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>{cl?.club_name||""} \u2022 Due {new Date(p.due_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</div></div>
-              <div style={{textAlign:"right"}}><div style={{fontSize:18,fontWeight:800,color:p.paid?"var(--gl)":overdue?"#dc2626":"var(--tx)",fontFamily:"var(--sr)"}}>\u20ac{parseFloat(p.amount).toFixed(0)}</div>
+              <div><div style={{fontSize:14,fontWeight:600}}>{kid?.first_name||profile?.first_name||"You"} — {p.description}</div><div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>{cl?.club_name||""} • Due {new Date(p.due_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</div></div>
+              <div style={{textAlign:"right"}}><div style={{fontSize:18,fontWeight:800,color:p.paid?"var(--gl)":overdue?"#dc2626":"var(--tx)",fontFamily:"var(--sr)"}}>€{parseFloat(p.amount).toFixed(0)}</div>
                 {!p.paid&&<button onClick={async()=>{await db("payment_reminders","PATCH",{body:{paid:true},filters:["id=eq."+p.id]});load()}} style={{fontSize:11,fontWeight:700,color:"var(--gl)",background:"var(--gxl)",border:"none",borderRadius:8,padding:"3px 10px",cursor:"pointer",marginTop:4}}>Mark paid</button>}
-                {p.paid&&<span style={{fontSize:11,color:"var(--gl)",fontWeight:700}}>\u2713 Paid</span>}
+                {p.paid&&<span style={{fontSize:11,color:"var(--gl)",fontWeight:700}}>✓ Paid</span>}
               </div>
             </div>
           </div>
@@ -520,7 +520,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           </h3>
           <p style={{fontSize:13,color:"var(--mt)",marginTop:4}}>{filtCamps.length} camps found{filter!=="all"&&filter!=="self"&&kids.find(k=>k.id===filter)?.date_of_birth?" for age "+getAge(kids.find(k=>k.id===filter).date_of_birth):""}</p>
         </div>
-        {filtCamps.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"var(--mt)"}}><div style={{fontSize:36,marginBottom:8}}>\ud83c\udfd5\ufe0f</div><p>No camps match</p></div>
+        {filtCamps.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"var(--mt)"}}><div style={{fontSize:36,marginBottom:8}}>🏕️</div><p>No camps match</p></div>
         :filtCamps.map(c=>{
           const ct=CT[c.camp_type]||CT.other;
           const coversWork=c.end_time&&c.end_time>="15:00";
@@ -531,15 +531,15 @@ function Hub({user,profile,onRefresh,onLogout}){
                   <span style={{fontSize:16}}>{ct.i}</span>
                   <span style={{fontSize:14,fontWeight:700}}>{c.title}</span>
                 </div>
-                <div style={{fontSize:12,color:"var(--mt)"}}>{c.provider||c.club_name} \u2022 {c.location}</div>
+                <div style={{fontSize:12,color:"var(--mt)"}}>{c.provider||c.club_name} • {c.location}</div>
                 <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>
-                  {c.start_date&&c.end_date?fmtDate(new Date(c.start_date+"T00:00"))+" \u2013 "+fmtDate(new Date(c.end_date+"T00:00")):""}
-                  {c.start_time&&c.end_time?" \u2022 "+c.start_time.slice(0,5)+"\u2013"+c.end_time.slice(0,5):""}
+                  {c.start_date&&c.end_date?fmtDate(new Date(c.start_date+"T00:00"))+" – "+fmtDate(new Date(c.end_date+"T00:00")):""}
+                  {c.start_time&&c.end_time?" • "+c.start_time.slice(0,5)+"–"+c.end_time.slice(0,5):""}
                 </div>
                 <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
-                  <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#8a6d00"}}>\u20ac{c.cost}</span>
-                  <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {c.age_min}\u2013{c.age_max}</span>
-                  {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--gxl)",color:"var(--gl)"}}>\u2713 Covers work day</span>}
+                  <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#8a6d00"}}>€{c.cost}</span>
+                  <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {c.age_min}–{c.age_max}</span>
+                  {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--gxl)",color:"var(--gl)"}}>✓ Covers work day</span>}
                 </div>
               </div>
             </div>
@@ -556,7 +556,7 @@ function Hub({user,profile,onRefresh,onLogout}){
             <div style={{width:40,height:40,borderRadius:10,background:c.colour||COLS[i%COLS.length],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:800,flexShrink:0}}>{c.club_name.split(" ").map(w=>w[0]).join("").substring(0,2)}</div>
             <div style={{flex:1}}>
               <div style={{fontSize:14,fontWeight:600}}>{c.club_name}</div>
-              <div style={{fontSize:12,color:"var(--mt)"}}>{kid?kid.first_name:(profile?.first_name||"You")} {c.club_addr?" \u2022 "+c.club_addr:""}</div>
+              <div style={{fontSize:12,color:"var(--mt)"}}>{kid?kid.first_name:(profile?.first_name||"You")} {c.club_addr?" • "+c.club_addr:""}</div>
             </div>
           </div>
         })}
@@ -589,7 +589,7 @@ function AddEventModal({clubs,userId,kids,profile,onClose,onSaved}){
     setSv(false);onSaved();
   }
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
-    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}><h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add Event</h3><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button></div>
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}><h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add Event</h3><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button></div>
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div><span className="lbl">Club</span><select value={cid} onChange={e=>setCid(e.target.value)}>{clubs.map(c=><option key={c.club_id} value={c.club_id}>{c.club_name}</option>)}</select></div>
       <div><span className="lbl">Who is this for?</span><select value={mid} onChange={e=>setMid(e.target.value)}><option value="self">{profile?.first_name||"Me"}</option>{kids.map(k=><option key={k.id} value={k.id}>{k.first_name}</option>)}</select></div>
@@ -612,12 +612,12 @@ function AddPaymentModal({clubs,userId,kids,profile,onClose,onSaved}){
   const[desc,setDesc]=useState("");const[amt,setAmt]=useState("");const[due,setDue]=useState("");const[sv,setSv]=useState(false);
   async function save(){if(!desc.trim()||!amt||!due)return;setSv(true);await db("payment_reminders","POST",{body:{user_id:userId,club_id:cid,dependant_id:mid==="self"?null:mid,description:desc.trim(),amount:parseFloat(amt),due_date:due}});setSv(false);onSaved()}
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
-    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}><h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add Payment Reminder</h3><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button></div>
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}><h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add Payment Reminder</h3><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button></div>
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div><span className="lbl">Club</span><select value={cid} onChange={e=>setCid(e.target.value)}>{clubs.map(c=><option key={c.club_id} value={c.club_id}>{c.club_name}</option>)}</select></div>
       <div><span className="lbl">Who</span><select value={mid} onChange={e=>setMid(e.target.value)}><option value="self">{profile?.first_name||"Me"}</option>{kids.map(k=><option key={k.id} value={k.id}>{k.first_name}</option>)}</select></div>
-      <div><span className="lbl">What\u2019s it for?</span><input value={desc} onChange={e=>setDesc(e.target.value)} placeholder="Annual fee, camp, kit..."/></div>
-      <div style={{display:"flex",gap:8}}><div style={{flex:1}}><span className="lbl">Amount (\u20ac)</span><input type="number" value={amt} onChange={e=>setAmt(e.target.value)}/></div><div style={{flex:1}}><span className="lbl">Due date</span><input type="date" value={due} onChange={e=>setDue(e.target.value)}/></div></div>
+      <div><span className="lbl">What’s it for?</span><input value={desc} onChange={e=>setDesc(e.target.value)} placeholder="Annual fee, camp, kit..."/></div>
+      <div style={{display:"flex",gap:8}}><div style={{flex:1}}><span className="lbl">Amount (€)</span><input type="number" value={amt} onChange={e=>setAmt(e.target.value)}/></div><div style={{flex:1}}><span className="lbl">Due date</span><input type="date" value={due} onChange={e=>setDue(e.target.value)}/></div></div>
       <button onClick={save} disabled={sv||!desc.trim()||!amt||!due} className="btn bp">{sv?"Saving...":"Save"}</button>
     </div>
   </div></div>;
@@ -627,7 +627,7 @@ function AddKidModal({userId,onClose,onSaved}){
   const[name,setName]=useState("");const[dob,setDob]=useState("");const[sv,setSv]=useState(false);
   async function save(){if(!name.trim())return;setSv(true);await db("dependants","POST",{body:{parent_user_id:userId,first_name:name.trim(),date_of_birth:dob||null}});setSv(false);onSaved()}
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
-    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}><h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add Family Member</h3><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button></div>
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}><h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add Family Member</h3><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button></div>
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div><span className="lbl">Name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="First name"/></div>
       <div><span className="lbl">Date of birth</span><input type="date" value={dob} onChange={e=>setDob(e.target.value)}/></div>
