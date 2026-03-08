@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OneClubView — All your clubs. One view.</title>
+  <meta name="description" content="All your clubs. One view. Track your family's activities, payments, and camps in one place.">
+  <meta name="theme-color" content="#1B4332">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'DM Sans', -apple-system, sans-serif; }
+    body { background: #f5f5f4; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    input[type="range"] { -webkit-appearance: none; height: 6px; border-radius: 3px; background: #e7e5e4; outline: none; width: 100%; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #1B4332; cursor: pointer; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .pulse { animation: pulse 1.5s infinite; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useCallback, useRef } = React;
+
+    // ============================================
+    // SUPABASE CLIENT
+    // ============================================
+    const SB_URL = "https://uqihwazheypvmrcrqklg.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxaWh3YXpoZXlwdm1yY3Jxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4Nzg1MjQsImV4cCI6MjA4ODQ1NDUyNH0.n5I1lkCu7Tf1sBbIceWUdsRQtIrH7-WGc3itZAfrBKI";
+
+    let _token = null;
+    let _refresh = null;
+
+    function sbHeaders() {
+      return {
+        apikey: SB_KEY,
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + (_token || SB_KEY),
+      };
+    }
+
+    async function sbAuth(action, body) {
+      const endpoints = {
+        signup: "/auth/v1/signup",
+        login: "/auth/v1/token?grant_type=password",
+        user: "/auth/v1/user",
+      };
+      const resp = await fetch(SB_URL + endpoints[action], {
+        method: action === "user" ? "GET" : "POST",
+        headers: sbHeaders(),
+        body: action === "user" ? undefined : JSON.stringify(body),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.msg || data.error_description || data.message || "Auth error");
+      if (data.access_token) { _token = data.access_token; _refresh = data.refresh_token; }
+      return data;
+    }
+
+    async function sbQuery(table, method, opts = {}) {
+      let url = SB_URL + "/rest/v1/" + table;
+      const params = [];
+      if (opts.select) params.push("select=" + encodeURIComponent(opts.select));
+      if (opts.filters) opts.filters.forEach(f => params.push(f));
+      if (opts.order) params.push("order=" + opts.order);
+      if (opts.limit) params.push("limit=" + opts.limit);
+      if (params.length) url += "?" + params.join("&");
+
+      const headers = sbHeaders();
+      if (method === "POST") headers["Prefer"] = opts.upsert ? "resolution=merge-duplicates,return=representation" : "return=representation";
+      if (method === "PATCH") headers["Prefer"] = "return=representation";
+      if (opts.single) headers["Accept"] = "application/vnd.pgrst.object+json";
+
+      const resp = await fetch(url, {
+        method,
+        headers,
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+      });
+      if (!resp.ok) { const t = await resp.text(); console.error("SB error:", t); return null; }
+      const text = await resp.text();
+      return text ? JSON.parse(text) : null;
+    }
+
+    // ============================================
+    // UTILS
+    // ============================================
+    const campTypes = {
+      sport: { label: "Sport", icon: "⚽", bg: "#ecfdf5", text: "#047857", border: "#a7f3d0" },
+      arts: { label: "Arts", icon: "🎨", bg: "#faf5ff", text: "#7c3aed", border: "#ddd6fe" },
+      stem: { label: "STEM", icon: "🤖", bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+      outdoor: { label: "Outdoor", icon: "🏔️", bg: "#f0fdfa", text: "#0f766e", border: "#99f6e4" },
+      drama: { label: "Drama", icon: "🎭", bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
+      multi_activity: { label: "Multi", icon: "🎪", bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
+      music: { label: "Music", icon: "🎵", bg: "#fdf2f8", text: "#be185d", border: "#fbcfe8" },
+      other: { label: "Other", icon: "📌", bg: "#f9fafb", text: "#374151", border: "#e5e7eb" },
+    };
+
+    function getAge(dob) {
+      if (!dob) return null;
+      const t = new Date(), b = new Date(dob);
+      let a = t.getFullYear() - b.getFullYear();
+      if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--;
+      return a;
+    }
+
+    function fmtDateRange(s, e) {
+      const sd = new Date(s + "T00:00:00"), ed = new Date(e + "T00:00:00");
+      const mo = { month: "short" };
+      if (sd.getMonth() === ed.getMonth()) return sd.getDate() + "–" + ed.getDate() + " " + sd.toLocaleDateString("en-IE", mo);
+      return sd.toLocaleDateString("en-IE", { day: "numeric", ...mo }) + " – " + ed.toLocaleDateString("en-IE", { day: "numeric", ...mo });
+    }
+
+    // ============================================
+    // COMPONENTS
+    // ============================================
+
+    function Logo({ size = "lg" }) {
+      const s = size === "lg" ? "28px" : size === "md" ? "22px" : "16px";
+      return (
+        <span style={{ fontSize: s, fontWeight: 900, letterSpacing: "-0.5px" }}>
+          <span style={{ color: "#2D6A4F" }}>One</span>
+          <span style={{ color: "#1B4332" }}>Club</span>
+          <span style={{ color: "#40916C" }}>View</span>
+        </span>
+      );
+    }
+
+    // ============================================
+    // AUTH SCREEN
+    // ============================================
+    function AuthScreen({ onAuth }) {
+      const [mode, setMode] = useState("login");
+      const [email, setEmail] = useState("");
+      const [pw, setPw] = useState("");
+      const [name, setName] = useState("");
+      const [err, setErr] = useState(null);
+      const [loading, setLoading] = useState(false);
+
+      async function go() {
+        setLoading(true); setErr(null);
+        try {
+          if (mode === "signup") {
+            const d = await sbAuth("signup", { email, password: pw, data: { first_name: name } });
+            onAuth(d.user || d);
+          } else {
+            const d = await sbAuth("login", { email, password: pw });
+            onAuth(d.user);
+          }
+        } catch (e) { setErr(e.message); }
+        setLoading(false);
+      }
+
+      const inputStyle = { width: "100%", padding: "12px 16px", borderRadius: 12, border: "1px solid #d6d3d1", fontSize: 14, outline: "none", marginTop: 4 };
+
+      return (
+        <div className="fade-in" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "#fafaf9" }}>
+          <div style={{ width: "100%", maxWidth: 380 }}>
+            <div style={{ textAlign: "center", marginBottom: 32 }}>
+              <Logo size="lg" />
+              <p style={{ fontSize: 13, color: "#a8a29e", marginTop: 6, fontStyle: "italic" }}>All your clubs. One view.</p>
+            </div>
+            <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #e7e5e4", padding: 24, boxShadow: "0 1px 3px rgba(0,0,0,.04)" }}>
+              <div style={{ display: "flex", background: "#f5f5f4", borderRadius: 12, padding: 4, marginBottom: 20 }}>
+                {["login", "signup"].map(m => (
+                  <button key={m} onClick={() => setMode(m)} style={{ flex: 1, padding: "8px 0", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, background: mode === m ? "#fff" : "transparent", color: mode === m ? "#1c1917" : "#a8a29e", boxShadow: mode === m ? "0 1px 2px rgba(0,0,0,.06)" : "none" }}>
+                    {m === "login" ? "Log in" : "Sign up"}
+                  </button>
+                ))}
+              </div>
+              {err && <div style={{ marginBottom: 16, padding: 12, borderRadius: 12, background: "#fef2f2", color: "#b91c1c", fontSize: 12, fontWeight: 500 }}>{err}</div>}
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {mode === "signup" && (
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", textTransform: "uppercase", letterSpacing: 1 }}>First name</label>
+                    <input value={name} onChange={e => setName(e.target.value)} placeholder="Sarah" style={inputStyle} />
+                  </div>
+                )}
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", textTransform: "uppercase", letterSpacing: 1 }}>Email</label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="sarah@example.com" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", textTransform: "uppercase", letterSpacing: 1 }}>Password</label>
+                  <input type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="••••••••" style={inputStyle} onKeyDown={e => e.key === "Enter" && go()} />
+                </div>
+                <button onClick={go} disabled={loading} style={{ width: "100%", padding: 14, borderRadius: 12, border: "none", fontSize: 14, fontWeight: 700, color: "#fff", background: "#1B4332", cursor: loading ? "wait" : "pointer", opacity: loading ? 0.6 : 1 }}>
+                  {loading ? "..." : mode === "signup" ? "Create account" : "Log in"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // ONBOARDING: ADD KIDS
+    // ============================================
+    function OnboardKids({ userId, onDone }) {
+      const [kids, setKids] = useState([{ first_name: "", date_of_birth: "" }]);
+      const [loading, setLoading] = useState(false);
+
+      function update(i, f, v) { const k = [...kids]; k[i][f] = v; setKids(k); }
+      function add() { setKids([...kids, { first_name: "", date_of_birth: "" }]); }
+      function remove(i) { if (kids.length > 1) setKids(kids.filter((_, j) => j !== i)); }
+
+      async function save() {
+        setLoading(true);
+        for (const k of kids.filter(k => k.first_name.trim())) {
+          await sbQuery("dependants", "POST", { body: { parent_user_id: userId, first_name: k.first_name.trim(), date_of_birth: k.date_of_birth || null } });
+        }
+        await sbQuery("profiles", "PATCH", { body: { onboarding_step: "clubs" }, filters: ["id=eq." + userId] });
+        setLoading(false);
+        onDone();
+      }
+
+      const inputStyle = { width: "100%", padding: "10px 14px", borderRadius: 12, border: "1px solid #d6d3d1", fontSize: 14, outline: "none" };
+
+      return (
+        <div className="fade-in" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "#fafaf9" }}>
+          <div style={{ width: "100%", maxWidth: 380 }}>
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <div style={{ fontSize: 40, marginBottom: 8 }}>👨‍👩‍👧‍👦</div>
+              <h2 style={{ fontSize: 20, fontWeight: 900, color: "#1c1917" }}>Add your family</h2>
+              <p style={{ fontSize: 13, color: "#a8a29e", marginTop: 4 }}>We'll match camps to their ages</p>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {kids.map((kid, i) => (
+                <div key={i} style={{ background: "#fff", borderRadius: 16, border: "1px solid #e7e5e4", padding: 16 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#a8a29e" }}>Child {i + 1}</span>
+                    {kids.length > 1 && <button onClick={() => remove(i)} style={{ fontSize: 11, color: "#f87171", background: "none", border: "none", cursor: "pointer" }}>Remove</button>}
+                  </div>
+                  <input value={kid.first_name} onChange={e => update(i, "first_name", e.target.value)} placeholder="First name" style={{ ...inputStyle, marginBottom: 8 }} />
+                  <label style={{ fontSize: 10, color: "#a8a29e" }}>Date of birth</label>
+                  <input type="date" value={kid.date_of_birth} onChange={e => update(i, "date_of_birth", e.target.value)} style={inputStyle} />
+                </div>
+              ))}
+            </div>
+            <button onClick={add} style={{ width: "100%", marginTop: 12, padding: 12, borderRadius: 12, border: "2px dashed #d6d3d1", background: "none", fontSize: 13, fontWeight: 600, color: "#a8a29e", cursor: "pointer" }}>+ Add another child</button>
+            <button onClick={save} disabled={loading} style={{ width: "100%", marginTop: 16, padding: 14, borderRadius: 12, border: "none", fontSize: 14, fontWeight: 700, color: "#fff", background: "#1B4332", cursor: "pointer" }}>
+              {loading ? "Saving..." : "Next →"}
+            </button>
+            <button onClick={onDone} style={{ width: "100%", marginTop: 8, padding: 8, background: "none", border: "none", fontSize: 12, color: "#a8a29e", cursor: "pointer" }}>Skip — I'll add kids later</button>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // ONBOARDING: ADD CLUBS
+    // ============================================
+    function OnboardClubs({ userId, onDone }) {
+      const [clubName, setClubName] = useState("");
+      const [website, setWebsite] = useState("");
+      const [added, setAdded] = useState([]);
+      const [loading, setLoading] = useState(false);
+      const colours = ["#E63946", "#457B9D", "#2D6A4F", "#E9C46A", "#264653", "#F4A261"];
+
+      async function addClub() {
+        if (!clubName.trim()) return;
+        setLoading(true);
+        try {
+          // Search for existing club
+          const existing = await sbQuery("clubs", "GET", { select: "id,name", filters: ["name=ilike.*" + clubName.trim() + "*"], limit: 1 });
+          let clubId;
+          if (existing && existing.length) {
+            clubId = existing[0].id;
+          } else {
+            // Generate slug: lowercase, hyphens only, strip leading/trailing hyphens, min 3 chars
+            let slug = clubName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+            if (slug.length < 3) slug = slug + "-club";
+            // Add random suffix to avoid unique constraint collisions
+            slug = slug + "-" + Math.random().toString(36).substring(2, 6);
+            const res = await sbQuery("clubs", "POST", { body: { name: clubName.trim(), slug, source: "external", website_url: website.trim() || null } });
+            console.log("Club insert result:", res);
+            clubId = res?.[0]?.id;
+          }
+          if (clubId) {
+            const subRes = await sbQuery("hub_subscriptions", "POST", { body: { user_id: userId, club_id: clubId, colour: colours[added.length % 6] } });
+            console.log("Subscription result:", subRes);
+            setAdded([...added, { id: clubId, name: clubName.trim() }]);
+          } else {
+            console.error("Failed to get club ID");
+          }
+        } catch(e) {
+          console.error("Add club error:", e);
+        }
+        setClubName(""); setWebsite(""); setLoading(false);
+      }
+
+      async function done() {
+        await sbQuery("profiles", "PATCH", { body: { onboarding_step: "done", onboarding_completed: true }, filters: ["id=eq." + userId] });
+        onDone();
+      }
+
+      const inputStyle = { width: "100%", padding: "10px 14px", borderRadius: 12, border: "1px solid #d6d3d1", fontSize: 14, outline: "none" };
+
+      return (
+        <div className="fade-in" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "#fafaf9" }}>
+          <div style={{ width: "100%", maxWidth: 380 }}>
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <div style={{ fontSize: 40, marginBottom: 8 }}>🏠</div>
+              <h2 style={{ fontSize: 20, fontWeight: 900, color: "#1c1917" }}>Add your clubs</h2>
+              <p style={{ fontSize: 13, color: "#a8a29e", marginTop: 4 }}>Any club — they don't need to be on OneClubView</p>
+            </div>
+            {added.length > 0 && (
+              <div style={{ marginBottom: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+                {added.map((c, i) => (
+                  <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, background: "#ecfdf5", borderRadius: 12, padding: "10px 14px", border: "1px solid #a7f3d0" }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, background: colours[i % 6] }}>{c.name.substring(0, 2).toUpperCase()}</div>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#1c1917", flex: 1 }}>{c.name}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#059669" }}>✓</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e7e5e4", padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+              <input value={clubName} onChange={e => setClubName(e.target.value)} placeholder="Club name (e.g. Raheny Swimming)" style={inputStyle} />
+              <input value={website} onChange={e => setWebsite(e.target.value)} placeholder="Website (optional)" style={inputStyle} />
+              <button onClick={addClub} disabled={loading || !clubName.trim()} style={{ width: "100%", padding: 10, borderRadius: 12, border: "none", fontSize: 13, fontWeight: 700, color: "#fff", background: "#292524", cursor: "pointer", opacity: (!clubName.trim() || loading) ? 0.4 : 1 }}>
+                {loading ? "Adding..." : "+ Add club"}
+              </button>
+            </div>
+            <button onClick={done} style={{ width: "100%", marginTop: 16, padding: 14, borderRadius: 12, border: "none", fontSize: 14, fontWeight: 700, color: "#fff", background: "#1B4332", cursor: "pointer" }}>
+              {added.length === 0 ? "Skip for now" : "Done — go to my hub →"}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // HUB DASHBOARD
+    // ============================================
+    function Hub({ profile, kids, clubs, onNav }) {
+      const [tab, setTab] = useState("week");
+      const [filter, setFilter] = useState("all");
+
+      const members = [
+        { id: "all", name: "Everyone", emoji: "👨‍👩‍👧‍👦" },
+        { id: "self", name: profile?.first_name || "Me", emoji: "👤" },
+        ...kids.map(k => ({ id: k.id, name: k.first_name, emoji: "👧", age: getAge(k.date_of_birth) })),
+      ];
+
+      const tabs = [
+        { id: "week", label: "This Week", icon: "📅" },
+        { id: "camps", label: "Camps", icon: "🏕️" },
+        { id: "payments", label: "Payments", icon: "💳" },
+        { id: "clubs", label: "My Clubs", icon: "🏠" },
+      ];
+
+      return (
+        <div className="fade-in">
+          {/* Header */}
+          <div style={{ background: "#fff", borderBottom: "1px solid #e7e5e4" }}>
+            <div style={{ maxWidth: 480, margin: "0 auto", padding: "20px 16px 12px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div>
+                  <Logo size="md" />
+                  <p style={{ fontSize: 12, color: "#a8a29e", marginTop: 2 }}>Hi {profile?.first_name || "there"} — here's your week</p>
+                </div>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#1c1917", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, fontWeight: 700 }}>{(profile?.first_name || "U")[0]}</div>
+              </div>
+              {/* Family pills */}
+              <div className="hide-scrollbar" style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+                {members.map(m => (
+                  <button key={m.id} onClick={() => setFilter(m.id)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", whiteSpace: "nowrap", background: filter === m.id ? "#1c1917" : "#f5f5f4", color: filter === m.id ? "#fff" : "#78716c" }}>
+                    <span>{m.emoji}</span> <span>{m.name}</span>
+                    {m.age != null && <span style={{ opacity: 0.6 }}>({m.age})</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Tabs */}
+            <div style={{ maxWidth: 480, margin: "0 auto", display: "flex" }}>
+              {tabs.map(t => (
+                <button key={t.id} onClick={() => t.id === "camps" ? onNav("camps") : setTab(t.id)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, padding: "10px 0", fontSize: 12, fontWeight: 600, border: "none", borderBottom: tab === t.id ? "2px solid #1c1917" : "2px solid transparent", cursor: "pointer", background: "none", color: tab === t.id ? "#1c1917" : "#a8a29e" }}>
+                  <span>{t.icon}</span> {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div style={{ maxWidth: 480, margin: "0 auto", padding: 16 }}>
+            {/* Stats */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
+              <div style={{ background: "#fff", borderRadius: 12, padding: 16, textAlign: "center", border: "1px solid #f5f5f4" }}>
+                <div style={{ fontSize: 28, fontWeight: 900, color: "#1c1917" }}>{clubs.length}</div>
+                <div style={{ fontSize: 11, color: "#78716c", marginTop: 4, fontWeight: 500 }}>Clubs</div>
+              </div>
+              <div style={{ background: "#fff", borderRadius: 12, padding: 16, textAlign: "center", border: "1px solid #f5f5f4" }}>
+                <div style={{ fontSize: 28, fontWeight: 900, color: "#1c1917" }}>{kids.length}</div>
+                <div style={{ fontSize: 11, color: "#78716c", marginTop: 4, fontWeight: 500 }}>Kids</div>
+              </div>
+              <div style={{ background: "#fffbeb", borderRadius: 12, padding: 16, textAlign: "center", border: "1px solid #fde68a" }}>
+                <div style={{ fontSize: 28, fontWeight: 900, color: "#b45309" }}>0</div>
+                <div style={{ fontSize: 11, color: "#b45309", marginTop: 4, fontWeight: 500 }}>Fees due</div>
+              </div>
+            </div>
+
+            {tab === "week" && (
+              <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e7e5e4", padding: 32, textAlign: "center" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#44403c" }}>Your hub is ready!</p>
+                <p style={{ fontSize: 12, color: "#a8a29e", marginTop: 4 }}>Check out Easter camps for your kids</p>
+                <button onClick={() => onNav("camps")} style={{ marginTop: 16, padding: "10px 24px", borderRadius: 12, border: "none", fontSize: 13, fontWeight: 700, color: "#fff", background: "#1B4332", cursor: "pointer" }}>
+                  🏕️ Browse Easter Camps
+                </button>
+              </div>
+            )}
+
+            {tab === "payments" && (
+              <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e7e5e4", padding: 32, textAlign: "center" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>💳</div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#44403c" }}>No payments tracked yet</p>
+                <p style={{ fontSize: 12, color: "#a8a29e", marginTop: 4 }}>Add payment reminders to track fees</p>
+              </div>
+            )}
+
+            {tab === "clubs" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {clubs.map(c => (
+                  <div key={c.club_id || c.id} style={{ display: "flex", alignItems: "center", gap: 12, background: "#fff", borderRadius: 12, padding: 14, border: "1px solid #f5f5f4" }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, background: c.colour || "#457B9D" }}>
+                      {(c.club_name || "?").substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#1c1917" }}>{c.club_name}</div>
+                      <div style={{ fontSize: 11, color: "#a8a29e" }}>{c.club_source === "external" ? "Added by you" : "OneClubView hosted"}</div>
+                    </div>
+                  </div>
+                ))}
+                <button onClick={() => onNav("addClub")} style={{ width: "100%", padding: 14, borderRadius: 12, border: "2px dashed #d6d3d1", background: "none", fontSize: 13, fontWeight: 600, color: "#a8a29e", cursor: "pointer" }}>+ Add a club</button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // CAMPS DISCOVERY
+    // ============================================
+    function Camps({ kids, onBack }) {
+      const [camps, setCamps] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [kid, setKid] = useState("all");
+      const [maxCost, setMaxCost] = useState(200);
+      const [interested, setInterested] = useState({});
+      const [showFilters, setShowFilters] = useState(false);
+
+      useEffect(() => {
+        (async () => {
+          const today = new Date().toISOString().split("T")[0];
+          const data = await sbQuery("camps", "GET", {
+            select: "*",
+            filters: ["status=eq.active", "start_date=gte." + today],
+            order: "start_date.asc",
+          });
+          setCamps(data || []);
+          setLoading(false);
+        })();
+      }, []);
+
+      const filtered = useMemo(() => {
+        let r = [...camps];
+        if (kid !== "all") {
+          const k = kids.find(c => c.id === kid);
+          if (k?.date_of_birth) {
+            const age = getAge(k.date_of_birth);
+            r = r.filter(c => (!c.age_min || age >= c.age_min) && (!c.age_max || age <= c.age_max));
+          }
+        }
+        r = r.filter(c => !c.cost_eur || parseFloat(c.cost_eur) <= maxCost);
+        return r;
+      }, [camps, kid, maxCost, kids]);
+
+      function toggle(id) { setInterested(p => ({ ...p, [id]: !p[id] })); }
+      const intCount = Object.values(interested).filter(Boolean).length;
+      const intTotal = camps.filter(c => interested[c.id]).reduce((s, c) => s + parseFloat(c.cost_eur || 0), 0);
+
+      const kidFilter = [{ id: "all", name: "All Kids", emoji: "👨‍👩‍👧‍👦" }, ...kids.map(k => ({ id: k.id, name: k.first_name, emoji: "👧", age: getAge(k.date_of_birth) }))];
+
+      return (
+        <div className="fade-in">
+          <div style={{ background: "#fff", borderBottom: "1px solid #e7e5e4", position: "sticky", top: 0, zIndex: 20 }}>
+            <div style={{ maxWidth: 480, margin: "0 auto", padding: "16px 16px 12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                <button onClick={onBack} style={{ width: 32, height: 32, borderRadius: 8, background: "#f5f5f4", border: "none", cursor: "pointer", fontSize: 14, color: "#78716c" }}>←</button>
+                <div style={{ flex: 1 }}>
+                  <h1 style={{ fontSize: 18, fontWeight: 900, color: "#1c1917" }}>🏕️ Easter Camps 2026</h1>
+                  <p style={{ fontSize: 11, color: "#a8a29e" }}>{filtered.length} camps · {camps.length} total</p>
+                </div>
+                <button onClick={() => setShowFilters(!showFilters)} style={{ padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer", background: showFilters ? "#1c1917" : "#f5f5f4", color: showFilters ? "#fff" : "#78716c" }}>⚙</button>
+              </div>
+              <div className="hide-scrollbar" style={{ display: "flex", gap: 8, overflowX: "auto" }}>
+                {kidFilter.map(k => (
+                  <button key={k.id} onClick={() => setKid(k.id)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", whiteSpace: "nowrap", background: kid === k.id ? "#1c1917" : "#f5f5f4", color: kid === k.id ? "#fff" : "#78716c" }}>
+                    {k.emoji} {k.name} {k.age != null && <span style={{ opacity: 0.6 }}>({k.age})</span>}
+                  </button>
+                ))}
+              </div>
+              {showFilters && (
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid #f5f5f4" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#a8a29e", textTransform: "uppercase" }}>Max budget</span>
+                    <span style={{ fontSize: 14, fontWeight: 700 }}>€{maxCost}</span>
+                  </div>
+                  <input type="range" min={30} max={300} step={10} value={maxCost} onChange={e => setMaxCost(+e.target.value)} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {intCount > 0 && (
+            <div style={{ position: "sticky", top: 120, zIndex: 10, background: "#1B4332", color: "#fff" }}>
+              <div style={{ maxWidth: 480, margin: "0 auto", padding: "8px 16px", display: "flex", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 12, fontWeight: 600 }}>{intCount} camp{intCount > 1 ? "s" : ""} shortlisted</span>
+                <span style={{ fontSize: 14, fontWeight: 900 }}>Total: €{intTotal}</span>
+              </div>
+            </div>
+          )}
+
+          <div style={{ maxWidth: 480, margin: "0 auto", padding: 16, paddingBottom: 80, display: "flex", flexDirection: "column", gap: 12 }}>
+            {loading ? (
+              <div style={{ textAlign: "center", padding: 48 }}>
+                <div className="pulse" style={{ fontSize: 40 }}>🏕️</div>
+                <p style={{ fontSize: 13, color: "#a8a29e", marginTop: 12 }}>Loading camps...</p>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div style={{ textAlign: "center", padding: 48 }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#78716c" }}>No camps match your filters</p>
+              </div>
+            ) : filtered.map(camp => {
+              const tc = campTypes[camp.camp_type] || campTypes.other;
+              const isInt = !!interested[camp.id];
+              const eligible = kids.filter(k => {
+                if (!k.date_of_birth) return true;
+                const age = getAge(k.date_of_birth);
+                return (!camp.age_min || age >= camp.age_min) && (!camp.age_max || age <= camp.age_max);
+              });
+
+              return (
+                <div key={camp.id} style={{ borderRadius: 16, border: isInt ? "1.5px solid #86efac" : "1px solid #e7e5e4", overflow: "hidden", background: isInt ? "#f0fdf4" : "#fff" }}>
+                  <div style={{ padding: "8px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", background: tc.bg, borderBottom: "1px solid " + tc.border }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 13 }}>{tc.icon}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: tc.text }}>{tc.label}</span>
+                    </div>
+                    {camp.source === "scraped" && <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, background: "#eff6ff", color: "#3b82f6", fontWeight: 600 }}>AI found</span>}
+                  </div>
+                  <div style={{ padding: 16 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{ fontSize: 15, fontWeight: 700, color: "#1c1917", lineHeight: 1.3 }}>{camp.title}</h3>
+                        <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+                          <div style={{ fontSize: 13, color: "#57534e" }}>📅 <strong>{fmtDateRange(camp.start_date, camp.end_date)}</strong></div>
+                          {camp.daily_start_time && (
+                            <div style={{ fontSize: 13, color: "#57534e", display: "flex", alignItems: "center", gap: 6 }}>
+                              🕐 {camp.daily_start_time?.slice(0,5)} – {camp.daily_end_time?.slice(0,5)}
+                              {camp.daily_end_time >= "15:00" && <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, background: "#dcfce7", color: "#15803d", fontWeight: 600 }}>Covers work day</span>}
+                            </div>
+                          )}
+                          <div style={{ fontSize: 13, color: "#57534e" }}>📍 {camp.location_name}{camp.location_address ? ", " + camp.location_address : ""}</div>
+                          <div style={{ fontSize: 13, color: "#57534e" }}>👶 Ages {camp.age_min || "?"} – {camp.age_max || "?"}</div>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <div style={{ fontSize: 22, fontWeight: 900, color: "#1c1917" }}>{camp.cost_eur ? "€" + parseFloat(camp.cost_eur) : "Free"}</div>
+                        {camp.cost_notes && <div style={{ fontSize: 9, color: "#a8a29e", marginTop: 2, maxWidth: 90, lineHeight: 1.3 }}>{camp.cost_notes}</div>}
+                      </div>
+                    </div>
+                    {eligible.length > 0 && (
+                      <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 9, color: "#a8a29e", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Suits:</span>
+                        {eligible.map(k => (
+                          <span key={k.id} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: "#eff6ff", color: "#1d4ed8", fontWeight: 500 }}>👧 {k.first_name}</span>
+                        ))}
+                      </div>
+                    )}
+                    <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                      <button onClick={() => toggle(camp.id)} style={{ flex: 1, padding: 10, borderRadius: 12, border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", background: isInt ? "#16a34a" : "#f5f5f4", color: isInt ? "#fff" : "#57534e" }}>
+                        {isInt ? "✓ Interested" : "☆ I'm interested"}
+                      </button>
+                      {camp.booking_url && (
+                        <a href={camp.booking_url} target="_blank" rel="noopener" style={{ padding: "10px 16px", borderRadius: 12, fontSize: 13, fontWeight: 700, background: "#1c1917", color: "#fff", textDecoration: "none", display: "flex", alignItems: "center" }}>Book →</a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // APP ROOT
+    // ============================================
+    function App() {
+      const [screen, setScreen] = useState("loading");
+      const [user, setUser] = useState(null);
+      const [profile, setProfile] = useState(null);
+      const [kids, setKids] = useState([]);
+      const [clubs, setClubs] = useState([]);
+
+      async function loadData(uid) {
+        const [p, k, c] = await Promise.all([
+          sbQuery("profiles", "GET", { filters: ["id=eq." + uid], single: true }),
+          sbQuery("dependants", "GET", { filters: ["parent_user_id=eq." + uid] }),
+          sbQuery("hub_subscriptions", "GET", { select: "id,club_id,colour,clubs(name,source)", filters: ["user_id=eq." + uid] }),
+        ]);
+        setProfile(p);
+        setKids(k || []);
+        // Flatten club data
+        const flatClubs = (c || []).map(x => ({ ...x, club_name: x.clubs?.name, club_source: x.clubs?.source }));
+        setClubs(flatClubs);
+        if (!p?.onboarding_completed) {
+          const step = p?.onboarding_step || "kids";
+          setScreen(step === "clubs" ? "onboardClubs" : "onboardKids");
+        } else {
+          setScreen("hub");
+        }
+      }
+
+      async function handleAuth(u) {
+        setUser(u);
+        await new Promise(r => setTimeout(r, 600)); // Wait for profile trigger
+        await loadData(u.id);
+      }
+
+      async function refresh() {
+        if (user) await loadData(user.id);
+      }
+
+      useEffect(() => {
+        (async () => {
+          try {
+            const d = await sbAuth("user");
+            if (d?.id) { setUser(d); await loadData(d.id); }
+            else setScreen("auth");
+          } catch { setScreen("auth"); }
+        })();
+      }, []);
+
+      if (screen === "loading") return (
+        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#fafaf9" }}>
+          <Logo size="lg" />
+          <p className="pulse" style={{ fontSize: 12, color: "#a8a29e", marginTop: 12 }}>Loading...</p>
+        </div>
+      );
+      if (screen === "auth") return <AuthScreen onAuth={handleAuth} />;
+      if (screen === "onboardKids") return <OnboardKids userId={user?.id} onDone={async () => { await refresh(); setScreen("onboardClubs"); }} />;
+      if (screen === "onboardClubs") return <OnboardClubs userId={user?.id} onDone={async () => { await refresh(); setScreen("hub"); }} />;
+      if (screen === "camps") return <Camps kids={kids} onBack={() => setScreen("hub")} />;
+      if (screen === "hub") return <Hub profile={profile} kids={kids} clubs={clubs} onNav={n => { if (n === "camps") setScreen("camps"); else if (n === "addClub") setScreen("onboardClubs"); }} />;
+      return null;
+    }
+
+    ReactDOM.render(<App />, document.getElementById("root"));
+  </script>
+</body>
+</html>
