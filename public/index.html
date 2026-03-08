@@ -574,7 +574,7 @@ function Hub({user,profile,onRefresh,onLogout}){
                   <p style={{fontSize:13,color:"var(--mt)"}}>No camps listed yet for this break</p>
                   <p style={{fontSize:12,color:"var(--mt)",marginTop:2}}>We'll alert you when camps appear</p>
                 </div>
-              :holCamps.map(camp=><CampCard key={camp.id} camp={camp} user={user} kids={kids} filter={filter} campBookings={campBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load}/>)
+              :holCamps.map(camp=><CampCard key={camp.id} camp={camp} user={user} kids={kids} filter={filter} campBookings={campBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load}/>)}
             </div>
           });
         })()}
@@ -702,17 +702,6 @@ function AddKidModal({userId,onClose,onSaved,editKid}){
         </div>
       </div>}
       <button onClick={save} disabled={sv||!name.trim()} className="btn bp">{sv?"Saving...":(editKid?"Save changes":"Add to family")}</button>
-    </div>
-  </div></div>;
-}){
-  const[name,setName]=useState("");const[dob,setDob]=useState("");const[sv,setSv]=useState(false);
-  async function save(){if(!name.trim())return;setSv(true);await db("dependants","POST",{body:{parent_user_id:userId,first_name:name.trim(),date_of_birth:dob||null}});setSv(false);onSaved()}
-  return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
-    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}><h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add Family Member</h3><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button></div>
-    <div style={{display:"flex",flexDirection:"column",gap:12}}>
-      <div><span className="lbl">Name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="First name"/></div>
-      <div><span className="lbl">Date of birth</span><input type="date" value={dob} onChange={e=>setDob(e.target.value)}/></div>
-      <button onClick={save} disabled={sv||!name.trim()} className="btn bp">{sv?"Saving...":"Add to family"}</button>
     </div>
   </div></div>;
 }
