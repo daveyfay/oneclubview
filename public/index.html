@@ -167,7 +167,7 @@ function AddPaymentModal({clubs,userId,onClose,onSaved}){
 // =========== HUB ===========
 function Hub({user,profile,kids,clubs,payments,recEvents,manEvents,onNav,onRefresh}){
   const[tab,setTab]=useState("week");const[filter,setFilter]=useState("all");
-  const[showAddEvent,setShowAddEvent]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
+  const[showAddEvent,setShowAddEvent]=useState(false);const[showAddPay,setShowAddPay]=useState(false);const[showAddKid,setShowAddKid]=useState(false);
   const members=[{id:"all",name:"Everyone",emoji:"👨‍👩‍👧‍👦"},...kids.map(k=>({id:k.id,name:k.first_name,emoji:"👧",a:getAge(k.date_of_birth)}))];
   const tabs=[{id:"week",l:"This Week",i:"📅"},{id:"money",l:"Money",i:"💳"},{id:"camps",l:"Camps",i:"🏕️"},{id:"clubs",l:"Clubs",i:"🏠"}];
   const noAge=kids.filter(k=>!k.date_of_birth);
@@ -205,7 +205,8 @@ function Hub({user,profile,kids,clubs,payments,recEvents,manEvents,onNav,onRefre
     <div style={{background:"var(--card)",borderBottom:"1px solid var(--bd)"}}>
       <div style={{maxWidth:520,margin:"0 auto",padding:"14px 16px 8px"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}><Logo/><div style={{width:32,height:32,borderRadius:10,background:"var(--g)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700}}>{(profile?.first_name||"U")[0]}</div></div>
-        {members.length>1&&<div className="hsb" style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6}}>{members.map(m=><button key={m.id} onClick={()=>setFilter(m.id)} style={{display:"flex",alignItems:"center",gap:4,padding:"5px 12px",borderRadius:100,fontSize:12,fontWeight:600,border:"none",cursor:"pointer",whiteSpace:"nowrap",fontFamily:"var(--sn)",background:filter===m.id?"var(--g)":"#f5f3ef",color:filter===m.id?"#fff":"var(--mt)",transition:"all .15s"}}>{m.emoji} {m.name}{m.a!=null&&<span style={{opacity:.6}}>({m.a})</span>}</button>)}</div>}
+        {members.length>1&&<div className="hsb" style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6}}>{members.map(m=><button key={m.id} onClick={()=>setFilter(m.id)} style={{display:"flex",alignItems:"center",gap:4,padding:"5px 12px",borderRadius:100,fontSize:12,fontWeight:600,border:"none",cursor:"pointer",whiteSpace:"nowrap",fontFamily:"var(--sn)",background:filter===m.id?"var(--g)":"#f5f3ef",color:filter===m.id?"#fff":"var(--mt)",transition:"all .15s"}}>{m.emoji} {m.name}{m.a!=null&&<span style={{opacity:.6}}>({m.a})</span>}</button>)}<button onClick={()=>setShowAddKid(true)} style={{padding:"5px 12px",borderRadius:100,fontSize:12,fontWeight:600,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",whiteSpace:"nowrap",fontFamily:"var(--sn)",color:"var(--mt)"}}>+ Add kid</button></div>}
+        {members.length<=1&&<button onClick={()=>setShowAddKid(true)} style={{width:"100%",padding:10,borderRadius:12,border:"2px dashed var(--bd)",background:"none",fontSize:13,fontWeight:600,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)",marginBottom:4}}>👧 + Add your kids to get started</button>}
       </div>
       <div style={{maxWidth:520,margin:"0 auto",display:"flex"}}>{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,padding:"10px 0",fontSize:12,fontWeight:600,border:"none",borderBottom:tab===t.id?"2.5px solid var(--g)":"2.5px solid transparent",cursor:"pointer",background:"none",color:tab===t.id?"var(--g)":"var(--mt)",fontFamily:"var(--sn)"}}>{t.i} {t.l}</button>)}</div>
     </div>
@@ -292,6 +293,7 @@ function Hub({user,profile,kids,clubs,payments,recEvents,manEvents,onNav,onRefre
     {/* Modals */}
     {showAddEvent&&<AddEventModal clubs={clubs} userId={user.id} onClose={()=>setShowAddEvent(false)} onSaved={()=>{setShowAddEvent(false);onRefresh()}}/>}
     {showAddPay&&<AddPaymentModal clubs={clubs} userId={user.id} onClose={()=>setShowAddPay(false)} onSaved={()=>{setShowAddPay(false);onRefresh()}}/>}
+    {showAddKid&&<AddKidModal userId={user.id} onClose={()=>setShowAddKid(false)} onSaved={()=>{setShowAddKid(false);onRefresh()}}/>}
   </div>;
 }
 
@@ -332,6 +334,21 @@ function CampsList({kids,filter}){
         </div>
       </div>})}</div>}
   </div>;
+}
+
+// =========== ADD KID MODAL ===========
+function AddKidModal({userId,onClose,onSaved}){
+  const[name,setName]=useState("");const[dob,setDob]=useState("");const[sv,setSv]=useState(false);
+  async function save(){if(!name.trim())return;setSv(true);await db("dependants","POST",{body:{parent_user_id:userId,first_name:name.trim(),date_of_birth:dob||null}});setSv(false);onSaved()}
+  return<div className="modal-bg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="modal-box">
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}><h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add Family Member</h3><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button></div>
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <div><label style={{fontSize:11,fontWeight:700,color:"var(--mt)",textTransform:"uppercase",letterSpacing:1}}>First name</label><input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Emma" style={{marginTop:4}} onKeyDown={e=>e.key==="Enter"&&save()}/></div>
+      <div><label style={{fontSize:11,fontWeight:700,color:"var(--mt)",textTransform:"uppercase",letterSpacing:1}}>Date of birth (optional)</label><input type="date" value={dob} onChange={e=>setDob(e.target.value)} style={{marginTop:4}}/></div>
+      <p style={{fontSize:12,color:"var(--mt)"}}>Adding their age helps us match camps and activities to them.</p>
+      <button onClick={save} disabled={sv||!name.trim()} style={{width:"100%",padding:14,borderRadius:100,border:"none",fontSize:14,fontWeight:700,cursor:"pointer",color:"#fff",background:"var(--g)",fontFamily:"var(--sn)",opacity:sv?.6:1,marginTop:4}}>{sv?"Saving...":"Add to family"}</button>
+    </div>
+  </div></div>;
 }
 
 // =========== ADD AGE ===========
