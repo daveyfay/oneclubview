@@ -63,6 +63,14 @@ async function db(t,m,o={}){
   return txt?JSON.parse(txt):null;
 }
 
+async function rpc(fn,params={}){
+  const r=await fetch(SB+"/rest/v1/rpc/"+fn,{method:"POST",headers:hd(),body:JSON.stringify(params)});
+  if(!r.ok)return null;
+  const txt=await r.text();
+  return txt?JSON.parse(txt):null;
+}
+
+
 const COLS=["#2d7cb5","#2d5a3f","#c4960c","#9b4dca","#d64545","#1a8a7d","#e67e22","#e84393"];
 const DAYF=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 function getAge(d){if(!d)return null;const t=new Date(),b=new Date(d);let a=t.getFullYear()-b.getFullYear();if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))a--;return a}
@@ -566,52 +574,7 @@ function Hub({user,profile,onRefresh,onLogout}){
                   <p style={{fontSize:13,color:"var(--mt)"}}>No camps listed yet for this break</p>
                   <p style={{fontSize:12,color:"var(--mt)",marginTop:2}}>We'll alert you when camps appear</p>
                 </div>
-              :holCamps.map(camp=>{
-                const ct=CT[camp.camp_type]||CT.other;
-                const coversWork=camp.daily_end_time&&camp.daily_end_time>="15:00";
-                return <div key={camp.id} style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:10}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                    <div style={{flex:1}}>
-                      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
-                        <span style={{fontSize:16}}>{ct.i}</span>
-                        <span style={{fontSize:14,fontWeight:700}}>{camp.title}</span>
-                      </div>
-                      <div style={{fontSize:12,color:"var(--mt)"}}>{camp.location_name}</div>
-                      <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>
-                        {camp.start_date&&camp.end_date?fmtDate(new Date(camp.start_date+"T00:00"))+" – "+fmtDate(new Date(camp.end_date+"T00:00")):""}
-                        {camp.daily_start_time&&camp.daily_end_time?" · "+camp.daily_start_time?.slice(0,5)+"–"+camp.daily_end_time?.slice(0,5):""}
-                      </div>
-                      <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
-                        <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#8a6d00"}}>€{camp.cost_eur}</span>
-                        <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {camp.age_min}–{camp.age_max}</span>
-                        {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--gxl)",color:"var(--gl)"}}>✓ Covers work day</span>}
-                      </div>
-                    </div>
-                  </div>
-                  {(()=>{
-                  const myBooking=campBookings.find(b=>b.camp_id===camp.id);
-                  const activeKid=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter):null;
-                  const hasSchool=activeKid?.school_name&&activeKid?.school_class;
-                  return <>
-                    <div style={{display:"flex",gap:6,marginTop:10}}>
-                      {!myBooking?<>
-                        <button onClick={async()=>{await db("camp_bookings","POST",{body:{user_id:user.id,dependant_id:activeKid?.id||null,camp_id:camp.id,status:"interested"}});load()}} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--bd)",background:"var(--card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--mt)",fontFamily:"var(--sn)"}}>\u2764\ufe0f Interested</button>
-                        <button onClick={async()=>{await db("camp_bookings","POST",{body:{user_id:user.id,dependant_id:activeKid?.id||null,camp_id:camp.id,status:"booked"}});load()}} style={{flex:1,padding:8,borderRadius:10,border:"none",background:"var(--g)",cursor:"pointer",fontSize:12,fontWeight:700,color:"#fff",fontFamily:"var(--sn)"}}>\u2713 Booked</button>
-                      </>:
-                        <div style={{flex:1,padding:8,borderRadius:10,background:myBooking.status==="booked"?"var(--gxl)":"var(--accl)",textAlign:"center",fontSize:12,fontWeight:700,color:myBooking.status==="booked"?"var(--gl)":"#8a6d00"}}>
-                          {myBooking.status==="booked"?"\u2713 Booked":"\u2764\ufe0f Interested"}
-                          <button onClick={async()=>{await db("camp_bookings","DELETE",{filters:["id=eq."+myBooking.id]});load()}} style={{marginLeft:8,background:"none",border:"none",fontSize:11,color:"var(--mt)",cursor:"pointer",textDecoration:"underline"}}>remove</button>
-                        </div>
-                      }
-                    </div>
-                    {hasSchool&&<div style={{marginTop:6,fontSize:11,color:"var(--gl)",fontStyle:"italic"}}>
-                      \ud83c\udfeb We\u2019ll notify you if classmates from {activeKid.school_class} at {activeKid.school_name} book this camp
-                    </div>}
-                    {camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site \u2192</a>}
-                  </>;
-                })()}
-                </div>
-              })}
+              :holCamps.map(camp=><CampCard key={camp.id} camp={camp} user={user} kids={kids} filter={filter} campBookings={campBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load}/>)
             </div>
           });
         })()}
@@ -915,6 +878,78 @@ function AddHolidayModal({userId,onClose,onSaved}){
       <button onClick={save} disabled={sv||!name.trim()||!start||!end} className="btn bp">{sv?"Saving...":"Add holiday"}</button>
     </div>
   </div></div>;
+}
+
+
+function CampCard({camp,user,kids,filter,campBookings,CT,fmtDate,onBookingChange}){
+  const[classmateCount,setClassmateCount]=useState(0);
+  const activeKid=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter):null;
+  const hasSchool=activeKid?.school_name&&activeKid?.school_class;
+  const myBooking=campBookings.find(b=>b.camp_id===camp.id);
+  const ct=CT[camp.camp_type]||CT.other;
+  const coversWork=camp.daily_end_time&&camp.daily_end_time>="15:00";
+
+  useEffect(()=>{
+    if(hasSchool&&activeKid){
+      rpc("camp_classmates_count",{p_camp_id:camp.id,p_dependant_id:activeKid.id}).then(n=>{
+        if(n!=null)setClassmateCount(n);
+      });
+    } else {setClassmateCount(0)}
+  },[camp.id,activeKid?.id,hasSchool,campBookings.length]);
+
+  async function markCamp(status){
+    await db("camp_bookings","POST",{body:{user_id:user.id,dependant_id:activeKid?.id||null,camp_id:camp.id,status}});
+    onBookingChange();
+  }
+  async function removeCamp(){
+    if(myBooking)await db("camp_bookings","DELETE",{filters:["id=eq."+myBooking.id]});
+    onBookingChange();
+  }
+
+  return <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:10}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+      <div style={{flex:1}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+          <span style={{fontSize:16}}>{ct.i}</span>
+          <span style={{fontSize:14,fontWeight:700}}>{camp.title}</span>
+        </div>
+        <div style={{fontSize:12,color:"var(--mt)"}}>{camp.location_name}</div>
+        <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>
+          {camp.start_date&&camp.end_date?fmtDate(new Date(camp.start_date+"T00:00"))+" \u2013 "+fmtDate(new Date(camp.end_date+"T00:00")):""}
+          {camp.daily_start_time&&camp.daily_end_time?" \u00b7 "+camp.daily_start_time?.slice(0,5)+"\u2013"+camp.daily_end_time?.slice(0,5):""}
+        </div>
+        <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
+          <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#8a6d00"}}>\u20ac{camp.cost_eur}</span>
+          <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {camp.age_min}\u2013{camp.age_max}</span>
+          {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--gxl)",color:"var(--gl)"}}>\u2713 Covers work day</span>}
+        </div>
+      </div>
+    </div>
+
+    {/* Classmate notification */}
+    {classmateCount>0&&<div style={{marginTop:10,padding:"8px 12px",borderRadius:10,background:"#eef6ff",border:"1px solid #c5ddf5",display:"flex",alignItems:"center",gap:8}}>
+      <span style={{fontSize:14}}>\ud83c\udfeb</span>
+      <span style={{fontSize:12,fontWeight:600,color:"#1a5fa0"}}>{classmateCount} {classmateCount===1?"family":"families"} from {activeKid.school_class} at {activeKid.school_name} {classmateCount===1?"has":"have"} booked this camp</span>
+    </div>}
+    {hasSchool&&classmateCount===0&&<div style={{marginTop:8,fontSize:11,color:"var(--mt)",fontStyle:"italic"}}>
+      \ud83c\udfeb We\u2019ll notify you when classmates from {activeKid.school_class} book this camp
+    </div>}
+
+    {/* Interested / Booked buttons */}
+    <div style={{display:"flex",gap:6,marginTop:10}}>
+      {!myBooking?<>
+        <button onClick={()=>markCamp("interested")} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--bd)",background:"var(--card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--mt)",fontFamily:"var(--sn)"}}>\u2764\ufe0f Interested</button>
+        <button onClick={()=>markCamp("booked")} style={{flex:1,padding:8,borderRadius:10,border:"none",background:"var(--g)",cursor:"pointer",fontSize:12,fontWeight:700,color:"#fff",fontFamily:"var(--sn)"}}>\u2713 Booked</button>
+      </>:
+        <div style={{flex:1,padding:8,borderRadius:10,background:myBooking.status==="booked"?"var(--gxl)":"var(--accl)",textAlign:"center",fontSize:12,fontWeight:700,color:myBooking.status==="booked"?"var(--gl)":"#8a6d00"}}>
+          {myBooking.status==="booked"?"\u2713 Booked":"\u2764\ufe0f Interested"}
+          <button onClick={removeCamp} style={{marginLeft:8,background:"none",border:"none",fontSize:11,color:"var(--mt)",cursor:"pointer",textDecoration:"underline"}}>remove</button>
+        </div>
+      }
+    </div>
+
+    {camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site \u2192</a>}
+  </div>;
 }
 
 function App(){
