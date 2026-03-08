@@ -446,7 +446,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           <div className="hsb" style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6}}>
             {members.map(m=><button key={m.id} onClick={()=>setFilter(m.id)} className={"pill "+(filter===m.id?"pon":"poff")}>{m.emoji} {m.name}{m.age!=null&&<span style={{opacity:.6,marginLeft:2}}>({m.age})</span>}</button>)}
             <button onClick={()=>setShowAddKid(true)} className="pill poff" style={{border:"2px dashed var(--bd)",background:"none"}}>+ kid</button>
-            {filter!=="all"&&filter!=="self"&&<button onClick={()=>{const kid=kids.find(k=>k.id===filter);if(kid)setShowAddKid(kid)}} className="pill poff" style={{fontSize:11}}>\u270e edit</button>}
+            {filter!=="all"&&filter!=="self"&&<button onClick={()=>{const kid=kids.find(k=>k.id===filter);if(kid)setShowAddKid(kid)}} className="pill poff" style={{fontSize:11}}>✎ edit</button>}
           </div>
         </div>
         <div style={{maxWidth:520,margin:"0 auto",display:"flex"}}>
@@ -560,10 +560,10 @@ function Hub({user,profile,onRefresh,onLogout}){
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
                 <span style={{fontSize:20}}>{holEmoji}</span>
                 <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",flex:1}}>{hol.name}</h3>
-                <button onClick={(e)=>{e.stopPropagation();setEditHol(hol)}} style={{background:"var(--gxl)",border:"none",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700,color:"var(--gl)",cursor:"pointer",fontFamily:"var(--sn)"}}>\u270e Edit dates</button>
+                <button onClick={(e)=>{e.stopPropagation();setEditHol(hol)}} style={{background:"var(--gxl)",border:"none",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700,color:"var(--gl)",cursor:"pointer",fontFamily:"var(--sn)"}}>✎ Edit dates</button>
               </div>
               <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>
-                {new Date(hol.start_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} – {new Date(hol.end_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} ({weeks} week{weeks>1?"s":""}){hol.is_user_override?" \u2022 customised":""}
+                {new Date(hol.start_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} – {new Date(hol.end_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} ({weeks} week{weeks>1?"s":""}){hol.is_user_override?" • customised":""}
                 {kidName&&kidAge!=null?" · Showing camps for "+kidName+" (age "+kidAge+")":""}
                 {" · "+holCamps.length+" camp"+(holCamps.length!==1?"s":"")+" found"}
               </p>
@@ -593,7 +593,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           </div>
         })}
         <button onClick={()=>onRefresh("clubs")} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a club</button>
-        <button onClick={()=>setShowInvite(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--acc)",background:"var(--accl)",cursor:"pointer",fontSize:13,fontWeight:700,color:"#8a6d00",fontFamily:"var(--sn)",marginTop:8}}>\ud83d\udc65 Invite another adult</button>
+        <button onClick={()=>setShowInvite(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--acc)",background:"var(--accl)",cursor:"pointer",fontSize:13,fontWeight:700,color:"#8a6d00",fontFamily:"var(--sn)",marginTop:8}}>👥 Invite another adult</button>
       </div>}
 
       </div>
@@ -684,7 +684,7 @@ function AddKidModal({userId,onClose,onSaved,editKid}){
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
       <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>{editKid?"Edit "+editKid.first_name:"Add Family Member"}</h3>
-      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button>
     </div>
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div><span className="lbl">Name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="First name"/></div>
@@ -728,18 +728,18 @@ function EditClubModal({club,kids,profile,userId,onClose,onSaved,onDelete}){
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
       <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>{club.club_name}</h3>
-      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button>
     </div>
     {club.club_addr&&<p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>{club.club_addr}</p>}
     <div style={{marginBottom:16}}>
       <span className="lbl">Who goes to this club?</span>
       <div style={{display:"flex",flexDirection:"column",gap:6,marginTop:6}}>
         <button onClick={()=>setWho("self")} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:12,border:who==="self"?"2px solid var(--g)":"2px solid var(--bd)",background:who==="self"?"var(--gxl)":"var(--card)",cursor:"pointer",fontFamily:"var(--sn)",fontSize:14,fontWeight:600}}>
-          \ud83d\udc64 {profile?.first_name||"Me"} {who==="self"&&<span style={{marginLeft:"auto",color:"var(--g)"}}>\u2713</span>}
+          👤 {profile?.first_name||"Me"} {who==="self"&&<span style={{marginLeft:"auto",color:"var(--g)"}}>✓</span>}
         </button>
         {kids.map(k=>(
           <button key={k.id} onClick={()=>setWho(k.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:12,border:who===k.id?"2px solid var(--g)":"2px solid var(--bd)",background:who===k.id?"var(--gxl)":"var(--card)",cursor:"pointer",fontFamily:"var(--sn)",fontSize:14,fontWeight:600}}>
-            \ud83d\udc67 {k.first_name} {who===k.id&&<span style={{marginLeft:"auto",color:"var(--g)"}}>\u2713</span>}
+            👧 {k.first_name} {who===k.id&&<span style={{marginLeft:"auto",color:"var(--g)"}}>✓</span>}
           </button>
         ))}
       </div>
@@ -769,7 +769,7 @@ function InviteAdultModal({userId,familyId,onClose,onSaved}){
   }
 
   if(done)return <div className="mbg" onClick={onClose}><div className="mbox" style={{textAlign:"center",padding:32}}>
-    <div style={{fontSize:48,marginBottom:12}}>\u2709\ufe0f</div>
+    <div style={{fontSize:48,marginBottom:12}}>✉️</div>
     <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Invite sent!</h3>
     <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 20px"}}>Share this link with {name||email}:<br/><strong>moonlit-haupia-3c2f14.netlify.app</strong><br/>They can sign up and join your family calendar.</p>
     <button onClick={onClose} className="btn bp">Done</button>
@@ -778,9 +778,9 @@ function InviteAdultModal({userId,familyId,onClose,onSaved}){
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
       <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Invite a family member</h3>
-      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button>
     </div>
-    <p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>Add your partner or another adult. They\u2019ll get their own login and see the same family calendar.</p>
+    <p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>Add your partner or another adult. They’ll get their own login and see the same family calendar.</p>
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div><span className="lbl">Their name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="First name"/></div>
       <div><span className="lbl">Their email</span><input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="email@example.com"/></div>
@@ -830,9 +830,9 @@ function EditHolidayModal({holiday,userId,onClose,onSaved}){
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
       <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Edit Holiday Dates</h3>
-      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button>
     </div>
-    <p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>Adjust to match your school\u2019s actual dates</p>
+    <p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>Adjust to match your school’s actual dates</p>
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div><span className="lbl">Holiday name</span><input value={name} onChange={e=>setName(e.target.value)}/></div>
       <div style={{display:"flex",gap:8}}>
@@ -855,9 +855,9 @@ function AddHolidayModal({userId,onClose,onSaved}){
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
       <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add School Holiday</h3>
-      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>\u2715</button>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button>
     </div>
-    <p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>Add a holiday your school has that\u2019s not in the standard calendar</p>
+    <p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>Add a holiday your school has that’s not in the standard calendar</p>
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div><span className="lbl">Name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. School closure day, Staff training day"/></div>
       <div style={{display:"flex",gap:8}}>
@@ -904,40 +904,40 @@ function CampCard({camp,user,kids,filter,campBookings,CT,fmtDate,onBookingChange
         </div>
         <div style={{fontSize:12,color:"var(--mt)"}}>{camp.location_name}</div>
         <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>
-          {camp.start_date&&camp.end_date?fmtDate(new Date(camp.start_date+"T00:00"))+" \u2013 "+fmtDate(new Date(camp.end_date+"T00:00")):""}
-          {camp.daily_start_time&&camp.daily_end_time?" \u00b7 "+camp.daily_start_time?.slice(0,5)+"\u2013"+camp.daily_end_time?.slice(0,5):""}
+          {camp.start_date&&camp.end_date?fmtDate(new Date(camp.start_date+"T00:00"))+" – "+fmtDate(new Date(camp.end_date+"T00:00")):""}
+          {camp.daily_start_time&&camp.daily_end_time?" · "+camp.daily_start_time?.slice(0,5)+"–"+camp.daily_end_time?.slice(0,5):""}
         </div>
         <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
-          <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#8a6d00"}}>\u20ac{camp.cost_eur}</span>
-          <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {camp.age_min}\u2013{camp.age_max}</span>
-          {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--gxl)",color:"var(--gl)"}}>\u2713 Covers work day</span>}
+          <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#8a6d00"}}>€{camp.cost_eur}</span>
+          <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {camp.age_min}–{camp.age_max}</span>
+          {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--gxl)",color:"var(--gl)"}}>✓ Covers work day</span>}
         </div>
       </div>
     </div>
 
     {/* Classmate notification */}
     {classmateCount>0&&<div style={{marginTop:10,padding:"8px 12px",borderRadius:10,background:"#eef6ff",border:"1px solid #c5ddf5",display:"flex",alignItems:"center",gap:8}}>
-      <span style={{fontSize:14}}>\ud83c\udfeb</span>
+      <span style={{fontSize:14}}>🏫</span>
       <span style={{fontSize:12,fontWeight:600,color:"#1a5fa0"}}>{classmateCount} {classmateCount===1?"family":"families"} from {activeKid.school_class} at {activeKid.school_name} {classmateCount===1?"has":"have"} booked this camp</span>
     </div>}
     {hasSchool&&classmateCount===0&&<div style={{marginTop:8,fontSize:11,color:"var(--mt)",fontStyle:"italic"}}>
-      \ud83c\udfeb We\u2019ll notify you when classmates from {activeKid.school_class} book this camp
+      🏫 We’ll notify you when classmates from {activeKid.school_class} book this camp
     </div>}
 
     {/* Interested / Booked buttons */}
     <div style={{display:"flex",gap:6,marginTop:10}}>
       {!myBooking?<>
-        <button onClick={()=>markCamp("interested")} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--bd)",background:"var(--card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--mt)",fontFamily:"var(--sn)"}}>\u2764\ufe0f Interested</button>
-        <button onClick={()=>markCamp("booked")} style={{flex:1,padding:8,borderRadius:10,border:"none",background:"var(--g)",cursor:"pointer",fontSize:12,fontWeight:700,color:"#fff",fontFamily:"var(--sn)"}}>\u2713 Booked</button>
+        <button onClick={()=>markCamp("interested")} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--bd)",background:"var(--card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--mt)",fontFamily:"var(--sn)"}}>❤️ Interested</button>
+        <button onClick={()=>markCamp("booked")} style={{flex:1,padding:8,borderRadius:10,border:"none",background:"var(--g)",cursor:"pointer",fontSize:12,fontWeight:700,color:"#fff",fontFamily:"var(--sn)"}}>✓ Booked</button>
       </>:
         <div style={{flex:1,padding:8,borderRadius:10,background:myBooking.status==="booked"?"var(--gxl)":"var(--accl)",textAlign:"center",fontSize:12,fontWeight:700,color:myBooking.status==="booked"?"var(--gl)":"#8a6d00"}}>
-          {myBooking.status==="booked"?"\u2713 Booked":"\u2764\ufe0f Interested"}
+          {myBooking.status==="booked"?"✓ Booked":"❤️ Interested"}
           <button onClick={removeCamp} style={{marginLeft:8,background:"none",border:"none",fontSize:11,color:"var(--mt)",cursor:"pointer",textDecoration:"underline"}}>remove</button>
         </div>
       }
     </div>
 
-    {camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site \u2192</a>}
+    {camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site →</a>}
   </div>;
 }
 
