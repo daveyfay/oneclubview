@@ -351,7 +351,7 @@ function Hub({user,profile,onRefresh,onLogout}){
       db("recurring_events","GET",{filters:["user_id=eq."+user.id]}),
       db("manual_events","GET",{filters:["user_id=eq."+user.id]}),
       db("payment_reminders","GET",{filters:["user_id=eq."+user.id],order:"due_date.asc"}),
-      db("camps","GET",{filters:["status=eq.active"],order:"start_date.asc"})
+      db("camps","GET",{select:"id,title,camp_type,start_date,end_date,daily_start_time,daily_end_time,age_min,age_max,cost_eur,cost_notes,location_name,booking_url,source",filters:["status=eq.active"],order:"start_date.asc"})
     ]);
     setKids(k||[]);
     setClubs((c||[]).map(s=>({...s,club_id:s.club_id||s.clubs?.id,club_name:s.clubs?.name||"?",club_addr:s.clubs?.address})));
@@ -523,7 +523,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         {filtCamps.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"var(--mt)"}}><div style={{fontSize:36,marginBottom:8}}>🏕️</div><p>No camps match</p></div>
         :filtCamps.map(c=>{
           const ct=CT[c.camp_type]||CT.other;
-          const coversWork=c.end_time&&c.end_time>="15:00";
+          const coversWork=c.daily_end_time&&c.daily_end_time>="15:00";
           return <div key={c.id} style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:10}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
               <div style={{flex:1}}>
@@ -531,13 +531,13 @@ function Hub({user,profile,onRefresh,onLogout}){
                   <span style={{fontSize:16}}>{ct.i}</span>
                   <span style={{fontSize:14,fontWeight:700}}>{c.title}</span>
                 </div>
-                <div style={{fontSize:12,color:"var(--mt)"}}>{c.provider||c.club_name} • {c.location}</div>
+                <div style={{fontSize:12,color:"var(--mt)"}}>{c.location_name}</div>
                 <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>
                   {c.start_date&&c.end_date?fmtDate(new Date(c.start_date+"T00:00"))+" – "+fmtDate(new Date(c.end_date+"T00:00")):""}
-                  {c.start_time&&c.end_time?" • "+c.start_time.slice(0,5)+"–"+c.end_time.slice(0,5):""}
+                  {c.daily_start_time&&c.daily_end_time?" • "+c.daily_start_time?.slice(0,5)+"–"+c.daily_end_time?.slice(0,5):""}
                 </div>
                 <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
-                  <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#8a6d00"}}>€{c.cost}</span>
+                  <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#8a6d00"}}>€{c.cost_eur}</span>
                   <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {c.age_min}–{c.age_max}</span>
                   {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--gxl)",color:"var(--gl)"}}>✓ Covers work day</span>}
                 </div>
