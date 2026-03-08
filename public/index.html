@@ -58,7 +58,7 @@ async function db(t,m,o={}){
   const h=hd();
   if(m==="POST"||m==="PATCH")h.Prefer="return=representation";
   const r=await fetch(u,{method:m,headers:h,body:o.body?JSON.stringify(o.body):undefined});
-  if(!r.ok){console.error("DB err:",await r.text());return null}
+  if(!r.ok){const errTxt=await r.text();console.error("DB err:",t,m,errTxt);return null}
   const txt=await r.text();
   return txt?JSON.parse(txt):null;
 }
@@ -617,13 +617,16 @@ function AddEventModal({clubs,userId,kids,profile,onClose,onSaved}){
   const[dow,setDow]=useState(1);const[sv,setSv]=useState(false);
   async function save(){
     if(!title.trim()||!cid)return;setSv(true);const dep=mid==="self"?null:mid;
+    let result;
     if(type==="recurring"){
-      await db("recurring_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),frequency:"weekly",day_of_week:parseInt(dow),start_time:time+":00",duration_minutes:parseInt(dur),starts_from:new Date().toISOString().split("T")[0]}});
+      result=await db("recurring_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),frequency:"weekly",day_of_week:parseInt(dow),start_time:time+":00",duration_minutes:parseInt(dur),starts_from:new Date().toISOString().split("T")[0],excluded_dates:[]}});
     }else{
       if(!date){setSv(false);return}
-      await db("manual_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),event_date:date+"T"+time+":00"}});
+      result=await db("manual_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),event_date:date+"T"+time+":00"}});
     }
-    setSv(false);onSaved();
+    setSv(false);
+    if(!result){alert("Failed to save event. Please try again.");return}
+    onSaved();
   }
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}><h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add Event</h3><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button></div>
@@ -647,7 +650,7 @@ function AddEventModal({clubs,userId,kids,profile,onClose,onSaved}){
 function AddPaymentModal({clubs,userId,kids,profile,onClose,onSaved}){
   const[cid,setCid]=useState(clubs[0]?.club_id||"");const[mid,setMid]=useState("self");
   const[desc,setDesc]=useState("");const[amt,setAmt]=useState("");const[due,setDue]=useState("");const[sv,setSv]=useState(false);
-  async function save(){if(!desc.trim()||!amt||!due)return;setSv(true);await db("payment_reminders","POST",{body:{user_id:userId,club_id:cid,dependant_id:mid==="self"?null:mid,description:desc.trim(),amount:parseFloat(amt),due_date:due}});setSv(false);onSaved()}
+  async function save(){if(!desc.trim()||!amt||!due)return;setSv(true);const r=await db("payment_reminders","POST",{body:{user_id:userId,club_id:cid,dependant_id:mid==="self"?null:mid,description:desc.trim(),amount:parseFloat(amt),due_date:due}});setSv(false);if(!r){alert("Failed to save. Please try again.");return}onSaved()}
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}><h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add Payment Reminder</h3><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button></div>
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
