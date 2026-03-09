@@ -929,6 +929,16 @@ function InviteAdultModal({userId,familyId,onClose,onSaved}){
     }
     if(fid){
       await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:email.trim(),invited_name:name.trim()||null}});
+      // Send email via edge function
+      try{
+        const prof=await db("profiles","GET",{filters:["id=eq."+userId]});
+        const myName=(prof&&prof[0]?.first_name)||"Your partner";
+        await fetch(SB+"/functions/v1/send-invite",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},
+          body:JSON.stringify({to_email:email.trim(),to_name:name.trim()||null,from_name:myName,site_url:window.location.origin})
+        });
+      }catch(e){console.log("Email send skipped:",e)}
       setDone(true);
     }
     setSv(false);
@@ -936,8 +946,8 @@ function InviteAdultModal({userId,familyId,onClose,onSaved}){
 
   if(done)return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox" style={{textAlign:"center",padding:32}}>
     <div style={{fontSize:48,marginBottom:12}}>✅</div>
-    <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Invite recorded!</h3>
-    <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 12px"}}>Share this link with {name||email} so they can sign up:</p>
+    <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Invite sent!</h3>
+    <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 12px"}}>We've emailed {name||email} with an invite. You can also share this link directly:</p>
     <div style={{background:"#f5f3ef",borderRadius:12,padding:12,marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
       <span style={{flex:1,fontSize:13,fontWeight:600,color:"var(--tx)",wordBreak:"break-all"}}>moonlit-haupia-3c2f14.netlify.app</span>
       <button onClick={()=>{navigator.clipboard?.writeText("https://moonlit-haupia-3c2f14.netlify.app");}} style={{padding:"6px 12px",borderRadius:8,border:"none",background:"var(--g)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",whiteSpace:"nowrap"}}>Copy link</button>
