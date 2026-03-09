@@ -419,7 +419,7 @@ function Hub({user,profile,onRefresh,onLogout}){
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
   const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[campBookings,setCampBookings]=useState([]);const[holidays,setHolidays]=useState([]);const[userHolidays,setUserHolidays]=useState([]);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
-  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showAdmin,setShowAdmin]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);
+  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);
 
   async function load(){
     setLoading(true);
@@ -845,14 +845,13 @@ function Hub({user,profile,onRefresh,onLogout}){
       {/* Help & Admin */}
       <div style={{marginTop:20,paddingTop:16,borderTop:"1px solid var(--bd)",display:"flex",gap:8}}>
         <button onClick={()=>setShowSupport(true)} style={{flex:1,padding:12,borderRadius:14,border:"1px solid var(--bd)",background:"var(--card)",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)"}}>💬 Contact Support</button>
-        {profile?.role==="admin"&&<button onClick={()=>setShowAdmin(true)} style={{flex:1,padding:12,borderRadius:14,border:"none",background:"var(--g)",cursor:"pointer",fontSize:13,fontWeight:700,color:"#fff",fontFamily:"var(--sn)"}}>📊 Admin</button>}
+
       </div>
 
       {/* Modals */}
       {showAddEv&&<AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddEv(false)} onSaved={()=>{setShowAddEv(false);load()}}/>}
       {showAddPay&&<AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddPay(false)} onSaved={()=>{setShowAddPay(false);load()}}/>}
       {showSupport&&<SupportModal userId={user.id} userEmail={user.email} onClose={()=>setShowSupport(false)}/>}
-      {showAdmin&&<AdminDashboard user={user} onBack={()=>setShowAdmin(false)}/>}
       {showAddKid&&<AddKidModal userId={user.id} editKid={typeof showAddKid==="object"?showAddKid:null} profile={profile} onClose={()=>setShowAddKid(false)} onSaved={()=>{setShowAddKid(false);load()}}/>}
       {editClub&&<EditClubModal club={editClub} kids={kids} profile={profile} userId={user.id} onClose={()=>setEditClub(null)} onSaved={()=>{setEditClub(null);load()}} onDelete={()=>{setEditClub(null);load()}}/>}
       {editHol&&<EditHolidayModal holiday={editHol} userId={user.id} onClose={()=>setEditHol(null)} onSaved={()=>{setEditHol(null);load()}}/>}
@@ -1505,6 +1504,7 @@ function App(){
   if(screen==="auth_login")return <Auth onAuth={onAuth} mode="login"/>;
   if(screen==="onboard_kids")return <OnboardKids userId={user.id} onDone={afterKids}/>;
   if(screen==="onboard_clubs")return <OnboardClubs userId={user.id} kids={kids} onDone={()=>setScreen("hub")}/>;
+  if(screen==="hub"&&profile?.role==="admin")return <AdminDashboard user={user} onBack={logout}/>;
   if(screen==="hub")return <Hub user={user} profile={profile} onRefresh={(s)=>{if(s==="clubs")setScreen("onboard_clubs")}} onLogout={logout}/>;
   return null;
 }
