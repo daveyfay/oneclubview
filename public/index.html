@@ -541,6 +541,17 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       <div style={{maxWidth:520,margin:"0 auto",padding:16,paddingBottom:100}}>
 
+      {/* ONBOARDING NUDGE */}
+      {clubs.length===0&&kids.length===0&&<div style={{background:"var(--goldl)",border:"1px solid #f0d078",borderRadius:16,padding:20,marginBottom:16,textAlign:"center"}}>
+        <div style={{fontSize:32,marginBottom:8}}>👋</div>
+        <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:6}}>Welcome! Let's get you set up</h3>
+        <p style={{fontSize:13,color:"var(--mt)",marginBottom:14}}>Start by adding your kids, then search for their clubs.</p>
+        <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+          <button onClick={()=>setShowAddKid(true)} className="btn bp" style={{fontSize:13}}>+ Add a child</button>
+          <button onClick={()=>onRefresh("clubs")} className="btn bs" style={{fontSize:13}}>+ Add a club</button>
+        </div>
+      </div>}
+
       {/* TODAY QUICK VIEW */}
       <div style={{background:"var(--g)",borderRadius:16,padding:16,marginBottom:16,color:"#fff"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
@@ -1464,7 +1475,7 @@ function App(){
       const p=await db("profiles","GET",{filters:["id=eq."+u.id]});
       const pr=p&&p[0]?p[0]:null;
       setUser(u);setProfile(pr);
-      if(pr&&(pr.role==="admin"||pr.role==="support"||pr.onboarding_completed))setScreen("hub");
+      if(pr&&pr.onboarding_completed)setScreen("hub");
       else setScreen("onboard_kids");
     }).catch(()=>{localStorage.removeItem("ocv_token");setScreen("landing")})}
     else setScreen("landing");
@@ -1476,7 +1487,7 @@ function App(){
     const p=await db("profiles","GET",{filters:["id=eq."+u.id]});
     const pr=p&&p[0]?p[0]:null;
     setProfile(pr);
-    if(pr&&(pr.role==="admin"||pr.role==="support"||pr.onboarding_completed))setScreen("hub");
+    if(pr&&pr.onboarding_completed)setScreen("hub");
     else setScreen("onboard_kids");
   }
 
