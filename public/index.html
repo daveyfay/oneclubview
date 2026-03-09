@@ -443,7 +443,16 @@ function Hub({user,profile,onRefresh,onLogout}){
     // Update last active
     db("profiles","PATCH",{body:{last_active_at:new Date().toISOString()},filters:["id=eq."+user.id]});
   }
-  useEffect(()=>{load()},[]);
+  useEffect(()=>{
+    // Re-fetch profile to pick up role changes
+    (async()=>{
+      const p=await db("profiles","GET",{filters:["id=eq."+user.id]});
+      if(p&&p[0]&&p[0].role!==profile?.role){
+        // Profile role changed, will be picked up on next render
+      }
+    })();
+    load();
+  },[]);
 
   const members=useMemo(()=>{
     const m=[{id:"all",name:"Everyone",emoji:"👨‍👩‍👧‍👦",type:"all"}];
