@@ -1455,8 +1455,8 @@ function App(){
       const p=await db("profiles","GET",{filters:["id=eq."+u.id]});
       const pr=p&&p[0]?p[0]:null;
       setUser(u);setProfile(pr);
-      if(!pr||!pr.onboarding_completed)setScreen("onboard_kids");
-      else setScreen("hub");
+      if(pr&&(pr.role==="admin"||pr.role==="support"||pr.onboarding_completed))setScreen("hub");
+      else setScreen("onboard_kids");
     }).catch(()=>{localStorage.removeItem("ocv_token");setScreen("landing")})}
     else setScreen("landing");
   },[]);
@@ -1467,8 +1467,8 @@ function App(){
     const p=await db("profiles","GET",{filters:["id=eq."+u.id]});
     const pr=p&&p[0]?p[0]:null;
     setProfile(pr);
-    if(!pr||!pr.onboarding_completed)setScreen("onboard_kids");
-    else setScreen("hub");
+    if(pr&&(pr.role==="admin"||pr.role==="support"||pr.onboarding_completed))setScreen("hub");
+    else setScreen("onboard_kids");
   }
 
   async function afterKids(){
