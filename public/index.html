@@ -519,7 +519,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           </div>
           <div className="hsb" style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6}}>
             {members.map(m=><button key={m.id} onClick={()=>setFilter(m.id)} className={"pill "+(filter===m.id?"pon":"poff")}>{m.emoji} {m.name}{m.age!=null&&<span style={{opacity:.6,marginLeft:2}}>({m.age})</span>}</button>)}
-            <button onClick={()=>setShowAddKid(true)} className="pill poff" style={{border:"2px dashed var(--bd)",background:"none"}}>+ kid</button>
+            <button onClick={()=>setShowAddKid(true)} className="pill poff" style={{border:"2px dashed var(--bd)",background:"none"}}>+ member</button>
             {filter!=="all"&&filter!=="self"&&<button onClick={()=>{const kid=kids.find(k=>k.id===filter);if(kid)setShowAddKid(kid)}} className="pill poff" style={{fontSize:11}}>✎ edit</button>}
           </div>
         </div>
@@ -667,7 +667,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           </div>
         })}
         <button onClick={()=>onRefresh("clubs")} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a club</button>
-        <button onClick={()=>setShowInvite(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--acc)",background:"var(--accl)",cursor:"pointer",fontSize:13,fontWeight:700,color:"#8a6d00",fontFamily:"var(--sn)",marginTop:8}}>👥 Invite another adult</button>
+        
       </div>}
 
       {tab==="discover"&&<div>
@@ -755,11 +755,11 @@ function Hub({user,profile,onRefresh,onLogout}){
       {/* Modals */}
       {showAddEv&&<AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddEv(false)} onSaved={()=>{setShowAddEv(false);load()}}/>}
       {showAddPay&&<AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddPay(false)} onSaved={()=>{setShowAddPay(false);load()}}/>}
-      {showAddKid&&<AddKidModal userId={user.id} editKid={typeof showAddKid==="object"?showAddKid:null} onClose={()=>setShowAddKid(false)} onSaved={()=>{setShowAddKid(false);load()}}/>}
+      {showAddKid&&<AddKidModal userId={user.id} editKid={typeof showAddKid==="object"?showAddKid:null} profile={profile} onClose={()=>setShowAddKid(false)} onSaved={()=>{setShowAddKid(false);load()}}/>}
       {editClub&&<EditClubModal club={editClub} kids={kids} profile={profile} userId={user.id} onClose={()=>setEditClub(null)} onSaved={()=>{setEditClub(null);load()}} onDelete={()=>{setEditClub(null);load()}}/>}
       {editHol&&<EditHolidayModal holiday={editHol} userId={user.id} onClose={()=>setEditHol(null)} onSaved={()=>{setEditHol(null);load()}}/>}
       {showAddHol&&<AddHolidayModal userId={user.id} onClose={()=>setShowAddHol(false)} onSaved={()=>{setShowAddHol(false);load()}}/>}
-      {showInvite&&<InviteAdultModal userId={user.id} familyId={profile?.family_id} onClose={()=>setShowInvite(false)} onSaved={()=>{setShowInvite(false);load()}}/>}
+      
     </div>
   );
 }
@@ -826,52 +826,84 @@ function AddPaymentModal({clubs,userId,kids,profile,onClose,onSaved}){
   </div></div>;
 }
 
-function AddKidModal({userId,onClose,onSaved,editKid}){
+function AddKidModal({userId,onClose,onSaved,editKid,profile}){
+  const[memberType,setMemberType]=useState(editKid?"kid":"kid");
   const[name,setName]=useState(editKid?.first_name||"");
   const[dob,setDob]=useState(editKid?.date_of_birth||"");
   const[school,setSchool]=useState(editKid?.school_name||"");
   const[cls,setCls]=useState(editKid?.school_class||"");
   const[teacher,setTeacher]=useState(editKid?.teacher_name||"");
   const[showSchool,setShowSchool]=useState(!!(editKid?.school_name));
+  const[adultEmail,setAdultEmail]=useState("");
   const[sv,setSv]=useState(false);
+  const[done,setDone]=useState(false);
 
   async function save(){
     if(!name.trim())return;setSv(true);
-    const body={first_name:name.trim(),date_of_birth:dob||null,school_name:school.trim()||null,school_class:cls.trim()||null,teacher_name:teacher.trim()||null};
-    if(editKid){
-      await db("dependants","PATCH",{body,filters:["id=eq."+editKid.id]});
-    } else {
-      body.parent_user_id=userId;
-      await db("dependants","POST",{body});
+    if(memberType==="adult"){
+      let fid=profile?.family_id;
+      if(!fid){
+        const fam=await db("families","POST",{body:{created_by:userId}});
+        if(fam&&fam[0]){fid=fam[0].id;await db("profiles","PATCH",{body:{family_id:fid},filters:["id=eq."+userId]})}
+      }
+      if(fid&&adultEmail.trim()){
+        await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:adultEmail.trim(),invited_name:name.trim()}});
+        try{await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({to_email:adultEmail.trim(),to_name:name.trim(),from_name:profile?.first_name||"Your partner",site_url:window.location.origin})})}catch(e){}
+      }
+      setSv(false);setDone(true);return;
     }
+    const body={first_name:name.trim(),date_of_birth:dob||null,school_name:school.trim()||null,school_class:cls.trim()||null,teacher_name:teacher.trim()||null};
+    if(editKid){await db("dependants","PATCH",{body,filters:["id=eq."+editKid.id]})}
+    else{body.parent_user_id=userId;await db("dependants","POST",{body})}
     setSv(false);onSaved();
   }
 
+  if(done)return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox" style={{textAlign:"center",padding:32}}>
+    <div style={{fontSize:48,marginBottom:12}}>✅</div>
+    <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Invite sent!</h3>
+    <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 12px"}}>We've emailed {name} with an invite.</p>
+    <div style={{background:"#f5f3ef",borderRadius:12,padding:12,marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
+      <span style={{flex:1,fontSize:13,fontWeight:600,color:"var(--tx)",wordBreak:"break-all"}}>oneclubview.com</span>
+      <button onClick={()=>{navigator.clipboard?.writeText("https://oneclubview.com")}} style={{padding:"6px 12px",borderRadius:8,border:"none",background:"var(--g)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",whiteSpace:"nowrap"}}>Copy link</button>
+    </div>
+    <button onClick={onClose} className="btn bp">Done</button>
+  </div></div>;
+
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
-      <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>{editKid?"Edit "+editKid.first_name:"Add Family Member"}</h3>
+      <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>{editKid?"Edit "+editKid.first_name:"Add family member"}</h3>
       <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button>
     </div>
+    {!editKid&&<div style={{display:"flex",gap:8,background:"#f5f3ef",borderRadius:12,padding:4,marginBottom:16}}>
+      <button onClick={()=>setMemberType("kid")} style={{flex:1,padding:10,borderRadius:10,border:"none",background:memberType==="kid"?"var(--g)":"transparent",color:memberType==="kid"?"#fff":"var(--mt)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>\ud83d\udc67 Child</button>
+      <button onClick={()=>setMemberType("adult")} style={{flex:1,padding:10,borderRadius:10,border:"none",background:memberType==="adult"?"var(--g)":"transparent",color:memberType==="adult"?"#fff":"var(--mt)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>\ud83d\udc64 Adult / Partner</button>
+    </div>}
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div><span className="lbl">Name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="First name"/></div>
-      <div><span className="lbl">Date of birth</span><input type="date" value={dob} onChange={e=>setDob(e.target.value)}/></div>
-      {!showSchool?
-        <button onClick={()=>setShowSchool(true)} style={{padding:10,borderRadius:12,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)"}}>+ Add school info (optional)</button>
-      :<div style={{background:"#f8f7f4",borderRadius:14,padding:14,border:"1px solid var(--bd)"}}>
-        <span className="lbl" style={{marginBottom:8}}>School (optional — helps match classmates at camps)</span>
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <input value={school} onChange={e=>setSchool(e.target.value)} placeholder="School name, e.g. Scoil Bhride"/>
-          <div style={{display:"flex",gap:8}}>
-            <input value={cls} onChange={e=>setCls(e.target.value)} placeholder="Class, e.g. 2nd Class" style={{flex:1}}/>
-            <input value={teacher} onChange={e=>setTeacher(e.target.value)} placeholder="Teacher (optional)" style={{flex:1}}/>
+      {memberType==="adult"&&<>
+        <div><span className="lbl">Their email</span><input type="email" value={adultEmail} onChange={e=>setAdultEmail(e.target.value)} placeholder="email@example.com"/></div>
+        <p style={{fontSize:12,color:"var(--mt)",lineHeight:1.4}}>They'll get an invite email and can sign up to see the same family calendar.</p>
+      </>}
+      {memberType==="kid"&&<>
+        <div><span className="lbl">Date of birth</span><input type="date" value={dob} onChange={e=>setDob(e.target.value)}/></div>
+        {!showSchool?<button onClick={()=>setShowSchool(true)} style={{padding:10,borderRadius:12,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)"}}>+ Add school info (optional)</button>
+        :<div style={{background:"#f8f7f4",borderRadius:14,padding:14,border:"1px solid var(--bd)"}}>
+          <span className="lbl" style={{marginBottom:8}}>School (helps match classmates at camps)</span>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            <input value={school} onChange={e=>setSchool(e.target.value)} placeholder="School name, e.g. Scoil Bhride"/>
+            <div style={{display:"flex",gap:8}}>
+              <input value={cls} onChange={e=>setCls(e.target.value)} placeholder="Class, e.g. 2nd Class" style={{flex:1}}/>
+              <input value={teacher} onChange={e=>setTeacher(e.target.value)} placeholder="Teacher (optional)" style={{flex:1}}/>
+            </div>
           </div>
-        </div>
-      </div>}
-      <button onClick={save} disabled={sv||!name.trim()} className="btn bp">{sv?"Saving...":(editKid?"Save changes":"Add to family")}</button>
+        </div>}
+      </>}
+      <button onClick={save} disabled={sv||!name.trim()||(memberType==="adult"&&!adultEmail.trim())} className="btn bp">
+        {sv?"Saving...":(editKid?"Save changes":(memberType==="adult"?"Send invite":"Add child"))}
+      </button>
     </div>
   </div></div>;
 }
-
 
 function EditClubModal({club,kids,profile,userId,onClose,onSaved,onDelete}){
   const[who,setWho]=useState(club.dependant_id||"self");
