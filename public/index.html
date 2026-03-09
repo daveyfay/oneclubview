@@ -1361,7 +1361,8 @@ function SupportModal({userId,userEmail,onClose}){
 
 function AdminDashboard({user,onBack}){
   const[stats,setStats]=useState(null);const[tickets,setTickets]=useState([]);const[loading,setLoading]=useState(true);
-  const[users,setUsers]=useState([]);
+  const[users,setUsers]=useState([]);const[drilldown,setDrilldown]=useState(null);
+  const[allSubs,setAllSubs]=useState([]);const[allKids,setAllKids]=useState([]);
 
   useEffect(()=>{
     (async()=>{
@@ -1371,57 +1372,188 @@ function AdminDashboard({user,onBack}){
       setTickets(t||[]);
       const u=await db("profiles","GET",{order:"created_at.desc"});
       setUsers(u||[]);
+      const subs=await db("hub_subscriptions","GET",{select:"id,user_id,club_id,dependant_id,clubs(name)"});
+      setAllSubs(subs||[]);
+      const kids=await db("dependants","GET",{});
+      setAllKids(kids||[]);
       setLoading(false);
     })();
   },[]);
 
   if(loading)return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--bg)"}}><p>Loading dashboard...</p></div>;
 
-  const S=({label,value,color,sub})=><div style={{background:"#fff",borderRadius:14,padding:16,border:"1px solid var(--bd)"}}>
+  // Drilldown views
+  if(drilldown){
+    let title="";let content=null;
+
+    if(drilldown==="users"){
+      title="All Users ("+users.length+")";
+      content=users.map(u=>{
+        const kidCount=allKids.filter(k=>k.parent_user_id===u.id).length;
+        const clubCount=new Set(allSubs.filter(s=>s.user_id===u.id).map(s=>s.club_id)).size;
+        return <div key={u.id} style={{background:"#fff",borderRadius:14,border:"1px solid var(--bd)",padding:14,marginBottom:8}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:14,fontWeight:700}}>{u.first_name||"—"} {u.last_name||""}</div>
+              <div style={{fontSize:12,color:"var(--mt)"}}>{u.email}</div>
+            </div>
+            <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,
+              background:u.subscription_status==="active"?"var(--sage)":u.subscription_status==="churned"?"#fef2f2":"var(--goldl)",
+              color:u.subscription_status==="active"?"var(--gl)":u.subscription_status==="churned"?"#dc2626":"#8a6d00"
+            }}>{u.subscription_status||"trial"}</span>
+          </div>
+          <div style={{display:"flex",gap:12,marginTop:8,fontSize:12,color:"var(--mt)"}}>
+            <span>Joined {new Date(u.created_at).toLocaleDateString("en-IE",{day:"numeric",month:"short",year:"numeric"})}</span>
+            <span>{kidCount} kid{kidCount!==1?"s":""}</span>
+            <span>{clubCount} club{clubCount!==1?"s":""}</span>
+            {u.last_active_at&&<span>Active {new Date(u.last_active_at).toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</span>}
+          </div>
+        </div>;
+      });
+    }
+
+    if(drilldown==="families"){
+      title="Families";
+      const fams={};
+      users.forEach(u=>{
+        const fid=u.family_id||u.id;
+        if(!fams[fid])fams[fid]={adults:[],kids:[],clubs:new Set()};
+        fams[fid].adults.push(u);
+      });
+      allKids.forEach(k=>{
+        const parent=users.find(u=>u.id===k.parent_user_id);
+        const fid=parent?.family_id||k.parent_user_id;
+        if(fams[fid])fams[fid].kids.push(k);
+      });
+      allSubs.forEach(s=>{
+        const parent=users.find(u=>u.id===s.user_id);
+        const fid=parent?.family_id||s.user_id;
+        if(fams[fid])fams[fid].clubs.add(s.clubs?.name||s.club_id);
+      });
+      content=Object.entries(fams).map(([fid,fam])=>
+        <div key={fid} style={{background:"#fff",borderRadius:14,border:"1px solid var(--bd)",padding:14,marginBottom:8}}>
+          <div style={{fontSize:14,fontWeight:700}}>{fam.adults.map(a=>a.first_name||"?").join(" & ")}</div>
+          <div style={{fontSize:12,color:"var(--mt)",marginTop:4}}>
+            {fam.kids.length>0?"Kids: "+fam.kids.map(k=>k.first_name).join(", "):"No kids added"}
+          </div>
+          <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>
+            {fam.clubs.size>0?"Clubs: "+[...fam.clubs].join(", "):"No clubs"}
+          </div>
+          <div style={{fontSize:11,color:"var(--mt)",marginTop:4}}>
+            Status: {fam.adults[0]?.subscription_status||"trial"} · Joined {new Date(fam.adults[0]?.created_at).toLocaleDateString("en-IE",{day:"numeric",month:"short"})}
+          </div>
+        </div>
+      );
+    }
+
+    if(drilldown==="tickets"){
+      title="Support Tickets ("+tickets.length+")";
+      content=tickets.map(t=><div key={t.id} style={{background:"#fff",borderRadius:14,border:"1px solid var(--bd)",padding:14,marginBottom:8}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{fontSize:14,fontWeight:700}}>{t.subject}</span>
+          <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,
+            background:t.status==="open"?"#fef2f2":t.status==="resolved"?"var(--sage)":"var(--goldl)",
+            color:t.status==="open"?"#dc2626":t.status==="resolved"?"var(--gl)":"#8a6d00"
+          }}>{t.status}</span>
+        </div>
+        <div style={{fontSize:12,color:"var(--mt)",marginTop:4}}>{t.user_email} · {new Date(t.created_at).toLocaleDateString("en-IE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
+        <div style={{fontSize:13,color:"var(--tx)",marginTop:8,lineHeight:1.5,background:"#f8f7f4",padding:12,borderRadius:10}}>{t.message}</div>
+      </div>);
+    }
+
+    if(drilldown==="revenue"){
+      title="Revenue Breakdown";
+      const active=users.filter(u=>u.subscription_status==="active");
+      const trial=users.filter(u=>u.subscription_status==="trial"||!u.subscription_status);
+      const churned=users.filter(u=>u.subscription_status==="churned");
+      content=<div>
+        <div style={{background:"var(--sage)",borderRadius:14,padding:16,marginBottom:12}}>
+          <div style={{fontSize:28,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)"}}>€{(active.length*7.99).toFixed(2)}</div>
+          <div style={{fontSize:13,color:"var(--gl)",fontWeight:600}}>Monthly Recurring Revenue</div>
+          <div style={{fontSize:12,color:"var(--mt)",marginTop:4}}>{active.length} active subscriber{active.length!==1?"s":""} × €7.99</div>
+        </div>
+        <h4 style={{fontSize:14,fontWeight:700,color:"var(--g)",margin:"16px 0 8px"}}>Active Subscribers ({active.length})</h4>
+        {active.map(u=><div key={u.id} style={{background:"#fff",borderRadius:10,border:"1px solid var(--bd)",padding:10,marginBottom:4,fontSize:13,display:"flex",justifyContent:"space-between"}}>
+          <span>{u.first_name} ({u.email})</span><span style={{fontWeight:700,color:"var(--gl)"}}>€7.99/mo</span>
+        </div>)}
+        <h4 style={{fontSize:14,fontWeight:700,color:"#f0a500",margin:"16px 0 8px"}}>On Trial ({trial.length})</h4>
+        {trial.map(u=><div key={u.id} style={{background:"#fff",borderRadius:10,border:"1px solid var(--bd)",padding:10,marginBottom:4,fontSize:13}}>
+          {u.first_name} ({u.email}) · Started {new Date(u.created_at).toLocaleDateString("en-IE",{day:"numeric",month:"short"})}
+        </div>)}
+        <h4 style={{fontSize:14,fontWeight:700,color:"#dc2626",margin:"16px 0 8px"}}>Churned ({churned.length})</h4>
+        {churned.length===0?<p style={{fontSize:13,color:"var(--mt)"}}>None yet</p>
+        :churned.map(u=><div key={u.id} style={{background:"#fef2f2",borderRadius:10,border:"1px solid #fecaca",padding:10,marginBottom:4,fontSize:13}}>
+          {u.first_name} ({u.email}) · Churned {u.churned_at?new Date(u.churned_at).toLocaleDateString("en-IE",{day:"numeric",month:"short"}):"—"}
+        </div>)}
+      </div>;
+    }
+
+    if(drilldown==="clubs"){
+      title="All Clubs Tracked";
+      const clubMap={};
+      allSubs.forEach(s=>{
+        const name=s.clubs?.name||"Unknown";
+        if(!clubMap[s.club_id])clubMap[s.club_id]={name,families:new Set()};
+        clubMap[s.club_id].families.add(s.user_id);
+      });
+      const sorted=Object.values(clubMap).sort((a,b)=>b.families.size-a.families.size);
+      content=sorted.map((cl,i)=><div key={i} style={{background:"#fff",borderRadius:10,border:"1px solid var(--bd)",padding:12,marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <span style={{fontSize:13,fontWeight:600}}>{cl.name}</span>
+        <span style={{fontSize:12,fontWeight:700,color:"var(--gl)",background:"var(--sage)",padding:"3px 10px",borderRadius:8}}>{cl.families.size} {cl.families.size===1?"family":"families"}</span>
+      </div>);
+    }
+
+    return <div style={{minHeight:"100vh",background:"var(--bg)"}}>
+      <div style={{background:"var(--g)",padding:"20px 16px",display:"flex",alignItems:"center",gap:12}}>
+        <button onClick={()=>setDrilldown(null)} style={{background:"none",border:"none",color:"#fff",fontSize:20,cursor:"pointer"}}>←</button>
+        <h1 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"#fff"}}>{title}</h1>
+      </div>
+      <div style={{maxWidth:600,margin:"0 auto",padding:16}}>{content}</div>
+    </div>;
+  }
+
+  // Main dashboard
+  const S=({label,value,color,sub,tap})=><div onClick={tap?()=>setDrilldown(tap):undefined} style={{background:"#fff",borderRadius:14,padding:16,border:"1px solid var(--bd)",cursor:tap?"pointer":"default",position:"relative"}}>
     <div style={{fontSize:24,fontWeight:800,color:color||"var(--g)",fontFamily:"var(--sr)"}}>{value}</div>
     <div style={{fontSize:12,fontWeight:600,color:"var(--mt)",marginTop:2}}>{label}</div>
     {sub&&<div style={{fontSize:11,color:"var(--mt)",marginTop:2}}>{sub}</div>}
+    {tap&&<span style={{position:"absolute",top:8,right:12,fontSize:11,color:"var(--mt)"}}>→</span>}
   </div>;
 
   return <div style={{minHeight:"100vh",background:"var(--bg)"}}>
-    <div style={{background:"var(--g)",padding:"20px 16px",display:"flex",alignItems:"center",gap:12}}>
-      <button onClick={onBack} style={{background:"none",border:"none",color:"#fff",fontSize:20,cursor:"pointer"}}>←</button>
+    <div style={{background:"var(--g)",padding:"20px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
       <h1 style={{fontFamily:"var(--sr)",fontSize:20,fontWeight:700,color:"#fff"}}>Admin Dashboard</h1>
+      <button onClick={onBack} style={{background:"rgba(255,255,255,.15)",border:"none",color:"#fff",fontSize:12,fontWeight:700,padding:"8px 14px",borderRadius:8,cursor:"pointer",fontFamily:"var(--sn)"}}>Logout</button>
     </div>
     <div style={{maxWidth:600,margin:"0 auto",padding:16}}>
 
-      {/* Key Metrics */}
       <h2 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)",marginBottom:12}}>Key Metrics</h2>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
-        <S label="Total Families" value={stats?.total_families||0} color="var(--g)"/>
-        <S label="Total Users" value={stats?.total_users||0}/>
-        <S label="Active (7d)" value={stats?.active_users_7d||0} color="#2d7cb5"/>
-        <S label="Active (30d)" value={stats?.active_users_30d||0}/>
+        <S label="Total Families" value={stats?.total_families||0} color="var(--g)" tap="families"/>
+        <S label="Total Users" value={stats?.total_users||0} tap="users"/>
+        <S label="Active (7d)" value={stats?.active_users_7d||0} color="#2d7cb5" tap="users"/>
+        <S label="Active (30d)" value={stats?.active_users_30d||0} tap="users"/>
       </div>
 
-      {/* Revenue */}
       <h2 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)",marginBottom:12}}>Revenue</h2>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:24}}>
-        <S label="MRR" value={"€"+(stats?.mrr||0)} color="#2d7cb5"/>
-        <S label="Subscribers" value={stats?.active_subscribers||0} color="var(--gl)"/>
-        <S label="Trial" value={stats?.trial_users||0} color="#f0a500"/>
+        <S label="MRR" value={"€"+(stats?.mrr||0)} color="#2d7cb5" tap="revenue"/>
+        <S label="Subscribers" value={stats?.active_subscribers||0} color="var(--gl)" tap="revenue"/>
+        <S label="Trial" value={stats?.trial_users||0} color="#f0a500" tap="revenue"/>
       </div>
 
-      {/* Churn */}
       <h2 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)",marginBottom:12}}>Churn</h2>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
-        <S label="Churned" value={stats?.churned_users||0} color="#dc2626"/>
+        <S label="Churned" value={stats?.churned_users||0} color="#dc2626" tap="revenue"/>
         <S label="Avg days to churn" value={stats?.avg_days_to_churn||"—"}/>
       </div>
 
-      {/* Growth */}
       <h2 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)",marginBottom:12}}>Growth</h2>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
-        <S label="Signups (7d)" value={stats?.signups_last_7d||0} color="var(--gl)"/>
-        <S label="Signups (30d)" value={stats?.signups_last_30d||0}/>
+        <S label="Signups (7d)" value={stats?.signups_last_7d||0} color="var(--gl)" tap="users"/>
+        <S label="Signups (30d)" value={stats?.signups_last_30d||0} tap="users"/>
       </div>
 
-      {/* Product */}
       <h2 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)",marginBottom:12}}>Product</h2>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:24}}>
         <S label="Avg family size" value={stats?.avg_family_size||"—"}/>
@@ -1429,37 +1561,14 @@ function AdminDashboard({user,onBack}){
         <S label="Total kids" value={stats?.total_kids||0}/>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
-        <S label="Clubs tracked" value={stats?.total_clubs_tracked||0}/>
+        <S label="Clubs tracked" value={stats?.total_clubs_tracked||0} tap="clubs"/>
         <S label="Camps listed" value={stats?.total_camps_listed||0}/>
       </div>
 
-      {/* Support Tickets */}
       <h2 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)",marginBottom:12}}>Support ({stats?.open_tickets||0} open)</h2>
-      {tickets.length===0?<p style={{color:"var(--mt)",fontSize:13}}>No tickets yet</p>
-      :tickets.slice(0,20).map(t=><div key={t.id} style={{background:"#fff",borderRadius:14,border:"1px solid var(--bd)",padding:14,marginBottom:8}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <span style={{fontSize:14,fontWeight:600}}>{t.subject}</span>
-          <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,
-            background:t.status==="open"?"#fef2f2":t.status==="resolved"?"var(--sage)":"var(--goldl)",
-            color:t.status==="open"?"#dc2626":t.status==="resolved"?"var(--gl)":"#8a6d00"
-          }}>{t.status}</span>
-        </div>
-        <div style={{fontSize:12,color:"var(--mt)",marginTop:4}}>{t.user_email} · {new Date(t.created_at).toLocaleDateString("en-IE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
-        <div style={{fontSize:13,color:"var(--tx)",marginTop:6,lineHeight:1.4}}>{t.message.substring(0,150)}{t.message.length>150?"...":""}</div>
-      </div>)}
-
-      {/* Recent Users */}
-      <h2 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)",marginBottom:12,marginTop:24}}>Recent Users</h2>
-      {users.slice(0,20).map(u=><div key={u.id} style={{background:"#fff",borderRadius:10,border:"1px solid var(--bd)",padding:12,marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div>
-          <span style={{fontSize:13,fontWeight:600}}>{u.first_name||"—"} {u.last_name||""}</span>
-          <div style={{fontSize:11,color:"var(--mt)"}}>{u.email||u.id.substring(0,8)} · Joined {new Date(u.created_at).toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</div>
-        </div>
-        <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,
-          background:u.subscription_status==="active"?"var(--sage)":u.subscription_status==="churned"?"#fef2f2":"var(--goldl)",
-          color:u.subscription_status==="active"?"var(--gl)":u.subscription_status==="churned"?"#dc2626":"#8a6d00"
-        }}>{u.subscription_status||"trial"}</span>
-      </div>)}
+      <div style={{display:"grid",gridTemplateColumns:"1fr",gap:10,marginBottom:24}}>
+        <S label="Open tickets" value={stats?.open_tickets||0} color={stats?.open_tickets>0?"#dc2626":"var(--gl)"} tap="tickets"/>
+      </div>
 
     </div>
   </div>;
