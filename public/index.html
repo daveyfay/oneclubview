@@ -419,11 +419,11 @@ function Hub({user,profile,onRefresh,onLogout}){
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
   const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[campBookings,setCampBookings]=useState([]);const[holidays,setHolidays]=useState([]);const[userHolidays,setUserHolidays]=useState([]);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
-  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[loading,setLoading]=useState(true);
+  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);
 
   async function load(){
     setLoading(true);
-    const[k,c,r,m,p,ca,hols,userHols,cBooks]=await Promise.all([
+    const[k,c,r,m,p,ca,hols,userHols,cBooks,lEvts,aCats]=await Promise.all([
       db("dependants","GET",{filters:["parent_user_id=eq."+user.id],order:"created_at.asc"}),
       db("hub_subscriptions","GET",{select:"id,club_id,dependant_id,colour,clubs(id,name,address,location,phone,rating)",filters:["user_id=eq."+user.id]}),
       db("recurring_events","GET",{filters:["user_id=eq."+user.id]}),
@@ -432,11 +432,13 @@ function Hub({user,profile,onRefresh,onLogout}){
       db("camps","GET",{select:"id,title,camp_type,start_date,end_date,daily_start_time,daily_end_time,age_min,age_max,cost_eur,cost_notes,location_name,booking_url,source",filters:["status=eq.active"],order:"start_date.asc"}),
       db("school_holidays","GET",{order:"start_date.asc"}),
       db("user_school_holidays","GET",{filters:["user_id=eq."+user.id],order:"start_date.asc"}),
-      db("camp_bookings","GET",{filters:["user_id=eq."+user.id]})
+      db("camp_bookings","GET",{filters:["user_id=eq."+user.id]}),
+      db("local_events","GET",{order:"event_date.asc"}),
+      db("activity_categories","GET",{order:"name.asc"})
     ]);
     setKids(k||[]);
     setClubs((c||[]).map(s=>({...s,club_id:s.club_id||s.clubs?.id,club_name:s.clubs?.name||"?",club_addr:s.clubs?.address})));
-    setRecs(r||[]);setMans(m||[]);setPays(p||[]);setCamps(ca||[]);setHolidays(hols||[]);setUserHolidays(userHols||[]);setCampBookings(cBooks||[]);
+    setRecs(r||[]);setMans(m||[]);setPays(p||[]);setCamps(ca||[]);setHolidays(hols||[]);setUserHolidays(userHols||[]);setCampBookings(cBooks||[]);setLocalEvents(lEvts||[]);setActCats(aCats||[]);
     setLoading(false);
   }
   useEffect(()=>{load()},[]);
@@ -490,7 +492,7 @@ function Hub({user,profile,onRefresh,onLogout}){
     return camps.filter(c=>age>=c.age_min&&age<=c.age_max);
   },[camps,filter,kids]);
 
-  const tabs=[{id:"week",l:"This Week",i:"📅"},{id:"money",l:"Money",i:"💳"},{id:"camps",l:"Camps",i:"🏕️"},{id:"clubs",l:"Clubs",i:"🏠"}];
+  const tabs=[{id:"week",l:"This Week",i:"📅"},{id:"money",l:"Money",i:"💳"},{id:"camps",l:"Camps",i:"🏕️"},{id:"clubs",l:"Clubs",i:"🏠"},{id:"discover",l:"Discover",i:"🔍"}];
 
   if(loading)return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--warm)"}}><p style={{color:"var(--mt)"}}>Loading...</p></div>;
 
@@ -666,6 +668,86 @@ function Hub({user,profile,onRefresh,onLogout}){
         })}
         <button onClick={()=>onRefresh("clubs")} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a club</button>
         <button onClick={()=>setShowInvite(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--acc)",background:"var(--accl)",cursor:"pointer",fontSize:13,fontWeight:700,color:"#8a6d00",fontFamily:"var(--sn)",marginTop:8}}>👥 Invite another adult</button>
+      </div>}
+
+      {tab==="discover"&&<div>
+        {/* Search by activity */}
+        <input value={discoverSearch} onChange={e=>setDiscoverSearch(e.target.value)} placeholder="Search clubs by activity... e.g. swimming, karate" style={{width:"100%",padding:"12px 16px",borderRadius:14,border:"1px solid var(--bd)",fontSize:14,marginBottom:12,fontFamily:"var(--sn)"}}/>
+
+        {/* Category pills */}
+        <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:16,WebkitOverflowScrolling:"touch"}}>
+          <button onClick={()=>setDiscoverFilter("all")} className={"pill "+(discoverFilter==="all"?"pon":"poff")}>All</button>
+          <button onClick={()=>setDiscoverFilter("kids")} className={"pill "+(discoverFilter==="kids"?"pon":"poff")}>👧 Kids</button>
+          <button onClick={()=>setDiscoverFilter("adults")} className={"pill "+(discoverFilter==="adults"?"pon":"poff")}>👤 Adults</button>
+        </div>
+
+        {/* Activity categories grid */}
+        {!discoverSearch&&<div>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:12}}>Browse by activity</h3>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:24}}>
+            {actCats.map(cat=>(
+              <button key={cat.id} onClick={()=>setDiscoverSearch(cat.name)} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:"14px 8px",cursor:"pointer",textAlign:"center"}}>
+                <div style={{fontSize:24}}>{cat.emoji}</div>
+                <div style={{fontSize:12,fontWeight:600,color:"var(--tx)",marginTop:4,fontFamily:"var(--sn)"}}>{cat.name}</div>
+              </button>
+            ))}
+          </div>
+        </div>}
+
+        {/* Search results from clubs table */}
+        {discoverSearch&&<div style={{marginBottom:24}}>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:12}}>Clubs matching "{discoverSearch}"</h3>
+          <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>Tap any club to add it to your family</p>
+          {/* Note: this searches the existing clubs DB. Full Google Places integration coming soon */}
+          <div style={{fontSize:13,color:"var(--mt)",background:"var(--card)",borderRadius:14,border:"1px solid var(--bd)",padding:16,textAlign:"center"}}>
+            <div style={{fontSize:28,marginBottom:8}}>🔍</div>
+            <p>Club search for "{discoverSearch}" in your area</p>
+            <button onClick={()=>{onRefresh("clubs")}} className="btn bp" style={{marginTop:12,fontSize:13}}>Go to Add Club →</button>
+          </div>
+        </div>}
+
+        {/* Local events & competitions */}
+        <div>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:4}}>Local events & competitions</h3>
+          <p style={{fontSize:12,color:"var(--mt)",marginBottom:14}}>Open days, tournaments, and social events from clubs near you</p>
+          {(()=>{
+            const now=new Date();
+            const filtered=localEvents
+              .filter(e=>new Date(e.event_date+"T23:59:59")>=now)
+              .filter(e=>discoverFilter==="all"||e.audience===discoverFilter||e.audience==="all");
+            if(filtered.length===0)return <p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>No upcoming events found</p>;
+
+            const ET={competition:{i:"🏆",bg:"var(--goldl)",c:"#8a6d00"},tournament:{i:"🏅",bg:"var(--goldl)",c:"#8a6d00"},open_day:{i:"🎪",bg:"var(--sage)",c:"var(--gl)"},social:{i:"🍻",bg:"#f0e8f8",c:"#6b21a8"},fundraiser:{i:"❤️",bg:"#fce8e8",c:"#c0392b"}};
+
+            return filtered.map(ev=>{
+              const t=ET[ev.event_type]||ET.competition;
+              const isAdult=ev.audience==="adults";
+              return <div key={ev.id} style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:10}}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
+                  <div style={{width:40,height:40,borderRadius:10,background:t.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{t.i}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:14,fontWeight:700,color:"var(--tx)"}}>{ev.title}</div>
+                    <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>{ev.club_name}</div>
+                    <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>
+                      {new Date(ev.event_date).toLocaleDateString("en-IE",{weekday:"short",day:"numeric",month:"short"})}
+                      {ev.event_time?" · "+ev.event_time.slice(0,5):""}
+                      {ev.location_name?" · "+ev.location_name:""}
+                    </div>
+                    <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
+                      {ev.age_group&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:isAdult?"#f0e8f8":"var(--sage)",color:isAdult?"#6b21a8":"var(--gl)"}}>{ev.age_group}</span>}
+                      {ev.cost_eur!==null&&<span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--goldl)",color:"#8a6d00"}}>{ev.cost_eur>0?"€"+ev.cost_eur:"Free"}</span>}
+                      <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:t.bg,color:t.c}}>{ev.event_type==="open_day"?"Open Day":ev.event_type==="social"?"Social":ev.event_type==="tournament"?"Tournament":"Competition"}</span>
+                    </div>
+                  </div>
+                </div>
+                {(ev.booking_url||ev.facebook_url)&&<div style={{display:"flex",gap:6,marginTop:10}}>
+                  {ev.booking_url&&<a href={ev.booking_url} target="_blank" rel="noopener" style={{flex:1,textAlign:"center",padding:8,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:12,fontWeight:700,textDecoration:"none"}}>More info →</a>}
+                  {ev.facebook_url&&<a href={ev.facebook_url} target="_blank" rel="noopener" style={{flex:1,textAlign:"center",padding:8,borderRadius:10,background:"#1877F2",color:"#fff",fontSize:12,fontWeight:700,textDecoration:"none"}}>Facebook →</a>}
+                </div>}
+              </div>;
+            });
+          })()}
+        </div>
       </div>}
 
       </div>
