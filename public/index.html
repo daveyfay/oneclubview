@@ -530,8 +530,56 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       <div style={{maxWidth:520,margin:"0 auto",padding:16,paddingBottom:100}}>
 
+      {/* TODAY QUICK VIEW */}
+      <div style={{background:"var(--g)",borderRadius:16,padding:16,marginBottom:16,color:"#fff"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+          <span style={{fontFamily:"var(--sr)",fontSize:16,fontWeight:700}}>Today</span>
+          <span style={{fontSize:12,opacity:.6}}>{new Date().toLocaleDateString("en-IE",{weekday:"long",day:"numeric",month:"short"})}</span>
+        </div>
+        {(()=>{
+          const today=new Date();
+          const todayEvts=weekEvts.filter(e=>e.date.getFullYear()===today.getFullYear()&&e.date.getMonth()===today.getMonth()&&e.date.getDate()===today.getDate());
+          const dueSoon=pays.filter(p=>!p.paid&&Math.ceil((new Date(p.due_date)-today)/(86400000))<=7&&Math.ceil((new Date(p.due_date)-today)/(86400000))>=-3);
+          if(todayEvts.length===0&&dueSoon.length===0)return <p style={{fontSize:13,opacity:.6}}>Nothing on today — enjoy the free time!</p>;
+          return <div style={{display:"flex",flexDirection:"column",gap:6}}>
+            {todayEvts.map(e=><div key={e.id} style={{display:"flex",alignItems:"center",gap:8,fontSize:13}}>
+              <div style={{width:3,height:20,borderRadius:2,background:e.colour,flexShrink:0}}/>
+              <span style={{fontWeight:600}}>{e.member}</span>
+              <span style={{opacity:.7}}>{e.title}</span>
+              <span style={{marginLeft:"auto",fontWeight:600,fontSize:12,background:"rgba(255,255,255,.15)",padding:"2px 8px",borderRadius:6}}>{e.time}{e.endTime?"–"+e.endTime:""}</span>
+            </div>)}
+            {dueSoon.map(p=><div key={p.id} style={{fontSize:12,color:"#f0a500",fontWeight:600}}>💳 {p.description} — €{parseFloat(p.amount).toFixed(0)} due {new Date(p.due_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</div>)}
+          </div>;
+        })()}
+      </div>
+
       {/* THIS WEEK */}
       {tab==="week"&&<div>
+        {(()=>{
+          // Clash detection
+          const clashes=[];
+          const today=new Date();
+          wd.forEach(d=>{
+            const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate()&&e.time);
+            for(let i=0;i<dayEvts.length;i++){
+              for(let j=i+1;j<dayEvts.length;j++){
+                const a=dayEvts[i],b=dayEvts[j];
+                if(a.memberId===b.memberId)continue;
+                const aStart=a.time,aEnd=a.endTime||"23:59",bStart=b.time,bEnd=b.endTime||"23:59";
+                if(aStart<bEnd&&bStart<aEnd){
+                  clashes.push({day:d,a,b});
+                }
+              }
+            }
+          });
+          if(clashes.length===0)return null;
+          return <div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:14,padding:14,marginBottom:14}}>
+            <div style={{fontSize:13,fontWeight:700,color:"#dc2626",marginBottom:6}}>⚠️ {clashes.length} clash{clashes.length>1?"es":""} this week</div>
+            {clashes.map((cl,i)=><div key={i} style={{fontSize:12,color:"#991b1b",marginBottom:2}}>
+              {fmtDate(cl.day)}: {cl.a.member} ({cl.a.title} {cl.a.time}) overlaps with {cl.b.member} ({cl.b.title} {cl.b.time})
+            </div>)}
+          </div>;
+        })()}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
           <div style={{background:"var(--card)",borderRadius:14,padding:12,border:"1px solid var(--bd)",textAlign:"center"}}>
             <div style={{fontSize:20,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)"}}>{filtEvts.length}</div>
@@ -570,6 +618,18 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       {/* MONEY */}
       {tab==="money"&&<div>
+        {(()=>{
+          const overdue=filtPays.filter(p=>!p.paid&&new Date(p.due_date)<new Date());
+          if(overdue.length===0)return null;
+          const total=overdue.reduce((s,p)=>s+parseFloat(p.amount),0);
+          return <div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:14,padding:14,marginBottom:14,display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:24}}>🚨</span>
+            <div>
+              <div style={{fontSize:14,fontWeight:700,color:"#dc2626"}}>€{total.toFixed(0)} overdue</div>
+              <div style={{fontSize:12,color:"#991b1b"}}>{overdue.length} payment{overdue.length>1?"s":""} past due date</div>
+            </div>
+          </div>;
+        })()}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
           <div style={{background:"var(--accl)",borderRadius:14,padding:16,border:"1px solid #f0d078"}}>
             <div style={{fontSize:28,fontWeight:800,color:"#8a6d00",fontFamily:"var(--sr)"}}>€{totalDue.toFixed(0)}</div>
@@ -875,8 +935,8 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
       <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button>
     </div>
     {!editKid&&<div style={{display:"flex",gap:8,background:"#f5f3ef",borderRadius:12,padding:4,marginBottom:16}}>
-      <button onClick={()=>setMemberType("kid")} style={{flex:1,padding:10,borderRadius:10,border:"none",background:memberType==="kid"?"var(--g)":"transparent",color:memberType==="kid"?"#fff":"var(--mt)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>\ud83d\udc67 Child</button>
-      <button onClick={()=>setMemberType("adult")} style={{flex:1,padding:10,borderRadius:10,border:"none",background:memberType==="adult"?"var(--g)":"transparent",color:memberType==="adult"?"#fff":"var(--mt)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>\ud83d\udc64 Adult / Partner</button>
+      <button onClick={()=>setMemberType("kid")} style={{flex:1,padding:10,borderRadius:10,border:"none",background:memberType==="kid"?"var(--g)":"transparent",color:memberType==="kid"?"#fff":"var(--mt)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>👧 Child</button>
+      <button onClick={()=>setMemberType("adult")} style={{flex:1,padding:10,borderRadius:10,border:"none",background:memberType==="adult"?"var(--g)":"transparent",color:memberType==="adult"?"#fff":"var(--mt)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>👤 Adult / Partner</button>
     </div>}
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div><span className="lbl">Name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="First name"/></div>
