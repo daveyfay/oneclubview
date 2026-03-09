@@ -929,6 +929,7 @@ function CampCard({camp,user,kids,filter,campBookings,CT,fmtDate,onBookingChange
         <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
           <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#8a6d00"}}>€{camp.cost_eur}</span>
           <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {camp.age_min}–{camp.age_max}</span>
+          {(()=>{const suited=kids.filter(k=>{const a=k.date_of_birth?Math.floor((new Date()-new Date(k.date_of_birth))/(365.25*86400000)):null;return a!==null&&a>=camp.age_min&&a<=camp.age_max});return suited.length>0?<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#e8f0fe",color:"#1a56db"}}>👧 Suits {suited.map(k=>k.first_name).join(", ")}</span>:null})()}
           {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--gxl)",color:"var(--gl)"}}>✓ Covers work day</span>}
         </div>
       </div>
@@ -947,11 +948,11 @@ function CampCard({camp,user,kids,filter,campBookings,CT,fmtDate,onBookingChange
     <div style={{display:"flex",gap:6,marginTop:10}}>
       {!myBooking?<>
         <button onClick={()=>markCamp("interested")} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--bd)",background:"var(--card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--mt)",fontFamily:"var(--sn)"}}>❤️ Interested</button>
-        <button onClick={()=>markCamp("booked")} style={{flex:1,padding:8,borderRadius:10,border:"none",background:"var(--g)",cursor:"pointer",fontSize:12,fontWeight:700,color:"#fff",fontFamily:"var(--sn)"}}>✓ Booked</button>
+        <button onClick={()=>markCamp("booked")} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--g)",background:"var(--card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--g)",fontFamily:"var(--sn)"}}>Mark booked</button>
       </>:
         <div style={{flex:1,padding:8,borderRadius:10,background:myBooking.status==="booked"?"var(--gxl)":"var(--accl)",textAlign:"center",fontSize:12,fontWeight:700,color:myBooking.status==="booked"?"var(--gl)":"#8a6d00"}}>
           {myBooking.status==="booked"?"✓ Booked":"❤️ Interested"}
-          <button onClick={removeCamp} style={{marginLeft:8,background:"none",border:"none",fontSize:11,color:"var(--mt)",cursor:"pointer",textDecoration:"underline"}}>remove</button>
+          <button onClick={removeCamp} style={{marginLeft:8,background:"none",border:"none",fontSize:11,color:"var(--mt)",cursor:"pointer",textDecoration:"underline"}}>undo</button>
         </div>
       }
     </div>
