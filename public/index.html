@@ -34,6 +34,56 @@ select{-webkit-appearance:none;appearance:none}
 <body>
 <div id="root"></div>
 <script type="text/babel">
+
+const{useState,useEffect,useMemo,useRef}=React;
+const SB="https://uqihwazheypvmrcrqklg.supabase.co";
+const SK="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxaWh3YXpoZXlwdm1yY3Jxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4Nzg1MjQsImV4cCI6MjA4ODQ1NDUyNH0.n5I1lkCu7Tf1sBbIceWUdsRQtIrH7-WGc3itZAfrBKI";
+let _t=null;
+const hd=()=>({apikey:SK,"Content-Type":"application/json",Authorization:"Bearer "+(_t||SK)});
+
+async function au(a,b){
+  const ep={signup:"/auth/v1/signup",login:"/auth/v1/token?grant_type=password",user:"/auth/v1/user"};
+  const r=await fetch(SB+ep[a],{method:a==="user"?"GET":"POST",headers:hd(),body:a==="user"?undefined:JSON.stringify(b)});
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.msg||d.error_description||d.message||"Error");
+  if(d.access_token)_t=d.access_token;
+  return d;
+}
+
+async function db(t,m,o={}){
+  let u=SB+"/rest/v1/"+t;
+  const p=[];
+  if(o.select)p.push("select="+encodeURIComponent(o.select));
+  if(o.filters)o.filters.forEach(f=>p.push(f));
+  if(o.order)p.push("order="+o.order);
+  if(o.limit)p.push("limit="+o.limit);
+  if(p.length)u+="?"+p.join("&");
+  const h=hd();
+  if(m==="POST"||m==="PATCH")h.Prefer="return=representation";
+  const r=await fetch(u,{method:m,headers:h,body:o.body?JSON.stringify(o.body):undefined});
+  if(!r.ok){const errTxt=await r.text();console.error("DB err:",t,m,errTxt);return null}
+  const txt=await r.text();
+  return txt?JSON.parse(txt):null;
+}
+
+async function rpc(fn,params={}){
+  const r=await fetch(SB+"/rest/v1/rpc/"+fn,{method:"POST",headers:hd(),body:JSON.stringify(params)});
+  if(!r.ok)return null;
+  const txt=await r.text();
+  return txt?JSON.parse(txt):null;
+}
+
+
+const COLS=["#2d7cb5","#2d5a3f","#c4960c","#9b4dca","#d64545","#1a8a7d","#e67e22","#e84393"];
+const DAYF=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+function getAge(d){if(!d)return null;const t=new Date(),b=new Date(d);let a=t.getFullYear()-b.getFullYear();if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))a--;return a}
+function weekDates(){const n=new Date(),d=n.getDay(),m=new Date(n);m.setDate(n.getDate()-((d+6)%7));return Array.from({length:7},(_,i)=>{const x=new Date(m);x.setDate(m.getDate()+i);return x})}
+function isToday(d){const n=new Date();return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate()}
+function fmtDate(d){return d.toLocaleDateString("en-IE",{weekday:"short",day:"numeric",month:"short"})}
+const CT={sport:{i:"⚽"},arts:{i:"🎨"},stem:{i:"🤖"},outdoor:{i:"🏔"},drama:{i:"🎭"},multi_activity:{i:"🎪"},music:{i:"🎵"},other:{i:"📌"}};
+
+
+
 function Logo({dark}){
   return <div style={{display:"flex",alignItems:"center",gap:8}}>
     <div style={{width:32,height:32,borderRadius:10,background:dark?"rgba(255,255,255,.1)":"var(--g)",display:"flex",alignItems:"center",justifyContent:"center"}}>
