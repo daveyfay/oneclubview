@@ -864,7 +864,7 @@ function Hub({user,profile,onRefresh,onLogout}){
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div><div style={{fontSize:14,fontWeight:600}}>{kid?.first_name||profile?.first_name||"You"} — {p.description}</div><div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>{cl?.club_name||""} • Due {new Date(p.due_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</div></div>
               <div style={{textAlign:"right"}}><div style={{fontSize:18,fontWeight:800,color:p.paid?"var(--gl)":overdue?"#dc2626":"var(--tx)",fontFamily:"var(--sr)"}}>€{parseFloat(p.amount).toFixed(0)}</div>
-                {!p.paid&&<button onClick={async()=>{await db("payment_reminders","PATCH",{body:{paid:true},filters:["id=eq."+p.id]});load()}} style={{fontSize:11,fontWeight:700,color:"var(--gl)",background:"var(--gxl)",border:"none",borderRadius:8,padding:"3px 10px",cursor:"pointer",marginTop:4}}>Mark paid</button>}
+                {!p.paid&&<button onClick={async()=>{await db("payment_reminders","PATCH",{body:{paid:true},filters:["id=eq."+p.id]});await load()}} style={{fontSize:11,fontWeight:700,color:"var(--gl)",background:"var(--gxl)",border:"none",borderRadius:8,padding:"3px 10px",cursor:"pointer",marginTop:4}}>Mark paid</button>}
                 {p.paid&&<span style={{fontSize:11,color:"var(--gl)",fontWeight:700}}>✓ Paid</span>}
               </div>
             </div>
