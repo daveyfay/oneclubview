@@ -621,7 +621,7 @@ function Hub({user,profile,onRefresh,onLogout}){
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <div style={{position:"relative",cursor:"pointer"}} onClick={()=>setShowNotifs(!showNotifs)}>
                 <span style={{fontSize:17}}>🔔</span>
-                {notifications.length>0&&<div style={{position:"absolute",top:-4,right:-6,width:15,height:15,borderRadius:"50%",background:"var(--acc)",color:"#fff",fontSize:8,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{notifications.length}</div>}
+                {notifications.filter(n=>!n.read_at).length>0&&<div style={{position:"absolute",top:-4,right:-6,width:15,height:15,borderRadius:"50%",background:"var(--acc)",color:"#fff",fontSize:8,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{notifications.filter(n=>!n.read_at).length}</div>}
               </div>
               <button onClick={()=>setShowProfile(!showProfile)} style={{width:32,height:32,borderRadius:10,background:"var(--g)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700,border:"none",cursor:"pointer"}}>{(profile?.first_name||"U")[0]}</button>
             </div>
@@ -1063,11 +1063,14 @@ function Hub({user,profile,onRefresh,onLogout}){
             {/* Notification Panel */}
       {showNotifs&&<div onClick={()=>setShowNotifs(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.3)",zIndex:60}}/>}
       {showNotifs&&<div style={{position:"fixed",top:52,right:12,left:12,zIndex:61,background:"#fff",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"0 8px 30px rgba(0,0,0,.12)",padding:8,maxHeight:"60vh",overflowY:"auto",maxWidth:400,marginLeft:"auto"}}>
-        <div style={{padding:"8px 10px",fontSize:13,fontWeight:700,color:"var(--g)"}}>Updates</div>
+        <div style={{padding:"8px 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>Updates</span>
+          {notifications.filter(n=>!n.read_at).length>0&&<button onClick={async(e)=>{e.stopPropagation();for(const n of notifications.filter(x=>!x.read_at)){await db("inbound_messages","PATCH",{body:{read_at:new Date().toISOString()},filters:["id=eq."+n.id]})}load()}} style={{fontSize:11,fontWeight:600,color:"var(--acc)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)",padding:"2px 6px"}}>Mark all read</button>}
+        </div>
         {notifications.length===0?<div style={{padding:"16px 10px",textAlign:"center",color:"var(--mt)",fontSize:13}}>No updates yet. Forward a club email to see them here.</div>
-        :notifications.slice(0,8).map(n=><div key={n.id} style={{padding:"10px",borderRadius:10,marginBottom:2,background:n.applied?"#fff":"var(--gxl)",cursor:"pointer"}} onClick={(e)=>{e.stopPropagation();const actions={fee_due:"money",cancellation:"week",schedule_update:"week",reminder:"week",term_dates:"clubs",general:"week"};setTab(actions[n.parsed_action]||"week");setShowNotifs(false);window.scrollTo(0,0)}}>
+        :notifications.slice(0,8).map(n=><div key={n.id} style={{padding:"10px",borderRadius:10,marginBottom:2,background:n.read_at?"#fff":"var(--gxl)",cursor:"pointer"}} onClick={async(e)=>{e.stopPropagation();if(!n.read_at)await db("inbound_messages","PATCH",{body:{read_at:new Date().toISOString()},filters:["id=eq."+n.id]});const actions={fee_due:"money",cancellation:"week",schedule_update:"week",reminder:"week",term_dates:"clubs",general:"week"};setTab(actions[n.parsed_action]||"week");setShowNotifs(false);window.scrollTo(0,0);load()}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
-            <span style={{fontSize:12}}>{n.parsed_action==="fee_due"?"💳":n.parsed_action==="cancellation"?"🚫":n.parsed_action==="schedule_update"?"📅":n.parsed_action==="reminder"?"⏰":"📬"}</span>
+            <span style={{fontSize:12}}>{n.parsed_action==="fee_due"?"💳":n.parsed_action==="cancellation"?"🚫":n.parsed_action==="schedule_update"?"📅":n.parsed_action==="reminder"?"⏰":"📬"}{!n.read_at&&<span style={{width:6,height:6,borderRadius:3,background:"var(--acc)",flexShrink:0}}/>}</span>
             <span style={{fontSize:12,fontWeight:700,color:"var(--g)"}}>{n.parsed_data?.summary||n.subject||"Club update"}</span>
           </div>
           <div style={{fontSize:10,color:"var(--mt)"}}>{new Date(n.created_at).toLocaleDateString("en-IE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
