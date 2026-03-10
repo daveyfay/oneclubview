@@ -708,6 +708,25 @@ function Hub({user,profile,onRefresh,onLogout}){
     return true;
   })();
 
+  function shareWeek(){
+    const evtsByDay={};
+    filtEvts.forEach(e=>{
+      const key=e.date.toLocaleDateString("en-IE",{weekday:"short",day:"numeric",month:"short"});
+      if(!evtsByDay[key])evtsByDay[key]=[];
+      evtsByDay[key].push(e);
+    });
+    let text="📅 Our week — OneClubView\n\n";
+    Object.entries(evtsByDay).forEach(([day,evts])=>{
+      text+=day+"\n";
+      evts.forEach(e=>{text+="  "+e.member+" · "+(e.club||e.title)+(e.time?" · "+e.time+(e.endTime?"–"+e.endTime:""):"")+(e.driver?" 🚗 "+e.driver:"")+"\n"});
+      text+="\n";
+    });
+    if(filtEvts.length===0)text+="Nothing scheduled this week! 🎉\n";
+    text+="—\nSent from OneClubView · oneclubview.com";
+    if(navigator.share){navigator.share({title:"Our week",text}).catch(()=>{})}
+    else{navigator.clipboard?.writeText(text);alert("Week summary copied to clipboard!")}
+  }
+
   async function startCheckout(tier){
     const res=await fetch(SB+"/functions/v1/stripe-billing",{
       method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},
@@ -1306,6 +1325,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           {icon:"🏠",label:"Add club",fn:()=>{setShowFab(false);onRefresh("clubs")}},
           {icon:"👤",label:"Add member",fn:()=>{setShowFab(false);setShowAddKid(true)}},
           {icon:"💳",label:"Add fee reminder",fn:()=>{setShowFab(false);setShowAddPay(true)}},
+          {icon:"📤",label:"Share my week",fn:()=>{setShowFab(false);shareWeek()}},
         ].map(a=><button key={a.label} onClick={a.fn} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 16px",borderRadius:12,background:"#fff",border:"1px solid var(--bd)",boxShadow:"0 4px 16px rgba(0,0,0,.1)",fontSize:13,fontWeight:600,color:"var(--g)",cursor:"pointer",fontFamily:"var(--sn)"}}>{a.icon} {a.label}</button>)}
       </div>}
       <button onClick={()=>setShowFab(!showFab)} style={{position:"fixed",bottom:20,right:20,width:52,height:52,borderRadius:"50%",background:showFab?"var(--mt)":"var(--g)",color:"#fff",border:"none",fontSize:24,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(26,42,58,.25)",zIndex:72,transition:"transform .15s,background .15s",transform:showFab?"rotate(45deg)":"none"}}>+</button>
