@@ -675,7 +675,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         // Uncovered holiday weeks (kids with no camp booked)
         if(camps&&camps.length>0&&kids.length>0){
           // Check each future holiday
-          const futureHols=(schoolHolidays||[]).filter(h=>new Date(h.end_date)>=now);
+          const futureHols=(holidays||[]).filter(h=>new Date(h.end_date)>=now);
           futureHols.slice(0,2).forEach(h=>{
             kids.forEach(kid=>{
               const age=getAge(kid.date_of_birth);
@@ -887,7 +887,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         {/* Holiday coverage summary */}
         {kids.length>0&&(()=>{
           const now=new Date();
-          const futureHols=(schoolHolidays||[]).filter(h=>new Date(h.end_date)>=now).slice(0,3);
+          const futureHols=(holidays||[]).filter(h=>new Date(h.end_date)>=now).slice(0,3);
           if(futureHols.length===0)return null;
           return <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:14,marginBottom:14,boxShadow:"var(--shadow)"}}>
             <div style={{fontSize:13,fontWeight:700,color:"var(--g)",marginBottom:8}}>Holiday coverage</div>
