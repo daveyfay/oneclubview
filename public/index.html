@@ -618,11 +618,13 @@ function Hub({user,profile,onRefresh,onLogout}){
         <div style={{maxWidth:520,margin:"0 auto",padding:"14px 16px 8px"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
             <Logo/>
-            <div style={{position:"relative",cursor:"pointer",marginRight:6}} onClick={()=>setShowNotifs(!showNotifs)}>
-              <span style={{fontSize:17}}>🔔</span>
-              {notifications.length>0&&<div style={{position:"absolute",top:-4,right:-6,width:15,height:15,borderRadius:"50%",background:"var(--acc)",color:"#fff",fontSize:8,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{notifications.length}</div>}
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{position:"relative",cursor:"pointer"}} onClick={()=>setShowNotifs(!showNotifs)}>
+                <span style={{fontSize:17}}>🔔</span>
+                {notifications.length>0&&<div style={{position:"absolute",top:-4,right:-6,width:15,height:15,borderRadius:"50%",background:"var(--acc)",color:"#fff",fontSize:8,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{notifications.length}</div>}
+              </div>
+              <button onClick={()=>setShowProfile(!showProfile)} style={{width:32,height:32,borderRadius:10,background:"var(--g)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700,border:"none",cursor:"pointer"}}>{(profile?.first_name||"U")[0]}</button>
             </div>
-            <button onClick={()=>setShowProfile(!showProfile)} style={{width:32,height:32,borderRadius:10,background:"var(--g)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700,border:"none",cursor:"pointer"}}>{(profile?.first_name||"U")[0]}</button>
           </div>
           <div className="hsb" style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6}}>
             {members.map(m=><button key={m.id} onClick={()=>setFilter(m.id)} className={"pill "+(filter===m.id?"pon":"poff")}>{m.type!=="all"&&<span style={{width:8,height:8,borderRadius:"50%",background:m.type==="kid"?COLS[members.indexOf(m)%COLS.length]:m.type==="adult"?"#8b5cf6":"var(--g)",flexShrink:0}}/>}{m.type==="all"?m.emoji:""} {m.name}{m.age!=null&&<span style={{opacity:.6,marginLeft:2}}>({m.age})</span>}</button>)}
