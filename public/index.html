@@ -657,6 +657,75 @@ function Hub({user,profile,onRefresh,onLogout}){
         })()}
       </div>
 
+      {/* SMART ALERTS */}
+      {(()=>{
+        const alerts=[];
+        const now=new Date();
+        const in3d=new Date(now);in3d.setDate(in3d.getDate()+3);
+        const in7d=new Date(now);in7d.setDate(in7d.getDate()+7);
+        
+        // Fee alerts
+        pays.filter(p=>!p.paid).forEach(p=>{
+          const due=new Date(p.due_date);
+          const days=Math.ceil((due-now)/(86400000));
+          if(days<0)alerts.push({type:"urgent",icon:"🚨",text:p.description+" is €"+parseFloat(p.amount).toFixed(0)+" overdue ("+Math.abs(days)+" days)",action:"money"});
+          else if(days<=3)alerts.push({type:"warn",icon:"💳",text:p.description+" — €"+parseFloat(p.amount).toFixed(0)+" due in "+days+" day"+(days!==1?"s":""),action:"money"});
+        });
+
+        // Uncovered holiday weeks (kids with no camp booked)
+        if(camps&&camps.length>0&&kids.length>0){
+          // Check each future holiday
+          const futureHols=(schoolHolidays||[]).filter(h=>new Date(h.end_date)>=now);
+          futureHols.slice(0,2).forEach(h=>{
+            kids.forEach(kid=>{
+              const age=getAge(kid.date_of_birth);
+              const suitableCamps=(camps||[]).filter(ca=>(!ca.age_min||age>=ca.age_min)&&(!ca.age_max||age<=ca.age_max));
+              const booked=(campBookings||[]).filter(b=>b.dependant_id===kid.id);
+              if(suitableCamps.length>0&&booked.length===0){
+                alerts.push({type:"info",icon:"🏕️",text:kid.first_name+" has no camp booked for "+h.name+". "+suitableCamps.length+" camp"+(suitableCamps.length>1?"s":"")+" suit"+(suitableCamps.length===1?"s":"")+" their age.",action:"camps"});
+              }
+            });
+          });
+        }
+
+        // Clash today
+        const todayEvts=weekEvts.filter(e=>isToday(e.date)&&e.time);
+        for(let i=0;i<todayEvts.length;i++){
+          for(let j=i+1;j<todayEvts.length;j++){
+            const a=todayEvts[i],b=todayEvts[j];
+            if(a.memberId===b.memberId)continue;
+            if((a.time<(b.endTime||"23:59"))&&(b.time<(a.endTime||"23:59"))){
+              alerts.push({type:"urgent",icon:"⚠️",text:"Clash today: "+a.member+" ("+a.title+" "+a.time+") overlaps "+b.member+" ("+b.title+" "+b.time+")",action:"week"});
+            }
+          }
+        }
+
+        // No driver assigned for today's events
+        todayEvts.filter(e=>!e.driver).forEach(e=>{
+          alerts.push({type:"info",icon:"🚗",text:"No driver set for "+e.member+"'s "+e.title+" at "+e.time,action:"week"});
+        });
+
+        // Events with no end time
+        const noEnd=weekEvts.filter(e=>e.time&&!e.endTime);
+        if(noEnd.length>0){
+          alerts.push({type:"info",icon:"⏰",text:noEnd.length+" event"+(noEnd.length>1?"s":"")+" this week with no end time — makes pickup planning harder",action:"week"});
+        }
+
+        if(alerts.length===0)return null;
+
+        const colors={urgent:{bg:"#fef2f2",border:"#fecaca",text:"#dc2626"},warn:{bg:"var(--accl)",border:"#f8c4bc",text:"var(--acc)"},info:{bg:"var(--gxl)",border:"#c8dce8",text:"var(--gl)"}};
+        return <div style={{marginBottom:14}}>
+          <div style={{fontSize:12,fontWeight:700,color:"var(--mt)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>Heads up</div>
+          {alerts.slice(0,5).map((a,i)=>{
+            const col=colors[a.type]||colors.info;
+            return <div key={i} onClick={()=>a.action&&setTab(a.action)} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",borderRadius:12,background:col.bg,border:"1px solid "+col.border,marginBottom:6,cursor:a.action?"pointer":"default"}}>
+              <span style={{fontSize:16,flexShrink:0}}>{a.icon}</span>
+              <span style={{fontSize:12,color:col.text,fontWeight:600,lineHeight:1.4}}>{a.text}</span>
+            </div>;
+          })}
+        </div>;
+      })()}
+
       {/* THIS WEEK */}
       {tab==="week"&&<div>
         {/* CLASH DETECTION */}
@@ -710,7 +779,7 @@ function Hub({user,profile,onRefresh,onLogout}){
                 </div>
                 {today&&<span style={{fontSize:11,fontWeight:700,color:"var(--acc)",textTransform:"uppercase",letterSpacing:.5}}>Today</span>}
               </div>
-              {lanes.length===0?<div style={{padding:"8px 0 4px 48px",fontSize:13,color:"var(--mt)",fontStyle:"italic"}}>Nothing on</div>
+              {lanes.length===0?<div style={{padding:"8px 0 4px 48px",fontSize:13,color:"var(--mt)"}}>Free day ✨</div>
               :<div style={{display:"flex",flexDirection:"column",gap:6,paddingLeft:48}}>
                 {lanes.map((lane,li)=>lane.events.map((e,ei)=>
                   <div key={e.id||li+"-"+ei} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:"var(--card)",border:"1px solid var(--bd)",boxShadow:"var(--shadow)"}}>
@@ -757,6 +826,22 @@ function Hub({user,profile,onRefresh,onLogout}){
       </div>}
 
       {tab==="money"&&<div>
+        {/* Spend summary */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
+          <div style={{background:"var(--card)",borderRadius:14,padding:12,border:"1px solid var(--bd)",textAlign:"center",boxShadow:"var(--shadow)"}}>
+            <div style={{fontSize:20,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)"}}>€{filtPays.reduce((s,p)=>s+parseFloat(p.amount||0),0).toFixed(0)}</div>
+            <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Total tracked</div>
+          </div>
+          <div style={{background:"var(--card)",borderRadius:14,padding:12,border:"1px solid var(--bd)",textAlign:"center",boxShadow:"var(--shadow)"}}>
+            <div style={{fontSize:20,fontWeight:800,color:"#16a34a",fontFamily:"var(--sr)"}}>€{filtPays.filter(p=>p.paid).reduce((s,p)=>s+parseFloat(p.amount||0),0).toFixed(0)}</div>
+            <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Paid</div>
+          </div>
+          <div style={{background:"var(--card)",borderRadius:14,padding:12,border:"1px solid var(--bd)",textAlign:"center",boxShadow:"var(--shadow)"}}>
+            <div style={{fontSize:20,fontWeight:800,color:"var(--acc)",fontFamily:"var(--sr)"}}>€{filtPays.filter(p=>!p.paid).reduce((s,p)=>s+parseFloat(p.amount||0),0).toFixed(0)}</div>
+            <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Outstanding</div>
+          </div>
+        </div>
+
         {(()=>{
           const overdue=filtPays.filter(p=>!p.paid&&new Date(p.due_date)<new Date());
           if(overdue.length===0)return null;
@@ -799,6 +884,30 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       {/* CAMPS */}
       {tab==="camps"&&<div>
+        {/* Holiday coverage summary */}
+        {kids.length>0&&(()=>{
+          const now=new Date();
+          const futureHols=(schoolHolidays||[]).filter(h=>new Date(h.end_date)>=now).slice(0,3);
+          if(futureHols.length===0)return null;
+          return <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:14,marginBottom:14,boxShadow:"var(--shadow)"}}>
+            <div style={{fontSize:13,fontWeight:700,color:"var(--g)",marginBottom:8}}>Holiday coverage</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {futureHols.map(h=>{
+                const booked=(campBookings||[]).filter(b=>{
+                  const camp=(camps||[]).find(ca=>ca.id===b.camp_id);
+                  return camp&&new Date(camp.start_date)>=new Date(h.start_date)&&new Date(camp.start_date)<=new Date(h.end_date);
+                });
+                const covered=booked.length>0;
+                return <div key={h.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",fontSize:12}}>
+                  <span style={{color:"var(--tx)",fontWeight:600}}>{h.name}</span>
+                  <span style={{fontWeight:700,color:covered?"#16a34a":"var(--acc)",background:covered?"#f0fdf4":"var(--accl)",padding:"2px 10px",borderRadius:8}}>
+                    {covered?booked.length+" booked":"Not covered"}
+                  </span>
+                </div>;
+              })}
+            </div>
+          </div>;
+        })()}
         {(()=>{
           const now=new Date();
           // Merge default + user overrides
@@ -957,6 +1066,22 @@ function Hub({user,profile,onRefresh,onLogout}){
         </div>
       </div>}
 
+      </div>
+
+      {/* Quick Actions */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginTop:16,marginBottom:8}}>
+        <button onClick={()=>setShowAddEvent(true)} style={{padding:"12px 8px",borderRadius:14,border:"1px solid var(--bd)",background:"var(--card)",cursor:"pointer",textAlign:"center",boxShadow:"var(--shadow)"}}>
+          <div style={{fontSize:18}}>📅</div>
+          <div style={{fontSize:11,fontWeight:600,color:"var(--mt)",marginTop:4,fontFamily:"var(--sn)"}}>Add event</div>
+        </button>
+        <button onClick={()=>setShowPaste(true)} style={{padding:"12px 8px",borderRadius:14,border:"1px solid var(--bd)",background:"var(--card)",cursor:"pointer",textAlign:"center",boxShadow:"var(--shadow)"}}>
+          <div style={{fontSize:18}}>📋</div>
+          <div style={{fontSize:11,fontWeight:600,color:"var(--mt)",marginTop:4,fontFamily:"var(--sn)"}}>Paste schedule</div>
+        </button>
+        <button onClick={()=>setShowAddKid(true)} style={{padding:"12px 8px",borderRadius:14,border:"1px solid var(--bd)",background:"var(--card)",cursor:"pointer",textAlign:"center",boxShadow:"var(--shadow)"}}>
+          <div style={{fontSize:18}}>👤</div>
+          <div style={{fontSize:11,fontWeight:600,color:"var(--mt)",marginTop:4,fontFamily:"var(--sn)"}}>Add member</div>
+        </button>
       </div>
 
       {/* Help & Admin */}
