@@ -496,7 +496,7 @@ function Hub({user,profile,onRefresh,onLogout}){
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
   const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[campBookings,setCampBookings]=useState([]);const[holidays,setHolidays]=useState([]);const[userHolidays,setUserHolidays]=useState([]);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
-  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);
+  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[weekView,setWeekView]=useState("timeline");const[showPaste,setShowPaste]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);
 
   async function load(){
     setLoading(true);
@@ -550,7 +550,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           const kid=re.dependant_id?kids.find(k=>k.id===re.dependant_id):null;
           evts.push({id:re.id+d.toISOString(),title:re.title,date:d,time:re.start_time?.slice(0,5)||"",
             endTime:re.start_time&&re.duration_minutes?((h,m)=>{const t=parseInt(re.start_time.slice(0,2))*60+parseInt(re.start_time.slice(3,5))+re.duration_minutes;return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()||"":"",
-            club:cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self"});
+            club:cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null});
         }
       });
     });
@@ -659,10 +659,9 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       {/* THIS WEEK */}
       {tab==="week"&&<div>
+        {/* CLASH DETECTION */}
         {(()=>{
-          // Clash detection
           const clashes=[];
-          const today=new Date();
           wd.forEach(d=>{
             const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate()&&e.time);
             for(let i=0;i<dayEvts.length;i++){
@@ -670,57 +669,93 @@ function Hub({user,profile,onRefresh,onLogout}){
                 const a=dayEvts[i],b=dayEvts[j];
                 if(a.memberId===b.memberId)continue;
                 const aStart=a.time,aEnd=a.endTime||"23:59",bStart=b.time,bEnd=b.endTime||"23:59";
-                if(aStart<bEnd&&bStart<aEnd){
-                  clashes.push({day:d,a,b});
-                }
+                if(aStart<bEnd&&bStart<aEnd)clashes.push({day:d,a,b});
               }
             }
           });
           if(clashes.length===0)return null;
-          return <div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:14,padding:14,marginBottom:14}}>
+          return <div style={{background:"#fef2f2",border:"1.5px solid #fecaca",borderRadius:16,padding:14,marginBottom:14,boxShadow:"var(--shadow)"}}>
             <div style={{fontSize:13,fontWeight:700,color:"#dc2626",marginBottom:6}}>⚠️ {clashes.length} clash{clashes.length>1?"es":""} this week</div>
             {clashes.map((cl,i)=><div key={i} style={{fontSize:12,color:"#991b1b",marginBottom:2}}>
-              {fmtDate(cl.day)}: {cl.a.member} ({cl.a.title} {cl.a.time}) overlaps with {cl.b.member} ({cl.b.title} {cl.b.time})
+              {fmtDate(cl.day)}: {cl.a.member} ({cl.a.title} {cl.a.time}) overlaps {cl.b.member} ({cl.b.title} {cl.b.time})
             </div>)}
           </div>;
         })()}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
-          <div style={{background:"var(--card)",borderRadius:14,padding:12,border:"1px solid var(--bd)",textAlign:"center"}}>
-            <div style={{fontSize:20,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)"}}>{filtEvts.length}</div>
-            <div style={{fontSize:11,color:"var(--mt)",fontWeight:600}}>events</div>
-          </div>
-          <div style={{background:"var(--accl)",borderRadius:14,padding:12,border:"1px solid #f0d078",textAlign:"center"}}>
-            <div style={{fontSize:20,fontWeight:800,color:"#c44030",fontFamily:"var(--sr)"}}>€{totalDue.toFixed(0)}</div>
-            <div style={{fontSize:11,color:"#a68600",fontWeight:600}}>due</div>
-          </div>
-          <div style={{background:"var(--gxl)",borderRadius:14,padding:12,border:"1px solid #c8e6c9",textAlign:"center"}}>
-            <div style={{fontSize:20,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)"}}>{clubs.length}</div>
-            <div style={{fontSize:11,color:"var(--gl)",fontWeight:600}}>clubs</div>
-          </div>
+
+        {/* VIEW TOGGLE */}
+        <div style={{display:"flex",gap:6,marginBottom:14}}>
+          <button onClick={()=>setWeekView&&setWeekView("timeline")} style={{padding:"6px 14px",borderRadius:10,border:"none",background:(!weekView||weekView==="timeline")?"var(--g)":"#f0eeeb",color:(!weekView||weekView==="timeline")?"#fff":"var(--mt)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"var(--sn)"}}>Timeline</button>
+          <button onClick={()=>setWeekView&&setWeekView("list")} style={{padding:"6px 14px",borderRadius:10,border:"none",background:weekView==="list"?"var(--g)":"#f0eeeb",color:weekView==="list"?"#fff":"var(--mt)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"var(--sn)"}}>List</button>
         </div>
-        {wd.map(d=>{
-          const dayEvts=filtEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate());
-          const today=isToday(d);
-          return <div key={d.toISOString()} style={{marginBottom:12}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-              {today&&<span style={{width:8,height:8,borderRadius:4,background:"#e85d4a"}}/>}
-              <span style={{fontSize:13,fontWeight:today?800:600,color:today?"var(--g)":"var(--mt)"}}>{fmtDate(d)}</span>
-            </div>
-            {dayEvts.length===0?<div style={{padding:"8px 0 4px",fontSize:13,color:"#ccc",fontStyle:"italic"}}>Nothing on</div>
-            :dayEvts.map(e=><div key={e.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"var(--shadow)",marginBottom:6}}>
-              <div style={{width:4,height:36,borderRadius:2,background:e.colour,flexShrink:0}}/>
-              <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:600}}><span style={{color:"var(--mt)",fontWeight:500}}>{e.member}</span> — {e.title}</div>
-                <div style={{fontSize:12,color:"var(--mt)",marginTop:1}}>{e.club}</div>
+
+        {/* SWIMLANE TIMELINE VIEW */}
+        {(!weekView||weekView==="timeline")&&<div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
+          {wd.map(d=>{
+            const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate());
+            const today=isToday(d);
+            if(dayEvts.length===0&&!today)return null;
+            // Group by member
+            const memberEvts={};
+            dayEvts.forEach(e=>{
+              const key=e.memberId||e.member;
+              if(!memberEvts[key])memberEvts[key]={name:e.member,events:[]};
+              memberEvts[key].events.push(e);
+            });
+            const lanes=Object.values(memberEvts);
+            return <div key={d.toISOString()} style={{marginBottom:12}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                <div style={{width:40,height:40,borderRadius:12,background:today?"var(--acc)":"var(--card)",border:today?"none":"1px solid var(--bd)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",boxShadow:today?"0 4px 12px rgba(232,93,74,.25)":"var(--shadow)"}}>
+                  <span style={{fontSize:9,fontWeight:700,color:today?"rgba(255,255,255,.7)":"var(--mt)",textTransform:"uppercase"}}>{d.toLocaleDateString("en-IE",{weekday:"short"})}</span>
+                  <span style={{fontSize:16,fontWeight:800,color:today?"#fff":"var(--tx)",lineHeight:1}}>{d.getDate()}</span>
+                </div>
+                {today&&<span style={{fontSize:11,fontWeight:700,color:"var(--acc)",textTransform:"uppercase",letterSpacing:.5}}>Today</span>}
               </div>
-              {e.time&&<span style={{fontSize:12,fontWeight:600,color:"var(--g)",background:"var(--gxl)",padding:"4px 10px",borderRadius:8,whiteSpace:"nowrap"}}>{e.time}{e.endTime?"–"+e.endTime:""}</span>}
-            </div>)}
-          </div>
-        })}
-        <button onClick={()=>setShowAddEv(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)"}}>+ Add an event</button>
+              {lanes.length===0?<div style={{padding:"8px 0 4px 48px",fontSize:13,color:"var(--mt)",fontStyle:"italic"}}>Nothing on</div>
+              :<div style={{display:"flex",flexDirection:"column",gap:6,paddingLeft:48}}>
+                {lanes.map((lane,li)=>lane.events.map((e,ei)=>
+                  <div key={e.id||li+"-"+ei} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:"var(--card)",border:"1px solid var(--bd)",boxShadow:"var(--shadow)"}}>
+                    <div style={{width:5,background:e.colour||COLS[li%COLS.length],flexShrink:0}}/>
+                    <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:700,color:"var(--tx)"}}>{e.member}</div>
+                        <div style={{fontSize:12,color:"var(--mt)"}}>{e.title}</div>
+                      </div>
+                      <div style={{textAlign:"right",flexShrink:0}}>
+                        <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
+                        {e.driver&&<div style={{fontSize:10,fontWeight:600,color:"var(--acc)",marginTop:2}}>🚗 {e.driver}</div>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>}
+            </div>;
+          })}
+        </div>}
+
+        {/* LIST VIEW (original) */}
+        {weekView==="list"&&<div>
+          {wd.map(d=>{
+            const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate());
+            const today=isToday(d);
+            return <div key={d.toISOString()} style={{marginBottom:10}}>
+              <div style={{fontSize:12,fontWeight:700,color:today?"var(--acc)":"var(--mt)",marginBottom:6}}>{fmtDate(d)}{today?" — TODAY":""}</div>
+              {dayEvts.length===0?<div style={{fontSize:13,color:"#ccc",fontStyle:"italic",marginBottom:4}}>Nothing on</div>
+              :dayEvts.map(e=><div key={e.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                <div style={{width:4,height:28,borderRadius:2,background:e.colour}}/>
+                <span style={{fontSize:13,fontWeight:600}}>{e.member}</span>
+                <span style={{fontSize:13,color:"var(--mt)"}}>{e.title}</span>
+                <span style={{marginLeft:"auto",fontSize:12,fontWeight:600,color:"var(--g)"}}>{e.time}{e.endTime?"–"+e.endTime:""}</span>
+              </div>)}
+            </div>;
+          })}
+        </div>}
+
+        <div style={{display:"flex",gap:8,marginTop:8}}>
+          <button onClick={()=>setShowAddEvent(true)} style={{flex:1,padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--mt)",fontFamily:"var(--sn)"}}>+ Add event</button>
+          <button onClick={()=>setShowPaste(true)} style={{flex:1,padding:14,borderRadius:14,border:"none",background:"var(--accl)",cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--acc)",fontFamily:"var(--sn)"}}>📋 Paste schedule</button>
+        </div>
       </div>}
 
-      {/* MONEY */}
       {tab==="money"&&<div>
         {(()=>{
           const overdue=filtPays.filter(p=>!p.paid&&new Date(p.due_date)<new Date());
@@ -934,6 +969,7 @@ function Hub({user,profile,onRefresh,onLogout}){
       {showAddEv&&<AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddEv(false)} onSaved={()=>{setShowAddEv(false);load()}}/>}
       {showAddPay&&<AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddPay(false)} onSaved={()=>{setShowAddPay(false);load()}}/>}
       {showSupport&&<SupportModal userId={user.id} userEmail={user.email} onClose={()=>setShowSupport(false)}/>}
+      {showPaste&&<PasteScheduleModal userId={user.id} clubs={clubs} kids={kids} profile={profile} onClose={()=>setShowPaste(false)} onSaved={()=>{setShowPaste(false);load()}}/>}
       {showAddKid&&<AddKidModal userId={user.id} editKid={typeof showAddKid==="object"?showAddKid:null} profile={profile} onClose={()=>setShowAddKid(false)} onSaved={()=>{setShowAddKid(false);load()}}/>}
       {editClub&&<EditClubModal club={editClub} kids={kids} profile={profile} userId={user.id} onClose={()=>setEditClub(null)} onSaved={()=>{setEditClub(null);load()}} onDelete={()=>{setEditClub(null);load()}}/>}
       {editHol&&<EditHolidayModal holiday={editHol} userId={user.id} onClose={()=>setEditHol(null)} onSaved={()=>{setEditHol(null);load()}}/>}
@@ -947,7 +983,7 @@ function AddEventModal({clubs,userId,kids,profile,onClose,onSaved}){
   const[cid,setCid]=useState(clubs[0]?.club_id||"");const[mid,setMid]=useState("self");
   const[title,setTitle]=useState("");const[type,setType]=useState("recurring");
   const[date,setDate]=useState("");const[time,setTime]=useState("18:00");const[endTime,setEndTime]=useState("19:00");const[dur,setDur]=useState(60);
-  const[dow,setDow]=useState(1);const[sv,setSv]=useState(false);
+  const[dow,setDow]=useState(1);const[sv,setSv]=useState(false);const[driver,setDriver]=useState("");
   async function save(){
     if(!title.trim()||!cid)return;setSv(true);const dep=mid==="self"?null:mid;
     let result;
@@ -984,6 +1020,11 @@ function AddEventModal({clubs,userId,kids,profile,onClose,onSaved}){
           <div style={{flex:1}}><span className="lbl">End time</span><input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)}/></div>
         </div>
       </div>}
+      <div><span className="lbl">Who's driving? (optional)</span>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>
+          {[profile?.first_name||"Me",...kids.map(k=>k.first_name)].map(d=><button key={d} type="button" onClick={()=>setDriver(driver===d?"":d)} style={{padding:"6px 12px",borderRadius:10,border:driver===d?"2px solid var(--g)":"1.5px solid var(--bd)",background:driver===d?"var(--gxl)":"var(--card)",fontSize:12,fontWeight:600,color:driver===d?"var(--gl)":"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>🚗 {d}</button>)}
+        </div>
+      </div>
       <button onClick={save} disabled={sv||!title.trim()||!cid} className="btn bp">{sv?"Saving...":(clubs.length===0?"Add a club first":"Save event")}</button>
     </div>
   </div></div>;
@@ -1654,6 +1695,68 @@ function AdminDashboard({user,onBack}){
 
     </div>
   </div>;
+}
+
+function PasteScheduleModal({userId,clubs,kids,profile,onClose,onSaved}){
+  const[text,setText]=useState("");const[parsing,setParsing]=useState(false);const[parsed,setParsed]=useState(null);const[err,setErr]=useState(null);const[applying,setApplying]=useState(false);
+
+  async function parse(){
+    if(!text.trim())return;setParsing(true);setErr(null);
+    try{
+      // Call Anthropic API via edge function to parse text into events
+      const res=await fetch(SB+"/functions/v1/parse-schedule",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},
+        body:JSON.stringify({text:text.trim(),kids:kids.map(k=>({name:k.first_name,id:k.id})),clubs:clubs.map(c=>({name:c.club_name||c.clubs?.name,id:c.club_id})),parent_name:profile?.first_name||"Parent"})
+      });
+      const data=await res.json();
+      if(data.events&&data.events.length>0){setParsed(data.events)}
+      else{setErr("Couldn't find any schedule info in that text. Try pasting a message that mentions days, times, or activities.")}
+    }catch(e){setErr("Failed to parse. Try again or add events manually.")}
+    setParsing(false);
+  }
+
+  async function apply(){
+    setApplying(true);
+    for(const ev of parsed){
+      if(ev.recurring&&ev.day_of_week){
+        await db("recurring_events","POST",{body:{user_id:userId,club_id:ev.club_id||null,dependant_id:ev.dependant_id||null,day_of_week:ev.day_of_week,start_time:ev.start_time||null,duration_minutes:ev.duration_minutes||60,title:ev.title||null,excluded_dates:[],driver:ev.driver||null}});
+      } else if(ev.date){
+        await db("manual_events","POST",{body:{user_id:userId,club_id:ev.club_id||null,dependant_id:ev.dependant_id||null,date:ev.date,start_time:ev.start_time||null,duration_minutes:ev.duration_minutes||60,title:ev.title||null,driver:ev.driver||null}});
+      }
+    }
+    setApplying(false);onSaved();
+  }
+
+  return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:16}}>
+      <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Paste a schedule</h3>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button>
+    </div>
+
+    {!parsed?<>
+      <p style={{fontSize:13,color:"var(--mt)",marginBottom:12,lineHeight:1.5}}>Paste a WhatsApp message, email, or club schedule below. We'll automatically extract the events.</p>
+      <textarea value={text} onChange={e=>setText(e.target.value)} placeholder={"E.g.:\n\nHi parents, training this term:\nTuesday 5-6pm (U8s)\nThursday 6-7pm (U10s)\nNo training 15th April"} rows={6} style={{width:"100%",padding:12,borderRadius:12,border:"1.5px solid var(--bd)",fontSize:13,fontFamily:"var(--sn)",resize:"vertical",marginBottom:12}}/>
+      {err&&<div style={{padding:12,borderRadius:12,background:"#fef2f2",color:"#dc2626",fontSize:13,marginBottom:12}}>{err}</div>}
+      <button onClick={parse} disabled={parsing||!text.trim()} className="btn bp">{parsing?"Reading...":"Extract events"}</button>
+    </>:<>
+      <p style={{fontSize:13,color:"var(--mt)",marginBottom:12}}>Found {parsed.length} event{parsed.length>1?"s":""}:</p>
+      <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+        {parsed.map((ev,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:10,background:"var(--card)",borderRadius:14,border:"1px solid var(--bd)",padding:"10px 14px",boxShadow:"var(--shadow)"}}>
+          <div style={{width:4,height:32,borderRadius:2,background:ev.colour||"var(--acc)",flexShrink:0}}/>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:700}}>{ev.title||"Event"}</div>
+            <div style={{fontSize:12,color:"var(--mt)"}}>{ev.day_of_week||ev.date} {ev.start_time?("at "+ev.start_time):""} {ev.duration_minutes?("("+ev.duration_minutes+"min)"):""}</div>
+          </div>
+          <span style={{fontSize:11,fontWeight:600,color:"var(--gl)",background:"var(--gxl)",padding:"3px 8px",borderRadius:6}}>{ev.recurring?"weekly":"once"}</span>
+        </div>)}
+      </div>
+      <div style={{display:"flex",gap:8}}>
+        <button onClick={()=>setParsed(null)} className="btn bs" style={{flex:1}}>Edit text</button>
+        <button onClick={apply} disabled={applying} className="btn bp" style={{flex:2}}>{applying?"Adding...":"Add "+parsed.length+" event"+(parsed.length>1?"s":"")+" to calendar"}</button>
+      </div>
+    </>}
+  </div></div>;
 }
 
 function App(){
