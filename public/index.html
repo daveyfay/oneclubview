@@ -37,6 +37,7 @@ select{-webkit-appearance:none;appearance:none}
 
 const{useState,useEffect,useMemo,useRef}=React;
 const SB="https://uqihwazheypvmrcrqklg.supabase.co";
+const STRIPE_PK="pk_live_51T6y1PC99F6PJ2edJz7PgvoddkHIAps5YUknsG8k6qvLmvvPy9ybK6OkFDi1ASMfzIOGGje3NuvSNu4kNMlJv2KG00qrHgtKbd";
 const SK="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxaWh3YXpoZXlwdm1yY3Jxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4Nzg1MjQsImV4cCI6MjA4ODQ1NDUyNH0.n5I1lkCu7Tf1sBbIceWUdsRQtIrH7-WGc3itZAfrBKI";
 let _t=null;
 const hd=()=>({apikey:SK,"Content-Type":"application/json",Authorization:"Bearer "+(_t||SK)});
@@ -600,6 +601,55 @@ function Hub({user,profile,onRefresh,onLogout}){
   if(loading)return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--warm)"}}><p style={{color:"var(--mt)"}}>Loading...</p></div>;
 
   // If no clubs yet, prompt
+  // Trial/subscription check
+  const trialStart=profile?.trial_started_at?new Date(profile.trial_started_at):null;
+  const trialDays=trialStart?Math.floor((new Date()-trialStart)/(86400000)):0;
+  const trialExpired=trialDays>14;
+  const isSubscribed=profile?.subscription_status==="active"||profile?.subscription_status==="trial";
+  const needsPayment=trialExpired&&profile?.subscription_status!=="active";
+
+  async function startCheckout(){
+    const res=await fetch(SB+"/functions/v1/stripe-billing",{
+      method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},
+      body:JSON.stringify({action:"checkout",user_id:user.id,email:user.email,return_url:window.location.origin})
+    });
+    const data=await res.json();
+    if(data.url)window.location.href=data.url;
+    else alert("Could not start checkout. Please try again.");
+  }
+
+  async function openPortal(){
+    const res=await fetch(SB+"/functions/v1/stripe-billing",{
+      method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},
+      body:JSON.stringify({action:"portal",user_id:user.id,return_url:window.location.origin})
+    });
+    const data=await res.json();
+    if(data.url)window.location.href=data.url;
+  }
+
+  if(needsPayment)return (
+    <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
+      <div style={{textAlign:"center",maxWidth:400}}>
+        <Logo/>
+        <div style={{fontSize:48,margin:"24px 0 12px"}}>⏰</div>
+        <h2 style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>Your free trial has ended</h2>
+        <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 4px"}}>You had {trialDays} days with OneClubView. Subscribe to keep your family's schedule, fees, and clubs all in one place.</p>
+        <div style={{background:"var(--card)",borderRadius:20,border:"1px solid var(--bd)",padding:24,margin:"20px 0",textAlign:"left"}}>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <span style={{fontFamily:"var(--sr)",fontSize:32,fontWeight:800,color:"var(--g)"}}>€7.99</span>
+            <span style={{fontSize:14,color:"var(--mt)"}}>/month</span>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {["Unlimited kids & clubs","Both parents included","Weekly schedule with clash detection","Fee tracking & reminders","Camp finder matched to your kids","Forward emails to auto-update","Smart notifications for both parents"].map(f=><div key={f} style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:"var(--tx)"}}><span style={{color:"#16a34a",fontWeight:700}}>✓</span>{f}</div>)}
+          </div>
+        </div>
+        <button onClick={startCheckout} className="btn bp" style={{width:"100%",fontSize:16,padding:16}}>Subscribe — €7.99/month</button>
+        <p style={{fontSize:11,color:"var(--mt)",marginTop:8}}>Cancel anytime. Secure payment via Stripe.</p>
+        <button onClick={onLogout} style={{marginTop:16,background:"none",border:"none",fontSize:13,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>Log out</button>
+      </div>
+    </div>
+  );
+
   if(clubs.length===0)return (
     <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
       <div style={{textAlign:"center",maxWidth:360}}>
@@ -648,6 +698,12 @@ function Hub({user,profile,onRefresh,onLogout}){
           <button onClick={()=>setShowAddKid(true)} className="btn bp" style={{fontSize:13}}>+ Add a child</button>
           <button onClick={()=>onRefresh("clubs")} className="btn bs" style={{fontSize:13}}>+ Add a club</button>
         </div>
+      </div>}
+
+      {/* TRIAL BANNER */}
+      {!needsPayment&&trialStart&&profile?.subscription_status!=="active"&&<div style={{background:"linear-gradient(135deg,#1a2a3a,#2d4a5f)",borderRadius:12,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",color:"#fff"}}>
+        <div><span style={{fontSize:12,fontWeight:700}}>Free trial</span><span style={{fontSize:11,color:"rgba(255,255,255,.6)",marginLeft:6}}>{14-trialDays} days left</span></div>
+        <button onClick={startCheckout} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Subscribe</button>
       </div>}
 
       {/* WEEK HEADER */}
@@ -1086,6 +1142,8 @@ function Hub({user,profile,onRefresh,onLogout}){
         </div>
         <button onClick={()=>{setShowProfile(false);setShowSupport(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💬 Contact Support</button>
         <button onClick={()=>{setShowProfile(false);/* TODO: change password */}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🔑 Change Password</button>
+        {profile?.subscription_status==="active"&&<button onClick={()=>{setShowProfile(false);openPortal()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💳 Manage Subscription</button>}
+        {profile?.subscription_status!=="active"&&<button onClick={()=>{setShowProfile(false);startCheckout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>⭐ Subscribe — €7.99/mo</button>}
         <div style={{borderTop:"1px solid var(--bd)",marginTop:4,paddingTop:4}}>
           <button onClick={()=>{setShowProfile(false);onLogout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🚪 Log out</button>
         </div>
