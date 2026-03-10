@@ -640,10 +640,7 @@ function Hub({user,profile,onRefresh,onLogout}){
       </div>}
 
       {/* WEEK HEADER */}
-      <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:14}}>
-        <h2 style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>This week</h2>
-        <span style={{fontSize:12,color:"var(--mt)"}}>{wd[0].toLocaleDateString("en-IE",{day:"numeric",month:"short"})+" – "+wd[6].toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</span>
-      </div>
+      
 
       {/* WEEK HEADER */}
       <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:14}}>
@@ -777,7 +774,7 @@ function Hub({user,profile,onRefresh,onLogout}){
                     <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
                       <div>
                         <div style={{fontSize:13,fontWeight:700,color:"var(--tx)"}}>{e.member}</div>
-                        <div style={{fontSize:12,color:"var(--mt)"}}>{e.title}</div>
+                        <div style={{fontSize:12,color:"var(--mt)"}}>{e.club||e.title||""}</div>
                       </div>
                       <div style={{textAlign:"right",flexShrink:0}}>
                         <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
@@ -1078,7 +1075,19 @@ function Hub({user,profile,onRefresh,onLogout}){
           <div style={{padding:"12px 0 6px"}}>
             <span style={{fontSize:11,fontWeight:700,color:"var(--mt)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8,display:"block"}}>Who's driving?</span>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-              {[profile?.first_name||"Me",...familyMembers.filter(fm=>fm.id!==user.id).map(fm=>fm.first_name||fm.email),...kids.map(k=>k.first_name)].filter(Boolean).map(d=><button key={d} onClick={()=>{/* TODO: save driver */}} style={{padding:"6px 12px",borderRadius:8,border:editEvent.driver===d?"1.5px solid var(--g)":"1.5px solid var(--bd)",background:editEvent.driver===d?"var(--gxl)":"var(--card)",fontSize:11,fontWeight:600,color:editEvent.driver===d?"var(--g)":"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>🚗 {d}</button>)}
+              {[profile?.first_name||"Me",...familyMembers.filter(fm=>fm.id!==user.id).map(fm=>fm.first_name||fm.email),...kids.map(k=>k.first_name)].filter(Boolean).map(d=><button key={d} onClick={()=>{
+                const evId=editEvent.id?.split?.("T")?.[0]||editEvent.id;
+                const isRecurring=!!(editEvent.id&&editEvent.id.includes("T"));
+                if(isRecurring){
+                  db("recurring_events","PATCH",{body:{driver:editEvent.driver===d?null:d},filters:["id=eq."+evId]}).then(()=>{
+                    setEditEvent({...editEvent,driver:editEvent.driver===d?null:d});load();
+                  });
+                }else{
+                  db("manual_events","PATCH",{body:{driver:editEvent.driver===d?null:d},filters:["id=eq."+evId]}).then(()=>{
+                    setEditEvent({...editEvent,driver:editEvent.driver===d?null:d});load();
+                  });
+                }
+              }} style={{padding:"6px 12px",borderRadius:8,border:editEvent.driver===d?"1.5px solid var(--g)":"1.5px solid var(--bd)",background:editEvent.driver===d?"var(--gxl)":"var(--card)",fontSize:11,fontWeight:600,color:editEvent.driver===d?"var(--g)":"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>🚗 {d}</button>)}
             </div>
           </div>
           <div style={{display:"flex",gap:8,marginTop:14}}>
@@ -1138,7 +1147,19 @@ function Hub({user,profile,onRefresh,onLogout}){
           <div style={{padding:"12px 0 6px"}}>
             <span style={{fontSize:11,fontWeight:700,color:"var(--mt)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8,display:"block"}}>Who's driving?</span>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-              {[profile?.first_name||"Me",...familyMembers.filter(fm=>fm.id!==user.id).map(fm=>fm.first_name||fm.email),...kids.map(k=>k.first_name)].filter(Boolean).map(d=><button key={d} onClick={()=>{/* TODO: save driver */}} style={{padding:"6px 12px",borderRadius:8,border:editEvent.driver===d?"1.5px solid var(--g)":"1.5px solid var(--bd)",background:editEvent.driver===d?"var(--gxl)":"var(--card)",fontSize:11,fontWeight:600,color:editEvent.driver===d?"var(--g)":"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>🚗 {d}</button>)}
+              {[profile?.first_name||"Me",...familyMembers.filter(fm=>fm.id!==user.id).map(fm=>fm.first_name||fm.email),...kids.map(k=>k.first_name)].filter(Boolean).map(d=><button key={d} onClick={()=>{
+                const evId=editEvent.id?.split?.("T")?.[0]||editEvent.id;
+                const isRecurring=!!(editEvent.id&&editEvent.id.includes("T"));
+                if(isRecurring){
+                  db("recurring_events","PATCH",{body:{driver:editEvent.driver===d?null:d},filters:["id=eq."+evId]}).then(()=>{
+                    setEditEvent({...editEvent,driver:editEvent.driver===d?null:d});load();
+                  });
+                }else{
+                  db("manual_events","PATCH",{body:{driver:editEvent.driver===d?null:d},filters:["id=eq."+evId]}).then(()=>{
+                    setEditEvent({...editEvent,driver:editEvent.driver===d?null:d});load();
+                  });
+                }
+              }} style={{padding:"6px 12px",borderRadius:8,border:editEvent.driver===d?"1.5px solid var(--g)":"1.5px solid var(--bd)",background:editEvent.driver===d?"var(--gxl)":"var(--card)",fontSize:11,fontWeight:600,color:editEvent.driver===d?"var(--g)":"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>🚗 {d}</button>)}
             </div>
           </div>
           <div style={{display:"flex",gap:8,marginTop:14}}>
