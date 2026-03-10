@@ -656,6 +656,10 @@ function Hub({user,profile,onRefresh,onLogout}){
         <span style={{fontSize:11,color:"var(--mt)"}}>{wd[0].toLocaleDateString("en-IE",{day:"numeric",month:"short"})+" – "+wd[6].toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</span>
       </div>
 
+      
+
+      {/* THIS WEEK */}
+      {tab==="week"&&<div>
       {/* SMART ALERTS */}
       {(()=>{
         const alerts=[];
@@ -717,16 +721,13 @@ function Hub({user,profile,onRefresh,onLogout}){
           
           {alerts.slice(0,false?99:2).map((a,i)=>{
             const col=colors[a.type]||colors.info;
-            return <div key={i} onClick={()=>a.action&&setTab(a.action)} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",borderRadius:12,background:col.bg,border:"1px solid "+col.border,marginBottom:6,cursor:a.action?"pointer":"default"}}>
+            return <div key={i} onClick={()=>{if(a.action){setTab(a.action);window.scrollTo(0,0)}}} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",borderRadius:12,background:col.bg,border:"1px solid "+col.border,marginBottom:6,cursor:a.action?"pointer":"default"}}>
               <span style={{fontSize:16,flexShrink:0}}>{a.icon}</span>
               <span style={{fontSize:12,color:col.text,fontWeight:600,lineHeight:1.4}}>{a.text}</span>
             </div>;
           })}
         </div>;
       })()}
-
-      {/* THIS WEEK */}
-      {tab==="week"&&<div>
         {/* CLASH DETECTION */}
         {(()=>{
           const clashes=[];
