@@ -496,7 +496,7 @@ function Hub({user,profile,onRefresh,onLogout}){
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
   const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[campBookings,setCampBookings]=useState([]);const[holidays,setHolidays]=useState([]);const[userHolidays,setUserHolidays]=useState([]);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
-  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[weekView,setWeekView]=useState("timeline");const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);const[familyMembers,setFamilyMembers]=useState([]);
+  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[weekView,setWeekView]=useState("timeline");const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);const[familyMembers,setFamilyMembers]=useState([]);
 
   async function load(){
     // Get family member IDs for shared data
@@ -645,6 +645,12 @@ function Hub({user,profile,onRefresh,onLogout}){
         <span style={{fontSize:12,color:"var(--mt)"}}>{wd[0].toLocaleDateString("en-IE",{day:"numeric",month:"short"})+" – "+wd[6].toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</span>
       </div>
 
+      {/* WEEK HEADER */}
+      <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:14}}>
+        <h2 style={{fontFamily:"var(--sr)",fontSize:20,fontWeight:800,color:"var(--g)"}}>This week</h2>
+        <span style={{fontSize:11,color:"var(--mt)"}}>{wd[0].toLocaleDateString("en-IE",{day:"numeric",month:"short"})+" – "+wd[6].toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</span>
+      </div>
+
       {/* SMART ALERTS */}
       {(()=>{
         const alerts=[];
@@ -703,7 +709,7 @@ function Hub({user,profile,onRefresh,onLogout}){
 
         const colors={urgent:{bg:"#fef2f2",border:"#fecaca",text:"#dc2626"},warn:{bg:"var(--accl)",border:"#f8c4bc",text:"var(--acc)"},info:{bg:"var(--gxl)",border:"#c8dce8",text:"var(--gl)"}};
         return <div style={{marginBottom:14}}>
-          <div style={{fontSize:12,fontWeight:700,color:"var(--mt)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>Heads up</div>
+          
           {alerts.slice(0,false?99:2).map((a,i)=>{
             const col=colors[a.type]||colors.info;
             return <div key={i} onClick={()=>a.action&&setTab(a.action)} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",borderRadius:12,background:col.bg,border:"1px solid "+col.border,marginBottom:6,cursor:a.action?"pointer":"default"}}>
@@ -739,14 +745,10 @@ function Hub({user,profile,onRefresh,onLogout}){
           </div>;
         })()}
 
-        {/* VIEW TOGGLE */}
-        <div style={{display:"flex",gap:6,marginBottom:14}}>
-          <button onClick={()=>setWeekView&&setWeekView("timeline")} style={{padding:"6px 14px",borderRadius:10,border:"none",background:(!weekView||weekView==="timeline")?"var(--g)":"#f0eeeb",color:(!weekView||weekView==="timeline")?"#fff":"var(--mt)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"var(--sn)"}}>Timeline</button>
-          <button onClick={()=>setWeekView&&setWeekView("list")} style={{padding:"6px 14px",borderRadius:10,border:"none",background:weekView==="list"?"var(--g)":"#f0eeeb",color:weekView==="list"?"#fff":"var(--mt)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"var(--sn)"}}>List</button>
-        </div>
+        
 
         {/* SWIMLANE TIMELINE VIEW */}
-        {(!weekView||weekView==="timeline")&&<div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
+        {true&&<div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
           {wd.map(d=>{
             const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate());
             const today=isToday(d);
@@ -770,7 +772,7 @@ function Hub({user,profile,onRefresh,onLogout}){
               {lanes.length===0?<div style={{padding:"8px 0 4px 48px",fontSize:13,color:"var(--mt)"}}>Free day ✨</div>
               :<div style={{display:"flex",flexDirection:"column",gap:6,paddingLeft:48}}>
                 {lanes.map((lane,li)=>lane.events.map((e,ei)=>
-                  <div key={e.id||li+"-"+ei} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:"var(--card)",border:"1px solid var(--bd)",boxShadow:"var(--shadow)"}}>
+                  <div key={e.id||li+"-"+ei} onClick={()=>setEditEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:"var(--card)",border:"1px solid var(--bd)",boxShadow:"var(--shadow)",cursor:"pointer"}}>
                     <div style={{width:5,background:e.colour||COLS[li%COLS.length],flexShrink:0}}/>
                     <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
                       <div>
@@ -789,25 +791,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           })}
         </div>}
 
-        {/* LIST VIEW (original) */}
-        {weekView==="list"&&<div>
-          {wd.map(d=>{
-            const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate());
-            const today=isToday(d);
-            return <div key={d.toISOString()} style={{marginBottom:10}}>
-              <div style={{fontSize:12,fontWeight:700,color:today?"var(--acc)":"var(--mt)",marginBottom:6}}>{fmtDate(d)}{today?" — TODAY":""}</div>
-              {dayEvts.length===0?<div style={{fontSize:13,color:"#ccc",fontStyle:"italic",marginBottom:4}}>Nothing on</div>
-              :dayEvts.map(e=><div key={e.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-                <div style={{width:4,height:28,borderRadius:2,background:e.colour}}/>
-                <span style={{fontSize:13,fontWeight:600}}>{e.member}</span>
-                <span style={{fontSize:13,color:"var(--mt)"}}>{e.title}</span>
-                <span style={{marginLeft:"auto",fontSize:12,fontWeight:600,color:"var(--g)"}}>{e.time}{e.endTime?"–"+e.endTime:""}</span>
-              </div>)}
-            </div>;
-          })}
-        </div>}
-
-        
+          
       </div>}
 
       {tab==="money"&&<div>
@@ -1059,6 +1043,35 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       </div>
 
+      {/* EDIT EVENT SHEET */}
+      {editEvent&&<>
+        <div onClick={()=>setEditEvent(null)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.3)",zIndex:60}}/>
+        <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:61,background:"#fff",borderRadius:"20px 20px 0 0",padding:"8px 20px 24px",boxShadow:"0 -8px 30px rgba(0,0,0,.1)",maxWidth:520,margin:"0 auto"}}>
+          <div style={{width:36,height:4,borderRadius:2,background:"var(--bd)",margin:"0 auto 16px"}}/>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:14}}>{editEvent.member} — {editEvent.club||editEvent.title}</h3>
+          <div style={{display:"flex",flexDirection:"column",gap:0}}>
+            <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid var(--bd)"}}>
+              <span style={{fontSize:12,color:"var(--mt)",fontWeight:600}}>Time</span>
+              <span style={{fontSize:13,fontWeight:600}}>{editEvent.time}{editEvent.endTime?"–"+editEvent.endTime:""}</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid var(--bd)"}}>
+              <span style={{fontSize:12,color:"var(--mt)",fontWeight:600}}>Club</span>
+              <span style={{fontSize:13,fontWeight:600}}>{editEvent.club||"—"}</span>
+            </div>
+          </div>
+          <div style={{padding:"12px 0 6px"}}>
+            <span style={{fontSize:11,fontWeight:700,color:"var(--mt)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8,display:"block"}}>Who's driving?</span>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              {[profile?.first_name||"Me",...familyMembers.filter(fm=>fm.id!==user.id).map(fm=>fm.first_name||fm.email),...kids.map(k=>k.first_name)].filter(Boolean).map(d=><button key={d} onClick={()=>{/* TODO: save driver */}} style={{padding:"6px 12px",borderRadius:8,border:editEvent.driver===d?"1.5px solid var(--g)":"1.5px solid var(--bd)",background:editEvent.driver===d?"var(--gxl)":"var(--card)",fontSize:11,fontWeight:600,color:editEvent.driver===d?"var(--g)":"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>🚗 {d}</button>)}
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8,marginTop:14}}>
+            <button onClick={()=>setEditEvent(null)} className="btn bp" style={{flex:1}}>Done</button>
+            <button style={{padding:"12px 16px",borderRadius:14,border:"none",background:"#fef2f2",color:"#dc2626",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"var(--sn)"}}>Skip this week</button>
+          </div>
+        </div>
+      </>}
+
       {/* FAB */}
       {showFab&&<div onClick={()=>setShowFab(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.3)",zIndex:60}}/>}
       {showFab&&<div style={{position:"fixed",bottom:76,right:20,zIndex:61,display:"flex",flexDirection:"column",gap:8,alignItems:"flex-end"}}>
@@ -1090,6 +1103,35 @@ function Hub({user,profile,onRefresh,onLogout}){
       {showAddEv&&<AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddEv(false)} onSaved={()=>{setShowAddEv(false);load()}}/>}
       {showAddPay&&<AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddPay(false)} onSaved={()=>{setShowAddPay(false);load()}}/>}
       
+      {/* EDIT EVENT SHEET */}
+      {editEvent&&<>
+        <div onClick={()=>setEditEvent(null)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.3)",zIndex:60}}/>
+        <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:61,background:"#fff",borderRadius:"20px 20px 0 0",padding:"8px 20px 24px",boxShadow:"0 -8px 30px rgba(0,0,0,.1)",maxWidth:520,margin:"0 auto"}}>
+          <div style={{width:36,height:4,borderRadius:2,background:"var(--bd)",margin:"0 auto 16px"}}/>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:14}}>{editEvent.member} — {editEvent.club||editEvent.title}</h3>
+          <div style={{display:"flex",flexDirection:"column",gap:0}}>
+            <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid var(--bd)"}}>
+              <span style={{fontSize:12,color:"var(--mt)",fontWeight:600}}>Time</span>
+              <span style={{fontSize:13,fontWeight:600}}>{editEvent.time}{editEvent.endTime?"–"+editEvent.endTime:""}</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid var(--bd)"}}>
+              <span style={{fontSize:12,color:"var(--mt)",fontWeight:600}}>Club</span>
+              <span style={{fontSize:13,fontWeight:600}}>{editEvent.club||"—"}</span>
+            </div>
+          </div>
+          <div style={{padding:"12px 0 6px"}}>
+            <span style={{fontSize:11,fontWeight:700,color:"var(--mt)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8,display:"block"}}>Who's driving?</span>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              {[profile?.first_name||"Me",...familyMembers.filter(fm=>fm.id!==user.id).map(fm=>fm.first_name||fm.email),...kids.map(k=>k.first_name)].filter(Boolean).map(d=><button key={d} onClick={()=>{/* TODO: save driver */}} style={{padding:"6px 12px",borderRadius:8,border:editEvent.driver===d?"1.5px solid var(--g)":"1.5px solid var(--bd)",background:editEvent.driver===d?"var(--gxl)":"var(--card)",fontSize:11,fontWeight:600,color:editEvent.driver===d?"var(--g)":"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>🚗 {d}</button>)}
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8,marginTop:14}}>
+            <button onClick={()=>setEditEvent(null)} className="btn bp" style={{flex:1}}>Done</button>
+            <button style={{padding:"12px 16px",borderRadius:14,border:"none",background:"#fef2f2",color:"#dc2626",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"var(--sn)"}}>Skip this week</button>
+          </div>
+        </div>
+      </>}
+
       {/* FAB */}
       {showFab&&<div onClick={()=>setShowFab(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:70}}/>}
       {showFab&&<div style={{position:"fixed",bottom:76,right:20,zIndex:71,display:"flex",flexDirection:"column",gap:8,alignItems:"flex-end"}}>
