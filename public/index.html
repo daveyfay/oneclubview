@@ -1065,7 +1065,7 @@ function Hub({user,profile,onRefresh,onLogout}){
       {showNotifs&&<div style={{position:"fixed",top:52,right:12,left:12,zIndex:61,background:"#fff",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"0 8px 30px rgba(0,0,0,.12)",padding:8,maxHeight:"60vh",overflowY:"auto",maxWidth:400,marginLeft:"auto"}}>
         <div style={{padding:"8px 10px",fontSize:13,fontWeight:700,color:"var(--g)"}}>Updates</div>
         {notifications.length===0?<div style={{padding:"16px 10px",textAlign:"center",color:"var(--mt)",fontSize:13}}>No updates yet. Forward a club email to see them here.</div>
-        :notifications.slice(0,8).map(n=><div key={n.id} style={{padding:"10px",borderRadius:10,marginBottom:2,background:n.applied?"#fff":"var(--gxl)",cursor:"pointer"}} onClick={()=>{if(n.parsed_action==="fee_due")setTab("money");else if(n.parsed_action==="cancellation"||n.parsed_action==="schedule_update")setTab("week");setShowNotifs(false)}}>
+        :notifications.slice(0,8).map(n=><div key={n.id} style={{padding:"10px",borderRadius:10,marginBottom:2,background:n.applied?"#fff":"var(--gxl)",cursor:"pointer"}} onClick={(e)=>{e.stopPropagation();const actions={fee_due:"money",cancellation:"week",schedule_update:"week",reminder:"week",term_dates:"clubs",general:"week"};setTab(actions[n.parsed_action]||"week");setShowNotifs(false);window.scrollTo(0,0)}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
             <span style={{fontSize:12}}>{n.parsed_action==="fee_due"?"💳":n.parsed_action==="cancellation"?"🚫":n.parsed_action==="schedule_update"?"📅":n.parsed_action==="reminder"?"⏰":"📬"}</span>
             <span style={{fontSize:12,fontWeight:700,color:"var(--g)"}}>{n.parsed_data?.summary||n.subject||"Club update"}</span>
