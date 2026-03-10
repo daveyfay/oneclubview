@@ -496,20 +496,29 @@ function Hub({user,profile,onRefresh,onLogout}){
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
   const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[campBookings,setCampBookings]=useState([]);const[holidays,setHolidays]=useState([]);const[userHolidays,setUserHolidays]=useState([]);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
-  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[weekView,setWeekView]=useState("timeline");const[showPaste,setShowPaste]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);
+  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[weekView,setWeekView]=useState("timeline");const[showPaste,setShowPaste]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);const[familyMembers,setFamilyMembers]=useState([]);
 
   async function load(){
+    // Get family member IDs for shared data
+    let famIds=[user.id];
+    if(profile?.family_id){
+      const famMembers=await db("profiles","GET",{filters:["family_id=eq."+profile.family_id],select:"id,first_name,email"});
+      if(famMembers)famIds=famMembers.map(m=>m.id);
+      setFamilyMembers(famMembers||[]);
+    }
+    const uidFilter=famIds.length>1?"user_id=in.("+famIds.join(",")+")":"user_id=eq."+user.id;
+    const pidFilter=famIds.length>1?"parent_user_id=in.("+famIds.join(",")+")":"parent_user_id=eq."+user.id;
     setLoading(true);
     const[k,c,r,m,p,ca,hols,userHols,cBooks,lEvts,aCats]=await Promise.all([
-      db("dependants","GET",{filters:["parent_user_id=eq."+user.id],order:"created_at.asc"}),
-      db("hub_subscriptions","GET",{select:"id,club_id,dependant_id,colour,clubs(id,name,address,location,phone,rating)",filters:["user_id=eq."+user.id]}),
-      db("recurring_events","GET",{filters:["user_id=eq."+user.id]}),
-      db("manual_events","GET",{filters:["user_id=eq."+user.id]}),
-      db("payment_reminders","GET",{filters:["user_id=eq."+user.id],order:"due_date.asc"}),
+      db("dependants","GET",{filters:[pidFilter],order:"created_at.asc"}),
+      db("hub_subscriptions","GET",{select:"id,club_id,dependant_id,colour,nickname,clubs(id,name,address,location,phone,rating)",filters:[uidFilter]}),
+      db("recurring_events","GET",{filters:[uidFilter]}),
+      db("manual_events","GET",{filters:[uidFilter]}),
+      db("payment_reminders","GET",{filters:[uidFilter],order:"due_date.asc"}),
       db("camps","GET",{select:"id,title,camp_type,start_date,end_date,daily_start_time,daily_end_time,age_min,age_max,cost_eur,cost_notes,location_name,booking_url,source",filters:["status=eq.active"],order:"start_date.asc"}),
       db("school_holidays","GET",{order:"start_date.asc"}),
-      db("user_school_holidays","GET",{filters:["user_id=eq."+user.id],order:"start_date.asc"}),
-      db("camp_bookings","GET",{filters:["user_id=eq."+user.id]}),
+      db("user_school_holidays","GET",{filters:[uidFilter],order:"start_date.asc"}),
+      db("camp_bookings","GET",{filters:[uidFilter]}),
       db("local_events","GET",{order:"event_date.asc"}),
       db("activity_categories","GET",{order:"name.asc"})
     ]);
@@ -534,9 +543,10 @@ function Hub({user,profile,onRefresh,onLogout}){
   const members=useMemo(()=>{
     const m=[{id:"all",name:"Everyone",emoji:"👨‍👩‍👧‍👦",type:"all"}];
     kids.forEach(k=>m.push({id:k.id,name:k.first_name,emoji:"👧",type:"kid",age:getAge(k.date_of_birth),dob:k.date_of_birth}));
-    if(kids.length>0)m.push({id:"self",name:profile?.first_name||"Me",emoji:"👤",type:"self"});
+    m.push({id:"self",name:profile?.first_name||"Me",emoji:"👤",type:"self"});
+    familyMembers.filter(fm=>fm.id!==user.id).forEach(fm=>m.push({id:fm.id,name:fm.first_name||fm.email,emoji:"👤",type:"adult"}));
     return m;
-  },[kids,profile]);
+  },[kids,profile,familyMembers]);
 
   // Build weekly events with member names
   const wd=weekDates();
