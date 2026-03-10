@@ -322,7 +322,9 @@ function Auth({onAuth,mode:im}){
         }
         // Token was issued (no email confirm required)
         if(u&&u.id){
-          await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:"trial"}});
+          const betaCount=await db("profiles","GET",{filters:["is_beta=eq.true"]});
+              const isBeta=(betaCount||[]).length<10;
+              await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false}});
         }
         onAuth(u);
       }
@@ -606,7 +608,7 @@ function Hub({user,profile,onRefresh,onLogout}){
   const trialDays=trialStart?Math.floor((new Date()-trialStart)/(86400000)):0;
   const trialExpired=trialDays>14;
   const isSubscribed=profile?.subscription_status==="active"||profile?.subscription_status==="trial";
-  const needsPayment=trialExpired&&profile?.subscription_status!=="active";
+  const needsPayment=trialExpired&&profile?.subscription_status!=="active"&&!profile?.is_beta;
 
   async function startCheckout(){
     const res=await fetch(SB+"/functions/v1/stripe-billing",{
@@ -701,7 +703,7 @@ function Hub({user,profile,onRefresh,onLogout}){
       </div>}
 
       {/* TRIAL BANNER */}
-      {!needsPayment&&trialStart&&profile?.subscription_status!=="active"&&<div style={{background:"linear-gradient(135deg,#1a2a3a,#2d4a5f)",borderRadius:12,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",color:"#fff"}}>
+      {!needsPayment&&!profile?.is_beta&&trialStart&&profile?.subscription_status!=="active"&&<div style={{background:"linear-gradient(135deg,#1a2a3a,#2d4a5f)",borderRadius:12,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",color:"#fff"}}>
         <div><span style={{fontSize:12,fontWeight:700}}>Free trial</span><span style={{fontSize:11,color:"rgba(255,255,255,.6)",marginLeft:6}}>{14-trialDays} days left</span></div>
         <button onClick={startCheckout} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Subscribe</button>
       </div>}
@@ -1143,7 +1145,8 @@ function Hub({user,profile,onRefresh,onLogout}){
         <button onClick={()=>{setShowProfile(false);setShowSupport(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💬 Contact Support</button>
         <button onClick={()=>{setShowProfile(false);/* TODO: change password */}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🔑 Change Password</button>
         {profile?.subscription_status==="active"&&<button onClick={()=>{setShowProfile(false);openPortal()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💳 Manage Subscription</button>}
-        {profile?.subscription_status!=="active"&&<button onClick={()=>{setShowProfile(false);startCheckout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>⭐ Subscribe — €7.99/mo</button>}
+        {profile?.is_beta?<div style={{padding:"10px 14px",fontSize:12,fontWeight:700,color:"#16a34a",display:"flex",alignItems:"center",gap:8}}>🎁 Beta member — free forever</div>
+        :profile?.subscription_status!=="active"&&<button onClick={()=>{setShowProfile(false);startCheckout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>⭐ Subscribe — €7.99/mo</button>}
         <div style={{borderTop:"1px solid var(--bd)",marginTop:4,paddingTop:4}}>
           <button onClick={()=>{setShowProfile(false);onLogout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🚪 Log out</button>
         </div>
