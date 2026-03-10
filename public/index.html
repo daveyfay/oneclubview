@@ -136,7 +136,7 @@ function FeatureTiles(){
        {c:"#dc2626",who:"✗ 10:00–13:00",what:"Easter Art Workshop",when:"€90 · Finishes too early"}
      ]}}
   ];
-  return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:20,marginTop:48}}>
+  return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:20,marginTop:48}}>
     {tiles.map((f,i)=>(
       <div key={i} onClick={()=>setOpen(open===i?null:i)} style={{background:open===i?"rgba(255,255,255,.14)":"rgba(255,255,255,.07)",borderRadius:20,padding:24,border:open===i?"1px solid rgba(255,255,255,.25)":"1px solid rgba(255,255,255,.1)",cursor:"pointer",transition:"all .2s"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
@@ -213,10 +213,10 @@ function Landing({onGo,onLogin}){
       </div>
     </section>
     {/* SOLUTION */}
-    <section style={{background:"#fff",padding:"56px 24px"}}>
+    <section style={{background:"linear-gradient(135deg, #1a2a3a 0%, #2d4a5f 100%)",padding:"56px 24px"}}>
       <div style={{maxWidth:520,margin:"0 auto"}}>
         <span style={{fontSize:12,fontWeight:700,color:"#e85d4a",textTransform:"uppercase",letterSpacing:1}}>The fix</span>
-        <h2 style={{fontFamily:"var(--sr)",fontSize:"clamp(24px,4vw,32px)",fontWeight:800,color:"var(--g)",margin:"8px 0 32px"}}>One screen. Whole family.</h2>
+        <h2 style={{fontFamily:"var(--sr)",fontSize:"clamp(24px,4vw,32px)",fontWeight:800,color:"#fff",margin:"8px 0 32px"}}>One screen. Whole family.</h2>
         <FeatureTiles/>
       </div>
     </section>
