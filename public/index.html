@@ -508,7 +508,7 @@ function Hub({user,profile,onRefresh,onLogout}){
     const myFamilyId=freshProfile?.[0]?.family_id||profile?.family_id;
     let famIds=[user.id];
     if(myFamilyId){
-      const famMembers=await db("profiles","GET",{filters:["family_id=eq."+myFamilyId],select:"id,first_name,email"});
+      const famMembers=await db("profiles","GET",{filters:["family_id=eq."+myFamilyId],select:"id,first_name,email,subscription_status,is_beta"});
       if(famMembers){famIds=famMembers.map(m=>m.id);setFamilyMembers(famMembers);}
     }
     const uidFilter=famIds.length>1?"user_id=in.("+famIds.join(",")+")":"user_id=eq."+user.id;
@@ -608,7 +608,15 @@ function Hub({user,profile,onRefresh,onLogout}){
   const trialDays=trialStart?Math.floor((new Date()-trialStart)/(86400000)):0;
   const trialExpired=trialDays>14;
   const isSubscribed=profile?.subscription_status==="active"||profile?.subscription_status==="trial";
-  const needsPayment=trialExpired&&profile?.subscription_status!=="active"&&!profile?.is_beta;
+  const needsPayment=(()=>{
+    if(profile?.is_beta)return false;
+    if(profile?.subscription_status==="active")return false;
+    if(!trialExpired)return false;
+    // Check if any family member has an active subscription
+    const famHasActive=familyMembers.some(fm=>fm.subscription_status==="active"||fm.is_beta);
+    if(famHasActive)return false;
+    return true;
+  })();
 
   async function startCheckout(){
     const res=await fetch(SB+"/functions/v1/stripe-billing",{
@@ -1298,6 +1306,24 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
   async function save(){
     if(!name.trim())return;setSv(true);
     if(memberType==="adult"){
+      // Check adult limit
+      try{
+        const limRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"check_limits",user_id:userId})});
+        const lim=await limRes.json();
+        if(lim.adults>=lim.max_adults){
+          if(lim.tier==="family_plus"||lim.is_beta){setSv(false);alert("Maximum adults reached for your plan.");return}
+          if(confirm("Adding a 3rd adult requires the Family+ plan (€14.99/mo instead of €7.99/mo). This gives you up to 4 adults and 6 kids. Upgrade now?")){
+            const upRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"upgrade",user_id:userId})});
+            const upData=await upRes.json();
+            if(upData.needs_checkout){
+              const coRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"checkout",user_id:userId,email:profile?.email,tier:"family_plus",return_url:window.location.origin})});
+              const coData=await coRes.json();
+              if(coData.url){window.location.href=coData.url;return}
+            }
+            // Upgraded in-place, continue adding
+          }else{setSv(false);return}
+        }
+      }catch(e){}
       let fid=profile?.family_id;
       if(!fid){
         const fam=await db("families","POST",{body:{created_by:userId}});
@@ -1309,6 +1335,23 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
       }
       setSv(false);setDone(true);return;
     }
+    // Check kid limit
+    try{
+      const limRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"check_limits",user_id:userId})});
+      const lim=await limRes.json();
+      if(lim.kids>=lim.max_kids){
+        if(lim.tier==="family_plus"||lim.is_beta){setSv(false);alert("Maximum kids reached for your plan ("+lim.max_kids+").");return}
+        if(confirm("Adding a 4th child requires the Family+ plan (€14.99/mo). This gives you up to 6 kids and 4 adults. Upgrade now?")){
+          const upRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"upgrade",user_id:userId})});
+          const upData=await upRes.json();
+          if(upData.needs_checkout){
+            const coRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"checkout",user_id:userId,email:profile?.email,tier:"family_plus",return_url:window.location.origin})});
+            const coData=await coRes.json();
+            if(coData.url){window.location.href=coData.url;return}
+          }
+        }else{setSv(false);return}
+      }
+    }catch(e){}
     const body={first_name:name.trim(),date_of_birth:dob||null,school_name:school.trim()||null,school_class:cls.trim()||null,teacher_name:teacher.trim()||null};
     if(editKid){await db("dependants","PATCH",{body,filters:["id=eq."+editKid.id]})}
     else{body.parent_user_id=userId;await db("dependants","POST",{body})}
