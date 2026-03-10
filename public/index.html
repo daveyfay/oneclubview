@@ -791,6 +791,22 @@ function Hub({user,profile,onRefresh,onLogout}){
           })}
         </div>}
 
+        {/* FORWARD BANNER */}
+        <div style={{background:"var(--g)",borderRadius:14,padding:16,marginTop:16,color:"#fff"}}>
+          <h4 style={{fontFamily:"var(--sr)",fontSize:14,fontWeight:700,marginBottom:8}}>📬 Forward club messages</h4>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            <div style={{background:"rgba(255,255,255,.06)",borderRadius:10,padding:10}}>
+              <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,.7)",marginBottom:3}}>📧 Email from a club?</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.45)",lineHeight:1.3}}>Forward it to:</div>
+              <span onClick={()=>navigator.clipboard?.writeText("schedule@geovoriofi.resend.app")} style={{display:"inline-block",padding:"4px 8px",background:"rgba(255,255,255,.1)",borderRadius:5,fontSize:10,fontWeight:700,fontFamily:"monospace",marginTop:4,cursor:"pointer"}}>schedule@geovoriofi.resend.app 📋</span>
+            </div>
+            <div style={{background:"rgba(255,255,255,.06)",borderRadius:10,padding:10}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#25D366",marginBottom:3}}>💬 WhatsApp from a coach?</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.45)",lineHeight:1.3}}>Long-press message → Share → Mail → forward to the address above</div>
+            </div>
+          </div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.3)",marginTop:8}}>We auto-update your schedule, fees, and terms.</div>
+        </div>
           
       </div>}
 
