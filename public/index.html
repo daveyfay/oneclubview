@@ -290,8 +290,24 @@ function Auth({onAuth,mode:im}){
     try{
       if(mode==="signup"){
         const d=await au("signup",{email,password:pw,data:{first_name:name.trim()}});
-        // Create profile
         const u=d.user||d;
+        // If no token (email confirmation required), auto-login immediately
+        if(!_t&&u){
+          try{
+            const loginD=await au("login",{email,password:pw});
+            if(loginD.user||loginD.id){
+              const lu=loginD.user||loginD;
+              // Create profile after successful login
+              await db("profiles","POST",{body:{id:lu.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:"trial"}});
+              onAuth(lu);setLd(false);return;
+            }
+          }catch(loginErr){
+            // Login failed — email might need confirmation
+            setErr("Account created! Please check your email to verify, then log in.");
+            setMode("login");setLd(false);return;
+          }
+        }
+        // Token was issued (no email confirm required)
         if(u&&u.id){
           await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:"trial"}});
         }
