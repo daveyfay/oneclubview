@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>OneClubView — All your clubs. One view.</title>
 <meta name="theme-color" content="#1a2a3a">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%231a2a3a'/><circle cx='50' cy='50' r='30' stroke='white' stroke-width='6' fill='none'/><circle cx='50' cy='50' r='10' fill='white'/></svg>">
@@ -76,7 +76,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <style>
 :root{--g:#1a2a3a;--gl:#2d4a5f;--gxl:#e8f0f5;--acc:#e85d4a;--accl:#fff0ee;--sage:#e8f0e8;--warm:#f8f6f3;--card:#fff;--tx:#1a1a1a;--mt:#7c8590;--bd:#e4e2de;--sr:'Fraunces',Georgia,serif;--sn:'Plus Jakarta Sans',-apple-system,sans-serif;--shadow:0 2px 8px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-lg:0 8px 30px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.04);--shadow-xl:0 20px 50px rgba(0,0,0,.12)}
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--sn);background:var(--warm);color:var(--tx);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+*{margin:0;padding:0;box-sizing:border-box}body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);font-family:var(--sn);background:var(--warm);color:var(--tx);-webkit-font-smoothing:antialiased;overflow-x:hidden;overscroll-behavior-y:contain}
 .hsb::-webkit-scrollbar{display:none}.hsb{scrollbar-width:none}
 input,select{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--bd);font-size:14px;outline:none;background:#fff;font-family:var(--sn);transition:border .2s}
 input:focus,select:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(26,42,58,.08)}
@@ -93,6 +93,14 @@ select{-webkit-appearance:none;appearance:none}
 .pill{padding:6px 14px;border-radius:100px;font-size:12px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;font-family:var(--sn);transition:all .15s}
 .pon{background:var(--g);color:#fff;box-shadow:0 2px 8px rgba(26,42,58,.15)}.poff{background:#f0eeeb;color:var(--mt)}
 .htab{transition:all .15s}
+@supports(padding-top: env(safe-area-inset-top)){
+  body{padding-top:0}
+  .safe-top{padding-top:env(safe-area-inset-top)}
+  .safe-bot{padding-bottom:calc(env(safe-area-inset-bottom) + 20px)}
+}
+@media(display-mode: standalone){
+  body{-webkit-user-select:none;user-select:none}
+}
 </style>
 </head>
 <body>
@@ -1376,7 +1384,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           {icon:"📤",label:"Share my week",fn:()=>{setShowFab(false);shareWeek()}},
         ].map(a=><button key={a.label} onClick={a.fn} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 16px",borderRadius:12,background:"#fff",border:"1px solid var(--bd)",boxShadow:"0 4px 16px rgba(0,0,0,.1)",fontSize:13,fontWeight:600,color:"var(--g)",cursor:"pointer",fontFamily:"var(--sn)"}}>{a.icon} {a.label}</button>)}
       </div>}
-      <button onClick={()=>setShowFab(!showFab)} style={{position:"fixed",bottom:20,right:20,width:52,height:52,borderRadius:"50%",background:showFab?"var(--mt)":"var(--g)",color:"#fff",border:"none",fontSize:24,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(26,42,58,.25)",zIndex:72,transition:"transform .15s,background .15s",transform:showFab?"rotate(45deg)":"none"}}>+</button>
+      <button onClick={()=>setShowFab(!showFab)} style={{position:"fixed",bottom:"calc(20px + env(safe-area-inset-bottom, 0px))",right:20,width:52,height:52,borderRadius:"50%",background:showFab?"var(--mt)":"var(--g)",color:"#fff",border:"none",fontSize:24,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(26,42,58,.25)",zIndex:72,transition:"transform .15s,background .15s",transform:showFab?"rotate(45deg)":"none"}}>+</button>
 
       {showSupport&&<SupportModal userId={user.id} userEmail={user.email} onClose={()=>setShowSupport(false)}/>}
       {showFamily&&<div className="mbg fi" onClick={()=>setShowFamily(false)}>
