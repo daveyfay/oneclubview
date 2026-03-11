@@ -592,6 +592,37 @@ function OnboardClubs({userId,kids,onDone}){
   );
 }
 
+function DiscoverResults({query,onAdd}){
+  const[results,setResults]=useState([]);const[loading,setLoading]=useState(false);
+  useEffect(()=>{
+    setLoading(true);
+    const isCategory=["swimming","gaa","soccer","rugby","gymnastics","dance","martial_arts","tennis","athletics","hockey","music","coding","sailing","scouts","basketball","cricket","horse_riding","multi_activity"].includes(query);
+    const filters=isCategory?["category=eq."+query]:["or=(name.ilike.*"+query+"*,location.ilike.*"+query+"*,category.ilike.*"+query+"*)"];
+    db("clubs","GET",{select:"id,name,location,website_url,category",filters,limit:25,order:"name.asc"}).then(r=>{setResults(r||[]);setLoading(false)});
+  },[query]);
+  const catEmoji={swimming:"🏊",gaa:"🏐",soccer:"⚽",rugby:"🏉",gymnastics:"🤸",dance:"💃",martial_arts:"🥋",tennis:"🎾",athletics:"🏃",hockey:"🏑",music:"🎵",coding:"💻",sailing:"⛵",scouts:"🏕️",basketball:"🏀",cricket:"🏏",horse_riding:"🐎",multi_activity:"🎯"};
+  const catName={swimming:"Swimming",gaa:"GAA",soccer:"Soccer",rugby:"Rugby",gymnastics:"Gymnastics",dance:"Dance & Drama",martial_arts:"Martial Arts",tennis:"Tennis",athletics:"Athletics",hockey:"Hockey",music:"Music",coding:"Coding & STEM",sailing:"Sailing",scouts:"Scouts",basketball:"Basketball",cricket:"Cricket",horse_riding:"Horse Riding",multi_activity:"Multi-Activity"};
+  return <div style={{marginBottom:24}}>
+    <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:4}}>{catName[query]||query}</h3>
+    <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>{results.length} club{results.length!==1?"s":""} found</p>
+    {loading&&<p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>Loading...</p>}
+    {!loading&&results.length===0&&<p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>No clubs found for "{query}"</p>}
+    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+    {results.map(club=><div key={club.id} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:14,boxShadow:"var(--shadow)"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{fontSize:22,width:36,textAlign:"center"}}>{catEmoji[club.category]||"🏠"}</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:14,fontWeight:700,color:"var(--g)"}}>{club.name}</div>
+          {club.location&&<div style={{fontSize:12,color:"var(--mt)"}}>{club.location}</div>}
+          {club.website_url&&<a href={club.website_url} target="_blank" rel="noopener" onClick={e=>e.stopPropagation()} style={{fontSize:11,color:"var(--acc)",textDecoration:"none"}}>🌐 {club.website_url.replace("https://","").replace("www.","").replace(/\/$/,"")}</a>}
+        </div>
+        <button onClick={()=>onAdd(club)} style={{padding:"6px 14px",borderRadius:10,border:"1.5px solid var(--g)",background:"none",fontSize:12,fontWeight:700,color:"var(--g)",cursor:"pointer",fontFamily:"var(--sn)",whiteSpace:"nowrap"}}>+ Add</button>
+      </div>
+    </div>)}
+    </div>
+  </div>;
+}
+
 function Hub({user,profile,onRefresh,onLogout}){
   const[tab,setTab]=useState("week");const[filter,setFilter]=useState("all");
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
@@ -1183,7 +1214,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:12}}>Browse by activity</h3>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:24}}>
             {actCats.map(cat=>(
-              <button key={cat.id} onClick={()=>setDiscoverSearch(cat.name)} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:"14px 8px",cursor:"pointer",textAlign:"center"}}>
+              <button key={cat.id} onClick={()=>setDiscoverSearch(cat.id)} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:"14px 8px",cursor:"pointer",textAlign:"center"}}>
                 <div style={{fontSize:24}}>{cat.emoji}</div>
                 <div style={{fontSize:12,fontWeight:600,color:"var(--tx)",marginTop:4,fontFamily:"var(--sn)"}}>{cat.name}</div>
               </button>
@@ -1192,16 +1223,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         </div>}
 
         {/* Search results from clubs table */}
-        {discoverSearch&&<div style={{marginBottom:24}}>
-          <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:12}}>Clubs matching "{discoverSearch}"</h3>
-          <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>Tap any club to add it to your family</p>
-          {/* Note: this searches the existing clubs DB. Full Google Places integration coming soon */}
-          <div style={{fontSize:13,color:"var(--mt)",background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"var(--shadow)",padding:16,textAlign:"center"}}>
-            <div style={{fontSize:28,marginBottom:8}}>🔍</div>
-            <p>Club search for "{discoverSearch}" in your area</p>
-            <button onClick={()=>{onRefresh("clubs")}} className="btn bp" style={{marginTop:12,fontSize:13}}>Go to Add Club →</button>
-          </div>
-        </div>}
+        {discoverSearch&&<DiscoverResults query={discoverSearch} onAdd={(club)=>{setDiscoverSearch("");onRefresh("clubs");setEditClub(club)}}/>}
 
         {/* Local events & competitions */}
         <div>
