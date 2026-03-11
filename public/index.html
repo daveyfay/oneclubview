@@ -841,10 +841,10 @@ function Hub({user,profile,onRefresh,onLogout}){
               <button onClick={()=>setShowProfile(!showProfile)} style={{width:32,height:32,borderRadius:10,background:"var(--g)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700,border:"none",cursor:"pointer"}}>{(profile?.first_name||"U")[0]}</button>
             </div>
           </div>
-          <div className="hsb" style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6}}>
-            {members.map(m=><button key={m.id} onClick={()=>setFilter(m.id)} className={"pill "+(filter===m.id?"pon":"poff")}>{m.type!=="all"&&<span style={{width:8,height:8,borderRadius:"50%",background:m.type==="kid"?COLS[members.indexOf(m)%COLS.length]:m.type==="adult"?"#8b5cf6":"var(--g)",flexShrink:0}}/>}{m.type==="all"?m.emoji:""} {m.name}{m.age!=null&&<span style={{opacity:.6,marginLeft:2}}>({m.age})</span>}</button>)}
-            <button onClick={()=>setShowAddKid(true)} className="pill poff" style={{border:"2px dashed var(--bd)",background:"none"}}>+ member</button>
-            {filter!=="all"&&filter!=="self"&&<button onClick={()=>{const kid=kids.find(k=>k.id===filter);if(kid)setShowAddKid(kid)}} className="pill poff" style={{fontSize:11}}>✎ edit</button>}
+          <div className="hsb" style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6,WebkitOverflowScrolling:"touch",msOverflowStyle:"none"}}>
+            {members.map(m=><button key={m.id} onClick={()=>setFilter(m.id)} className={"pill "+(filter===m.id?"pon":"poff")} style={{flexShrink:0}}>{m.type!=="all"&&<span style={{width:8,height:8,borderRadius:"50%",background:m.type==="kid"?COLS[members.indexOf(m)%COLS.length]:m.type==="adult"?"#8b5cf6":"var(--g)",flexShrink:0}}/>}{m.type==="all"?m.emoji:""} {m.name}{m.age!=null&&<span style={{opacity:.6,marginLeft:2}}>({m.age})</span>}</button>)}
+            <button onClick={()=>setShowAddKid(true)} className="pill poff" style={{border:"2px dashed var(--bd)",background:"none",flexShrink:0}}>+ member</button>
+            {filter!=="all"&&filter!=="self"&&<button onClick={()=>{const kid=kids.find(k=>k.id===filter);if(kid)setShowAddKid(kid)}} className="pill poff" style={{fontSize:11,flexShrink:0}}>✎ edit</button>}
           </div>
         </div>
         <div style={{maxWidth:520,margin:"0 auto",display:"flex"}}>
@@ -1233,7 +1233,17 @@ function Hub({user,profile,onRefresh,onLogout}){
             const now=new Date();
             const filtered=localEvents
               .filter(e=>new Date(e.event_date+"T23:59:59")>=now)
-              .filter(e=>discoverFilter==="all"||e.audience===discoverFilter||e.audience==="all");
+              .filter(e=>{
+                // Audience filter (kids/adults/all pills within Discover)
+                if(discoverFilter!=="all"&&e.audience!==discoverFilter&&e.audience!=="all")return false;
+                // Member filter (top pills) — if a kid is selected, show kids events; if adult, show adults events
+                if(filter!=="all"){
+                  const selKid=kids.find(k=>k.id===filter);
+                  if(selKid&&e.audience==="adults")return false;
+                  if(!selKid&&filter==="self"&&e.audience==="kids")return false;
+                }
+                return true;
+              });
             if(filtered.length===0)return <p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>No upcoming events found</p>;
 
             const ET={competition:{i:"🏆",bg:"var(--goldl)",c:"#8a6d00"},tournament:{i:"🏅",bg:"var(--goldl)",c:"#8a6d00"},open_day:{i:"🎪",bg:"var(--sage)",c:"var(--gl)"},social:{i:"🍻",bg:"#f0e8f8",c:"#6b21a8"},fundraiser:{i:"❤️",bg:"#fce8e8",c:"#c0392b"}};
