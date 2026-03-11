@@ -653,7 +653,7 @@ function Hub({user,profile,onRefresh,onLogout}){
       db("school_holidays","GET",{order:"start_date.asc"}),
       db("user_school_holidays","GET",{filters:[uidFilter],order:"start_date.asc"}),
       db("camp_bookings","GET",{filters:[uidFilter]}),
-      db("local_events","GET",{order:"event_date.asc"}),
+      db("local_events","GET",{select:"*,category",order:"event_date.asc"}),
       db("activity_categories","GET",{order:"name.asc"})
     ]);
     setKids(k||[]);
@@ -1227,16 +1227,19 @@ function Hub({user,profile,onRefresh,onLogout}){
 
         {/* Local events & competitions */}
         <div>
-          <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:4}}>Local events & competitions</h3>
-          <p style={{fontSize:12,color:"var(--mt)",marginBottom:14}}>Open days, tournaments, and social events from clubs near you</p>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:4}}>{discoverSearch?discoverSearch.charAt(0).toUpperCase()+discoverSearch.slice(1).replace("_"," ")+" events":"Local events & competitions"}</h3>
+          <p style={{fontSize:12,color:"var(--mt)",marginBottom:14}}>{discoverSearch?"Upcoming events from "+discoverSearch.replace("_"," ")+" clubs":"Open days, tournaments, and social events from clubs near you"}</p>
           {(()=>{
             const now=new Date();
             const filtered=localEvents
               .filter(e=>new Date(e.event_date+"T23:59:59")>=now)
               .filter(e=>{
+                // Category filter from search/category tiles
+                if(discoverSearch&&e.category&&e.category!==discoverSearch)return false;
+                if(discoverSearch&&!e.category)return false;
                 // Audience filter (kids/adults/all pills within Discover)
                 if(discoverFilter!=="all"&&e.audience!==discoverFilter&&e.audience!=="all")return false;
-                // Member filter (top pills) — if a kid is selected, show kids events; if adult, show adults events
+                // Member filter (top pills)
                 if(filter!=="all"){
                   const selKid=kids.find(k=>k.id===filter);
                   if(selKid&&e.audience==="adults")return false;
