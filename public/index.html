@@ -28,7 +28,7 @@
 <meta name="twitter:image" content="https://oneclubview.com/og-image.svg">
 
 <!-- Apple -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%231a2a3a'/><circle cx='50' cy='50' r='30' stroke='white' stroke-width='6' fill='none'/><circle cx='50' cy='50' r='10' fill='white'/></svg>">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="OneClubView">
@@ -67,6 +67,9 @@
 }
 </script>
 
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -2400,6 +2403,43 @@ function App(){
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 
+</script>
+<script>
+// Register service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+
+// PWA install prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  // Show install banner after 30 seconds if not already installed
+  setTimeout(()=>{
+    if(deferredPrompt&&!window.matchMedia('(display-mode: standalone)').matches){
+      const b=document.createElement('div');
+      b.id='installBanner';
+      b.style.cssText='position:fixed;bottom:70px;left:12px;right:12px;background:#1a2a3a;color:#fff;padding:14px 16px;border-radius:16px;z-index:9998;display:flex;align-items:center;gap:12px;box-shadow:0 8px 30px rgba(0,0,0,.2);font-family:-apple-system,sans-serif;animation:ri .4s ease';
+      b.innerHTML='<img src="/icons/icon-192.png" style="width:40px;height:40px;border-radius:10px"><div style="flex:1"><div style="font-size:14px;font-weight:700">Add OneClubView to home screen</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Quick access, works offline</div></div><button id="installBtn" style="padding:8px 16px;border-radius:10px;border:none;background:#e85d4a;color:#fff;font-weight:700;font-size:13px;cursor:pointer">Install</button><button id="dismissInstall" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer;padding:0 4px">×</button>';
+      document.body.appendChild(b);
+      document.getElementById('installBtn').onclick=()=>{deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;b.remove()})};
+      document.getElementById('dismissInstall').onclick=()=>b.remove();
+    }
+  },30000);
+});
+
+// iOS install hint
+if(/iPhone|iPad/.test(navigator.userAgent)&&!window.navigator.standalone){
+  setTimeout(()=>{
+    if(!localStorage.getItem('ocv_ios_hint')){
+      const b=document.createElement('div');
+      b.style.cssText='position:fixed;bottom:70px;left:12px;right:12px;background:#1a2a3a;color:#fff;padding:14px 16px;border-radius:16px;z-index:9998;display:flex;align-items:center;gap:12px;box-shadow:0 8px 30px rgba(0,0,0,.2);font-family:-apple-system,sans-serif;animation:ri .4s ease';
+      b.innerHTML='<img src="/icons/icon-192.png" style="width:40px;height:40px;border-radius:10px"><div style="flex:1"><div style="font-size:14px;font-weight:700">Add to Home Screen</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Tap <span style="font-size:16px">⎙</span> then "Add to Home Screen"</div></div><button style="background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer;padding:0 4px" onclick="this.parentElement.remove();localStorage.setItem(\'ocv_ios_hint\',\'1\')">×</button>';
+      document.body.appendChild(b);
+    }
+  },60000);
+}
 </script>
 </body>
 </html>
