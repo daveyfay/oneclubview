@@ -94,6 +94,13 @@ select{-webkit-appearance:none;appearance:none}
 </head>
 <body>
 <div id="root"></div>
+<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a2a3a;color:#fff;padding:14px 20px;z-index:9999;font-family:-apple-system,sans-serif;font-size:13px">
+  <div style="max-width:520px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span style="flex:1;line-height:1.5">🍪 We only use essential cookies to keep you logged in. No tracking, no ads. <a href="/privacy#11-cookies" style="color:#e85d4a;font-weight:600">Learn more</a></span>
+    <button onclick="document.getElementById('cookieBanner').style.display='none';localStorage.setItem('ocv_cookies','1')" style="padding:8px 18px;border-radius:8px;border:none;background:#e85d4a;color:#fff;font-weight:700;cursor:pointer;font-size:12px;white-space:nowrap">Got it</button>
+  </div>
+</div>
+<script>if(!localStorage.getItem('ocv_cookies'))document.getElementById('cookieBanner').style.display='block'</script>
 <noscript>
   <div style="font-family:-apple-system,sans-serif;max-width:520px;margin:60px auto;padding:20px;text-align:center">
     <h1 style="font-size:24px;color:#1a2a3a;margin-bottom:8px">OneClubView</h1>
@@ -455,6 +462,7 @@ function Auth({onAuth,mode:im}){
             </div>}
             <button onClick={go} disabled={ld||(mode==="signup"?!canSignup:!canLogin)} className="btn bp">{ld?"...":mode==="signup"?"Start free trial":"Log in"}</button>
             {mode==="signup"&&<p style={{fontSize:12,color:"var(--mt)",textAlign:"center"}}>14 days free, then from €7.99/month</p>}
+            {mode==="signup"&&<p style={{fontSize:11,color:"var(--mt)",textAlign:"center",lineHeight:1.5}}>By signing up you agree to our <a href="/terms" style={{color:"var(--acc)"}}>Terms of Service</a> and <a href="/privacy" style={{color:"var(--acc)"}}>Privacy Policy</a>.</p>}
             {mode==="signup"&&<p style={{fontSize:11,color:"var(--mt)",textAlign:"center"}}>Password must be 8+ characters with a mix of uppercase, numbers, or symbols</p>}
           </div>
         </div>
@@ -1271,6 +1279,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         {profile?.subscription_status==="active"&&<button onClick={()=>{setShowProfile(false);openPortal()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💳 Manage Subscription</button>}
         {profile?.is_beta?<div style={{padding:"10px 14px",fontSize:12,fontWeight:700,color:"#16a34a",display:"flex",alignItems:"center",gap:8}}>🎁 Beta member — free forever</div>
         :profile?.subscription_status!=="active"&&<button onClick={()=>{setShowProfile(false);startCheckout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>⭐ Subscribe — €7.99/mo</button>}
+        <a href="/privacy" style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>🔒 Privacy & Data</a>
         <div style={{borderTop:"1px solid var(--bd)",marginTop:4,paddingTop:4}}>
           <button onClick={()=>{setShowProfile(false);onLogout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🚪 Log out</button>
         </div>
