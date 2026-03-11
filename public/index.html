@@ -1408,11 +1408,55 @@ function AddPaymentModal({clubs,userId,kids,profile,onClose,onSaved}){
   </div></div>;
 }
 
+function SchoolPicker({school,setSchool,schoolId,setSchoolId,cls,setCls}){
+  const[q,setQ]=useState(school||"");const[results,setResults]=useState([]);const[searching,setSearching]=useState(false);
+  const tmr=useRef(null);
+  
+  function onType(v){
+    setQ(v);setSchool(v);setSchoolId(null);clearTimeout(tmr.current);
+    if(v.length<2){setResults([]);return}
+    tmr.current=setTimeout(async()=>{
+      setSearching(true);
+      const r=await db("schools","GET",{filters:["name=ilike.*"+v+"*","school_type=eq.primary"],limit:8,order:"name.asc"});
+      setResults(r||[]);setSearching(false);
+    },300);
+  }
+
+  function pick(s){
+    setQ(s.name);setSchool(s.name);setSchoolId(s.id);setResults([]);
+  }
+
+  const classes=["Junior Infants","Senior Infants","1st Class","2nd Class","3rd Class","4th Class","5th Class","6th Class"];
+
+  return <div style={{background:"#f8f7f4",borderRadius:14,padding:14,border:"1px solid var(--bd)"}}>
+    <span className="lbl" style={{marginBottom:8}}>School (helps match classmates at camps)</span>
+    <div style={{display:"flex",flexDirection:"column",gap:8}}>
+      <div style={{position:"relative"}}>
+        <input value={q} onChange={e=>onType(e.target.value)} placeholder="Start typing school name..."/>
+        {searching&&<span style={{position:"absolute",right:12,top:13,fontSize:12,color:"var(--mt)"}}>...</span>}
+        {schoolId&&<span style={{position:"absolute",right:12,top:13,fontSize:12,color:"#16a34a"}}>✓</span>}
+        {results.length>0&&<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid var(--bd)",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,.1)",zIndex:20,overflow:"hidden",marginTop:4,maxHeight:200,overflowY:"auto"}}>
+          {results.map(s=><button key={s.id} onClick={()=>pick(s)} style={{width:"100%",padding:"10px 14px",border:"none",borderBottom:"1px solid #f5f3ef",background:"none",cursor:"pointer",textAlign:"left",fontFamily:"var(--sn)"}}>
+            <div style={{fontSize:13,fontWeight:600,color:"var(--tx)"}}>{s.name}</div>
+            {s.address&&<div style={{fontSize:11,color:"var(--mt)"}}>{s.address}</div>}
+          </button>)}
+        </div>}
+      </div>
+      <div>
+        <span className="lbl">Class</span>
+        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+          {classes.map(cl=><button key={cl} type="button" onClick={()=>setCls(cls===cl?"":cl)} style={{padding:"5px 10px",borderRadius:8,border:cls===cl?"1.5px solid var(--g)":"1.5px solid var(--bd)",background:cls===cl?"var(--gxl)":"#fff",fontSize:11,fontWeight:600,color:cls===cl?"var(--g)":"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>{cl}</button>)}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
 function AddKidModal({userId,onClose,onSaved,editKid,profile}){
   const[memberType,setMemberType]=useState(editKid?"kid":"kid");
   const[name,setName]=useState(editKid?.first_name||"");
   const[dob,setDob]=useState(editKid?.date_of_birth||"");
-  const[school,setSchool]=useState(editKid?.school_name||"");
+  const[school,setSchool]=useState(editKid?.school_name||"");const[schoolId,setSchoolId]=useState(editKid?.school_id||null);
   const[cls,setCls]=useState(editKid?.school_class||"");
   const[teacher,setTeacher]=useState(editKid?.teacher_name||"");
   const[showSchool,setShowSchool]=useState(!!(editKid?.school_name));
@@ -1469,7 +1513,7 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
         }else{setSv(false);return}
       }
     }catch(e){}
-    const body={first_name:name.trim(),date_of_birth:dob||null,school_name:school.trim()||null,school_class:cls.trim()||null,teacher_name:teacher.trim()||null};
+    const body={first_name:name.trim(),date_of_birth:dob||null,school_name:school.trim()||null,school_class:cls.trim()||null,teacher_name:null,school_id:schoolId||null};
     if(editKid){await db("dependants","PATCH",{body,filters:["id=eq."+editKid.id]})}
     else{body.parent_user_id=userId;await db("dependants","POST",{body})}
     setSv(false);onSaved();
@@ -1503,17 +1547,8 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
       </>}
       {memberType==="kid"&&<>
         <div><span className="lbl">Date of birth</span><input type="date" value={dob} onChange={e=>setDob(e.target.value)}/></div>
-        {!showSchool?<button onClick={()=>setShowSchool(true)} style={{padding:10,borderRadius:12,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)"}}>+ Add school info (optional)</button>
-        :<div style={{background:"#f8f7f4",borderRadius:14,padding:14,border:"1px solid var(--bd)"}}>
-          <span className="lbl" style={{marginBottom:8}}>School (helps match classmates at camps)</span>
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            <input value={school} onChange={e=>setSchool(e.target.value)} placeholder="School name, e.g. Scoil Bhride"/>
-            <div style={{display:"flex",gap:8}}>
-              <input value={cls} onChange={e=>setCls(e.target.value)} placeholder="Class, e.g. 2nd Class" style={{flex:1}}/>
-              <input value={teacher} onChange={e=>setTeacher(e.target.value)} placeholder="Teacher (optional)" style={{flex:1}}/>
-            </div>
-          </div>
-        </div>}
+        {(()=>{const age=dob?Math.floor((new Date()-new Date(dob))/(365.25*86400000)):null;return age!==null&&age<5})() ? null : !showSchool?<button onClick={()=>setShowSchool(true)} style={{padding:10,borderRadius:12,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)"}}>+ Add school info (optional)</button>
+        :<SchoolPicker school={school} setSchool={setSchool} schoolId={schoolId} setSchoolId={setSchoolId} cls={cls} setCls={setCls}/>}
       </>}
       <button onClick={save} disabled={sv||!name.trim()||(memberType==="adult"&&!adultEmail.trim())} className="btn bp">
         {sv?"Saving...":(editKid?"Save changes":(memberType==="adult"?"Send invite":"Add child"))}
