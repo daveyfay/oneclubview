@@ -281,7 +281,7 @@ function Landing({onGo,onLogin}){
         <span style={{width:4,height:4,borderRadius:2,background:"var(--bd)"}}/>
         <span>💳 <strong style={{color:"var(--tx)"}}>Track</strong> every fee</span>
         <span style={{width:4,height:4,borderRadius:2,background:"var(--bd)"}}/>
-        <span>🏕️ <strong style={{color:"var(--tx)"}}>Find</strong> camps</span>
+        <span>👨‍👩‍👧‍👦 <strong style={{color:"var(--tx)"}}>Both parents</strong> in the loop</span>
       </div>
     </div>
     {/* PROBLEM */}
@@ -368,6 +368,10 @@ function Landing({onGo,onLogin}){
     </section>
     <footer style={{padding:"24px",background:"var(--g)",textAlign:"center"}}>
       <Logo dark/>
+      <div style={{display:"flex",justifyContent:"center",gap:16,marginTop:12}}>
+        <a href="/privacy" style={{fontSize:12,color:"rgba(255,255,255,.4)",textDecoration:"none"}}>Privacy Policy</a>
+        <a href="/terms" style={{fontSize:12,color:"rgba(255,255,255,.4)",textDecoration:"none"}}>Terms of Service</a>
+      </div>
       <p style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:8}}>© 2026 OneClubView</p>
     </footer>
   </div>;
@@ -775,7 +779,7 @@ function Hub({user,profile,onRefresh,onLogout}){
     if(filtEvts.length===0)text+="Nothing scheduled this week! 🎉\n";
     text+="—\nSent from OneClubView · oneclubview.com";
     if(navigator.share){navigator.share({title:"Our week",text}).catch(()=>{})}
-    else{navigator.clipboard?.writeText(text);alert("Week summary copied to clipboard!")}
+    else{navigator.clipboard?.writeText(text);alert("Week summary copied to clipboard.")}
   }
 
   async function startCheckout(tier){
@@ -1215,7 +1219,7 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       {tab==="discover"&&<div>
         {/* Search by activity */}
-        <input value={discoverSearch} onChange={e=>setDiscoverSearch(e.target.value)} placeholder="Search clubs by activity... e.g. swimming, karate" style={{width:"100%",padding:"12px 16px",borderRadius:14,border:"1px solid var(--bd)",fontSize:14,marginBottom:12,fontFamily:"var(--sn)"}}/>
+        <input value={discoverSearch} onChange={e=>setDiscoverSearch(e.target.value)} placeholder="Search clubs by activity, e.g. swimming, karate" style={{width:"100%",padding:"12px 16px",borderRadius:14,border:"1px solid var(--bd)",fontSize:14,marginBottom:12,fontFamily:"var(--sn)"}}/>
 
         {/* Category pills */}
         <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:16,WebkitOverflowScrolling:"touch"}}>
@@ -1580,7 +1584,7 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
         const limRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"check_limits",user_id:userId})});
         const lim=await limRes.json();
         if(lim.adults>=lim.max_adults){
-          if(lim.tier==="family_plus"||lim.is_beta){setSv(false);alert("Maximum adults reached for your plan.");return}
+          if(lim.tier==="family_plus"||lim.is_beta){setSv(false);alert("Maximum adults reached for your current plan.");return}
           if(confirm("Adding a 3rd adult requires the Family+ plan (€14.99/mo instead of €7.99/mo). This gives you up to 4 adults and 6 kids. Upgrade now?")){
             const upRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"upgrade",user_id:userId})});
             const upData=await upRes.json();
