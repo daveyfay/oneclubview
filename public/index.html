@@ -76,7 +76,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <style>
 :root{--g:#1a2a3a;--gl:#2d4a5f;--gxl:#e8f0f5;--acc:#e85d4a;--accl:#fff0ee;--sage:#e8f0e8;--warm:#f8f6f3;--card:#fff;--tx:#1a1a1a;--mt:#7c8590;--bd:#e4e2de;--sr:'Fraunces',Georgia,serif;--sn:'Plus Jakarta Sans',-apple-system,sans-serif;--shadow:0 2px 8px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-lg:0 8px 30px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.04);--shadow-xl:0 20px 50px rgba(0,0,0,.12)}
-*{margin:0;padding:0;box-sizing:border-box}body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);font-family:var(--sn);background:var(--warm);color:var(--tx);-webkit-font-smoothing:antialiased;overflow-x:hidden;overscroll-behavior-y:contain}
+*{margin:0;padding:0;box-sizing:border-box}body{padding-bottom:env(safe-area-inset-bottom);font-family:var(--sn);background:var(--warm);color:var(--tx);-webkit-font-smoothing:antialiased;overflow-x:hidden;overscroll-behavior-y:contain}
 .hsb::-webkit-scrollbar{display:none}.hsb{scrollbar-width:none}
 input,select{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--bd);font-size:14px;outline:none;background:#fff;font-family:var(--sn);transition:border .2s}
 input:focus,select:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(26,42,58,.08)}
@@ -94,12 +94,12 @@ select{-webkit-appearance:none;appearance:none}
 .pon{background:var(--g);color:#fff;box-shadow:0 2px 8px rgba(26,42,58,.15)}.poff{background:#f0eeeb;color:var(--mt)}
 .htab{transition:all .15s}
 @supports(padding-top: env(safe-area-inset-top)){
-  body{padding-top:0}
-  .safe-top{padding-top:env(safe-area-inset-top)}
   .safe-bot{padding-bottom:calc(env(safe-area-inset-bottom) + 20px)}
 }
 @media(display-mode: standalone){
   body{-webkit-user-select:none;user-select:none}
+  #root{padding-top:env(safe-area-inset-top)}
+  #root::before{content:"";display:block;position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:var(--warm);z-index:9999}
 }
 </style>
 </head>
