@@ -619,7 +619,7 @@ function OnboardClubs({userId,kids,onDone}){
   );
 }
 
-function DiscoverResults({query,onAdd}){
+function DiscoverResults({query,onAdd,userLoc}){
   const[results,setResults]=useState([]);const[loading,setLoading]=useState(false);
   useEffect(()=>{
     setLoading(true);
@@ -635,7 +635,7 @@ function DiscoverResults({query,onAdd}){
     {loading&&<p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>Loading...</p>}
     {!loading&&results.length===0&&<p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>No clubs found for "{query}"</p>}
     <div style={{display:"flex",flexDirection:"column",gap:6}}>
-    {results.map(club=><div key={club.id} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:14,boxShadow:"var(--shadow)"}}>
+    {results.sort((a,b)=>{if(userLoc&&a.latitude&&b.latitude){return calcKm(userLoc.lat,userLoc.lng,a.latitude,a.longitude)-calcKm(userLoc.lat,userLoc.lng,b.latitude,b.longitude)}return 0}).map(club=><div key={club.id} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:14,boxShadow:"var(--shadow)"}}>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
         <div style={{fontSize:22,width:36,textAlign:"center"}}>{catEmoji[club.category]||"🏠"}</div>
         <div style={{flex:1}}>
@@ -694,14 +694,24 @@ function Hub({user,profile,onRefresh,onLogout}){
     db("profiles","PATCH",{body:{last_active_at:new Date().toISOString()},filters:["id=eq."+user.id]});
   }
   useEffect(()=>{
-    // Re-fetch profile to pick up role changes
-    (async()=>{
-      const p=await db("profiles","GET",{filters:["id=eq."+user.id]});
-      if(p&&p[0]&&p[0].role!==profile?.role){
-        // Profile role changed, will be picked up on next render
-      }
-    })();
     load();
+    // Get user location, populate local camps/clubs
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(pos=>{
+        const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};
+        setUserLoc(loc);
+        db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}});
+        fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:loc.lat,longitude:loc.lng,user_id:user.id})}).then(r=>r.json()).then(d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0))load()}).catch(()=>{});
+      },()=>{
+        db("profiles","GET",{filters:["id=eq."+user.id],select:"latitude,longitude"}).then(p=>{
+          if(p&&p[0]&&p[0].latitude){
+            const loc={lat:Number(p[0].latitude),lng:Number(p[0].longitude)};
+            setUserLoc(loc);
+            fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:loc.lat,longitude:loc.lng,user_id:user.id})}).then(r=>r.json()).then(d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0))load()}).catch(()=>{});
+          }
+        });
+      },{enableHighAccuracy:false,timeout:5000,maximumAge:3600000});
+    }
   },[]);
 
   const members=useMemo(()=>{
@@ -1126,6 +1136,7 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       {/* CAMPS */}
       {tab==="camps"&&<div>
+        {userLoc&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,fontSize:12,color:"var(--mt)"}}><span>📍</span> Showing camps within 30km of you</div>}
         {!userLoc&&<button onClick={()=>{navigator.geolocation?.getCurrentPosition(pos=>{const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};setUserLoc(loc);db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}})},()=>alert("Could not get your location. Please enable location services."),{timeout:5000})}} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Enable location to see camps near you</button>}
         {/* Holiday coverage summary */}
         {kids.length>0&&(()=>{
@@ -1166,7 +1177,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           userHolidays.filter(uh=>!uh.base_holiday_id&&uh.holiday_type!=="hidden").forEach(uh=>{
             mergedHols.push({...uh,is_user_override:true});
           });
-          const futureHols=mergedHols.filter(h=>new Date(h.end_date+"T23:59:59")>=now).sort((a,b)=>{if(userLoc&&a.latitude&&b.latitude){const da=calcKm(userLoc.lat,userLoc.lng,a.latitude,a.longitude),db2=calcKm(userLoc.lat,userLoc.lng,b.latitude,b.longitude);if(Math.abs(da-db2)>2)return da-db2}return new Date(a.start_date)-new Date(b.start_date)});
+          const futureHols=mergedHols.filter(h=>new Date(h.end_date+"T23:59:59")>=now).filter(c=>!userLoc||!c.latitude||calcKm(userLoc.lat,userLoc.lng,c.latitude,c.longitude)<=30).sort((a,b)=>{if(userLoc&&a.latitude&&b.latitude){const da=calcKm(userLoc.lat,userLoc.lng,a.latitude,a.longitude),db2=calcKm(userLoc.lat,userLoc.lng,b.latitude,b.longitude);if(Math.abs(da-db2)>2)return da-db2}return new Date(a.start_date)-new Date(b.start_date)});
           const kidName=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter)?.first_name:null;
           const kidAge=filter!=="all"&&filter!=="self"?getAge(kids.find(k=>k.id===filter)?.date_of_birth):null;
 
@@ -1254,7 +1265,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         </div>}
 
         {/* Search results from clubs table */}
-        {discoverSearch&&<DiscoverResults query={discoverSearch} onAdd={(club)=>{setDiscoverSearch("");onRefresh("clubs");setEditClub(club)}}/>}
+        {discoverSearch&&<DiscoverResults query={discoverSearch} userLoc={userLoc} onAdd={(club)=>{setDiscoverSearch("");onRefresh("clubs");setEditClub(club)}}/>}
 
         {/* Local events & competitions */}
         <div>
