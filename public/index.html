@@ -105,7 +105,7 @@ select{-webkit-appearance:none;appearance:none}
 </head>
 <body>
 <div id="root"></div>
-<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a2a3a;color:#fff;padding:14px 20px;z-index:9999;font-family:-apple-system,sans-serif;font-size:13px">
+<div id="cookieBanner" style="display:none;position:fixed;bottom:80px;left:12px;right:12px;background:#1a2a3a;border-radius:16px;color:#fff;padding:14px 20px;z-index:9999;font-family:-apple-system,sans-serif;font-size:13px">
   <div style="max-width:520px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
     <span style="flex:1;line-height:1.5">🍪 We only use essential cookies to keep you logged in. No tracking, no ads. <a href="/privacy#11-cookies" style="color:#e85d4a;font-weight:600">Learn more</a></span>
     <button onclick="document.getElementById('cookieBanner').style.display='none';localStorage.setItem('ocv_cookies','1')" style="padding:8px 18px;border-radius:8px;border:none;background:#e85d4a;color:#fff;font-weight:700;cursor:pointer;font-size:12px;white-space:nowrap">Got it</button>
@@ -472,6 +472,7 @@ function Auth({onAuth,mode:im}){
               {pw2.length>0&&pwMatch&&<p style={{fontSize:11,color:"#16a34a",marginTop:4}}>Passwords match ✓</p>}
             </div>}
             <button onClick={go} disabled={ld||(mode==="signup"?!canSignup:!canLogin)} className="btn bp">{ld?"...":mode==="signup"?"Start free trial":"Log in"}</button>
+            {mode==="login"&&<p style={{textAlign:"center",marginTop:8}}><button onClick={async()=>{const em=prompt("Enter your email address:");if(em){try{const r=await fetch(SB+"/auth/v1/recover",{method:"POST",headers:{"apikey":SK,"Content-Type":"application/json"},body:JSON.stringify({email:em})});if(r.ok)alert("Password reset link sent! Check your inbox.");else alert("Could not send reset email. Check the address and try again.")}catch(e){alert("Error: "+e.message)}}}} style={{background:"none",border:"none",color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)",fontSize:12,textDecoration:"underline"}}>Forgot password?</button></p>}
             {mode==="signup"&&<p style={{fontSize:12,color:"var(--mt)",textAlign:"center"}}>14 days free, then from €7.99/month</p>}
             {mode==="signup"&&<p style={{fontSize:11,color:"var(--mt)",textAlign:"center",lineHeight:1.5}}>By signing up you agree to our <a href="/terms" style={{color:"var(--acc)"}}>Terms of Service</a> and <a href="/privacy" style={{color:"var(--acc)"}}>Privacy Policy</a>.</p>}
             {mode==="signup"&&<p style={{fontSize:11,color:"var(--mt)",textAlign:"center"}}>Password must be 8+ characters with a mix of uppercase, numbers, or symbols</p>}
@@ -875,6 +876,9 @@ function Hub({user,profile,onRefresh,onLogout}){
           <button onClick={()=>onRefresh("clubs")} className="btn bs" style={{fontSize:13}}>+ Add a club</button>
         </div>
       </div>}
+
+      {/* OFFLINE BANNER */}
+      {typeof navigator!=="undefined"&&!navigator.onLine&&<div style={{background:"#fef3c7",borderRadius:12,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:8,fontSize:12,fontWeight:600,color:"#92400e"}}>📡 You're offline — showing cached data</div>}
 
       {/* TRIAL BANNER */}
       {!needsPayment&&!profile?.is_beta&&trialStart&&profile?.subscription_status!=="active"&&<div style={{background:"linear-gradient(135deg,#1a2a3a,#2d4a5f)",borderRadius:12,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",color:"#fff"}}>
@@ -1321,13 +1325,14 @@ function Hub({user,profile,onRefresh,onLogout}){
           <div style={{fontSize:12,color:"var(--mt)"}}>{user?.email}</div>
         </div>
         <button onClick={()=>{setShowProfile(false);setShowSupport(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💬 Contact Support</button>
-        <button onClick={()=>{setShowProfile(false);/* TODO: change password */}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🔑 Change Password</button>
+        <button onClick={()=>{setShowProfile(false);const np=prompt("Enter new password (min 8 characters):");if(np&&np.length>=8){fetch(SB+"/auth/v1/user",{method:"PUT",headers:hd(),body:JSON.stringify({password:np})}).then(r=>{if(r.ok)alert("Password changed successfully!");else alert("Error changing password. Try again.")}).catch(()=>alert("Error."))}else if(np){alert("Password must be at least 8 characters.")}}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🔑 Change Password</button>
         {profile?.subscription_status==="active"&&<button onClick={()=>{setShowProfile(false);openPortal()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💳 Manage Subscription</button>}
         {profile?.is_beta?<div style={{padding:"10px 14px",fontSize:12,fontWeight:700,color:"#16a34a",display:"flex",alignItems:"center",gap:8}}>🎁 Beta member — free forever</div>
         :profile?.subscription_status!=="active"&&<button onClick={()=>{setShowProfile(false);startCheckout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>⭐ Subscribe — €7.99/mo</button>}
         <button onClick={()=>{setShowProfile(false);setShowFamily(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>👨‍👩‍👧‍👦 Family Members</button>
         <a href="/privacy" style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>🔒 Privacy & Data</a>
         <div style={{borderTop:"1px solid var(--bd)",marginTop:4,paddingTop:4}}>
+          <button onClick={async()=>{if(confirm("Are you sure you want to delete your account? This will permanently delete all your data, your children's data, clubs, and payment history. This cannot be undone.")){if(confirm("Final confirmation — type YES to delete everything.")){try{await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:user.email,subject:"Account deletion requested",html:"<p>Your OneClubView account deletion has been requested. All data will be removed within 30 days. If this was not you, please contact hello@oneclubview.com immediately.</p>"})});alert("Account deletion requested. Your data will be removed within 30 days. You'll receive a confirmation email.");onLogout()}catch(e){alert("Error requesting deletion. Please email hello@oneclubview.com")}}}}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🗑️ Delete Account</button>
           <button onClick={()=>{setShowProfile(false);onLogout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🚪 Log out</button>
         </div>
       </div>}
