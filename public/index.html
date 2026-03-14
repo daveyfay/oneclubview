@@ -1256,88 +1256,78 @@ function Hub({user,profile,onRefresh,onLogout}){
         {/* Search */}
         <input value={discoverSearch} onChange={e=>setDiscoverSearch(e.target.value)} placeholder="Search clubs near you..." style={{width:"100%",padding:"12px 16px",borderRadius:14,border:"1px solid var(--bd)",fontSize:14,marginBottom:12,fontFamily:"var(--sn)"}}/>
 
-        {/* Smart audience pills */}
-        <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:16,WebkitOverflowScrolling:"touch"}}>
-          <button onClick={()=>setDiscoverFilter("all")} className={"pill "+(discoverFilter==="all"?"pon":"poff")}>All</button>
-          {kids.length>0&&<button onClick={()=>setDiscoverFilter("kids")} className={"pill "+(discoverFilter==="kids"?"pon":"poff")}>👧 Kids</button>}
-          <button onClick={()=>setDiscoverFilter("adults")} className={"pill "+(discoverFilter==="adults"?"pon":"poff")}>👤 Adults</button>
-          {kids.length>0&&<button onClick={()=>setDiscoverFilter("family")} className={"pill "+(discoverFilter==="family"?"pon":"poff")}>👨‍👩‍👧 Family</button>}
-        </div>
-
-        {/* Activity categories grid */}
-        {!discoverSearch&&<div>
-          <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:12}}>Browse by activity</h3>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:24}}>
-            {actCats.map(cat=>(
-              <button key={cat.id} onClick={()=>setDiscoverSearch(cat.id)} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:"14px 8px",cursor:"pointer",textAlign:"center"}}>
-                <div style={{fontSize:24}}>{cat.emoji}</div>
-                <div style={{fontSize:12,fontWeight:600,color:"var(--tx)",marginTop:4,fontFamily:"var(--sn)"}}>{cat.name}</div>
-              </button>
-            ))}
-          </div>
-        </div>}
-
-        {/* Search results from clubs table */}
+        {/* Search results */}
         {discoverSearch&&<DiscoverResults query={discoverSearch} userLoc={userLoc} onAdd={(club)=>{setDiscoverSearch("");onRefresh("clubs");setEditClub(club)}}/>}
 
-        {/* Local events & competitions */}
-        <div>
-          <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:4}}>{discoverSearch?discoverSearch.charAt(0).toUpperCase()+discoverSearch.slice(1).replace("_"," ")+" events":"Local events & competitions"}</h3>
-          <p style={{fontSize:12,color:"var(--mt)",marginBottom:14}}>{discoverSearch?"Upcoming events from "+discoverSearch.replace("_"," ")+" clubs":"Open days, tournaments, and social events from clubs near you"}</p>
-          {(()=>{
-            const now=new Date();
-            // Hide Dublin-specific local events when user isn't near Dublin
-            const nearDublin=!userLoc||calcKm(userLoc.lat,userLoc.lng,53.35,-6.26)<=40;
-            const filtered=localEvents
-              .filter(e=>nearDublin)
-              .filter(e=>new Date(e.event_date+"T23:59:59")>=now)
-              .filter(e=>{
-                // Category filter from search/category tiles
-                if(discoverSearch&&e.category&&e.category!==discoverSearch)return false;
-                if(discoverSearch&&!e.category)return false;
-                // Audience filter (kids/adults/all pills within Discover)
-                if(discoverFilter!=="all"&&e.audience!==discoverFilter&&e.audience!=="all")return false;
-                // Member filter (top pills)
-                if(filter!=="all"){
-                  const selKid=kids.find(k=>k.id===filter);
-                  if(selKid&&e.audience==="adults")return false;
-                  if(!selKid&&filter==="self"&&e.audience==="kids")return false;
-                }
-                return true;
+        {/* Location-based content — ONLY from local clubs DB */}
+        {!discoverSearch&&(()=>{
+          const catEmoji={swimming:"🏊",gaa:"🏐",soccer:"⚽",rugby:"🏉",gymnastics:"🤸",dance:"💃",martial_arts:"🥋",tennis:"🎾",athletics:"🏃",hockey:"🏑",music:"🎵",coding:"💻",sailing:"⛵",scouts:"🏕️",basketball:"🏀",cricket:"🏏",horse_riding:"🐎",multi_activity:"🎯",drama:"🎭",art:"🎨",yoga:"🧘","multi-sport":"🏅",football:"⚽",youth:"👦"};
+          const catName={swimming:"Swimming",gaa:"GAA",soccer:"Soccer",rugby:"Rugby",gymnastics:"Gymnastics",dance:"Dance",martial_arts:"Martial Arts",tennis:"Tennis",athletics:"Athletics",hockey:"Hockey",music:"Music",coding:"Coding & STEM",sailing:"Sailing",scouts:"Scouts",basketball:"Basketball",cricket:"Cricket",horse_riding:"Horse Riding",multi_activity:"Multi-Activity",drama:"Drama",art:"Art",yoga:"Yoga","multi-sport":"Multi-Sport",football:"Football",youth:"Youth"};
+
+          const NearbySection=()=>{
+            const[nearbyClubs,setNearbyClubs]=useState([]);const[loadingN,setLoadingN]=useState(true);
+            useEffect(()=>{
+              db("clubs","GET",{select:"id,name,category,location,website_url,latitude,longitude",limit:200,order:"name.asc"}).then(r=>{
+                const all=r||[];
+                const local=userLoc?all.filter(c=>c.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(c.latitude),Number(c.longitude))<=30):all;
+                local.sort((a,b)=>{if(userLoc&&a.latitude&&b.latitude)return calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude));return 0});
+                setNearbyClubs(local);setLoadingN(false);
               });
-            if(filtered.length===0)return <p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>No upcoming events found</p>;
+            },[]);
 
-            const ET={competition:{i:"🏆",bg:"var(--goldl)",c:"#8a6d00"},tournament:{i:"🏅",bg:"var(--goldl)",c:"#8a6d00"},open_day:{i:"🎪",bg:"var(--sage)",c:"var(--gl)"},social:{i:"🍻",bg:"#f0e8f8",c:"#6b21a8"},fundraiser:{i:"❤️",bg:"#fce8e8",c:"#c0392b"}};
+            if(loadingN)return <p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>Finding activities near you...</p>;
 
-            return filtered.map(ev=>{
-              const t=ET[ev.event_type]||ET.competition;
-              const isAdult=ev.audience==="adults";
-              return <div key={ev.id} style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:10}}>
-                <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
-                  <div style={{width:40,height:40,borderRadius:10,background:t.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{t.i}</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:14,fontWeight:700,color:"var(--tx)"}}>{ev.title}</div>
-                    <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>{ev.club_name}</div>
-                    <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>
-                      {new Date(ev.event_date).toLocaleDateString("en-IE",{weekday:"short",day:"numeric",month:"short"})}
-                      {ev.event_time?" · "+ev.event_time.slice(0,5):""}
-                      {ev.location_name?" · "+ev.location_name:""}
+            // Build categories from actual local clubs
+            const catCounts={};
+            nearbyClubs.forEach(c=>{const cat=c.category||"other";catCounts[cat]=(catCounts[cat]||0)+1});
+            const sortedCats=Object.entries(catCounts).sort((a,b)=>b[1]-a[1]);
+            const hasKids=kids.length>0;
+            const kidFriendly=["gaa","swimming","soccer","rugby","gymnastics","dance","martial_arts","tennis","athletics","drama","art","coding","scouts","multi_activity","music","multi-sport","football"];
+
+            return <div>
+              {/* Category grid from REAL local data */}
+              <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:12}}>Activities near you</h3>
+              {sortedCats.length===0?<div style={{padding:20,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center",marginBottom:16}}>
+                <div style={{fontSize:28,marginBottom:6}}>🔍</div>
+                <p style={{fontSize:13,color:"var(--mt)"}}>No clubs found in your area yet</p>
+                <p style={{fontSize:12,color:"var(--mt)",marginTop:4}}>We are building our database. Check back soon.</p>
+              </div>
+              :<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:24}}>
+                {sortedCats.map(([cat,count])=>(
+                  <button key={cat} onClick={()=>setDiscoverSearch(cat)} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:"14px 8px",cursor:"pointer",textAlign:"center"}}>
+                    <div style={{fontSize:24}}>{catEmoji[cat]||"🏠"}</div>
+                    <div style={{fontSize:12,fontWeight:600,color:"var(--tx)",marginTop:4,fontFamily:"var(--sn)"}}>{catName[cat]||cat}</div>
+                    <div style={{fontSize:10,color:"var(--mt)",marginTop:2}}>{count} club{count!==1?"s":""}</div>
+                  </button>
+                ))}
+              </div>}
+
+              {/* Suggested clubs */}
+              {nearbyClubs.length>0&&<div>
+                <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:4}}>{hasKids?"Suggested for your family":"Activities for you"}</h3>
+                <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>{hasKids?"Based on "+kids.map(k=>k.first_name).join(" & ")+"'s interests":"Clubs and activities in your area"}</p>
+                {nearbyClubs.filter(c=>hasKids?kidFriendly.includes(c.category):true).slice(0,8).map(club=>{
+                  const dist=userLoc&&club.latitude?calcKm(userLoc.lat,userLoc.lng,Number(club.latitude),Number(club.longitude)):null;
+                  return <div key={club.id} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:14,marginBottom:8,boxShadow:"var(--shadow)"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <div style={{fontSize:22,width:36,textAlign:"center"}}>{catEmoji[club.category]||"🏠"}</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:14,fontWeight:700,color:"var(--g)"}}>{club.name}</div>
+                        <div style={{display:"flex",gap:6,alignItems:"center",marginTop:2}}>
+                          {club.location&&<span style={{fontSize:12,color:"var(--mt)"}}>{club.location}</span>}
+                          {dist!==null&&<span style={{fontSize:11,fontWeight:600,padding:"2px 6px",borderRadius:5,background:"#e8f0f5",color:"var(--gl)"}}>📍 {fmtDist(dist)}</span>}
+                        </div>
+                        {club.website_url&&<a href={club.website_url} target="_blank" rel="noopener" onClick={e=>e.stopPropagation()} style={{fontSize:11,color:"var(--acc)",textDecoration:"none",marginTop:2,display:"block"}}>Visit website →</a>}
+                      </div>
+                      <button onClick={()=>{setEditClub(club)}} style={{padding:"6px 14px",borderRadius:10,border:"1.5px solid var(--g)",background:"none",fontSize:12,fontWeight:700,color:"var(--g)",cursor:"pointer",fontFamily:"var(--sn)"}}>+ Add</button>
                     </div>
-                    <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
-                      {ev.age_group&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:isAdult?"#f0e8f8":"var(--sage)",color:isAdult?"#6b21a8":"var(--gl)"}}>{ev.age_group}</span>}
-                      {ev.cost_eur!==null&&<span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#c44030"}}>{ev.cost_eur>0?"€"+ev.cost_eur:"Free"}</span>}
-                      <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:t.bg,color:t.c}}>{ev.event_type==="open_day"?"Open Day":ev.event_type==="social"?"Social":ev.event_type==="tournament"?"Tournament":"Competition"}</span>
-                    </div>
-                  </div>
-                </div>
-                {(ev.booking_url||ev.facebook_url)&&<div style={{display:"flex",gap:6,marginTop:10}}>
-                  {ev.booking_url&&<a href={ev.booking_url} target="_blank" rel="noopener" style={{flex:1,textAlign:"center",padding:8,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:12,fontWeight:700,textDecoration:"none"}}>More info →</a>}
-                  {ev.facebook_url&&<a href={ev.facebook_url} target="_blank" rel="noopener" style={{flex:1,textAlign:"center",padding:8,borderRadius:10,background:"#1877F2",color:"#fff",fontSize:12,fontWeight:700,textDecoration:"none"}}>Facebook →</a>}
-                </div>}
-              </div>;
-            });
-          })()}
-        </div>
+                  </div>;
+                })}
+              </div>}
+            </div>;
+          };
+          return <NearbySection/>;
+        })()}
       </div>}
 
       </div>
