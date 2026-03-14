@@ -1328,6 +1328,69 @@ function Hub({user,profile,onRefresh,onLogout}){
           };
           return <NearbySection/>;
         })()}
+
+        {/* Things to do near you — from things_to_do table */}
+        {!discoverSearch&&(()=>{
+          const ThingsToDo=()=>{
+            const[things,setThings]=useState([]);const[loadingT,setLoadingT]=useState(true);
+            useEffect(()=>{
+              db("things_to_do","GET",{select:"*",filters:["status=eq.active"],order:"title.asc",limit:50}).then(r=>{
+                const all=r||[];
+                const local=userLoc?all.filter(t=>t.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(t.latitude),Number(t.longitude))<=40):all;
+                local.sort((a,b)=>{if(userLoc&&a.latitude&&b.latitude)return calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude));return 0});
+                setThings(local);setLoadingT(false);
+              });
+            },[]);
+
+            if(loadingT)return null;
+            if(things.length===0)return null;
+
+            const catIcon={outdoor:"🌲",indoor:"🏠",nature:"🍃",adventure:"🧗",farm:"🐄",beach:"🏖️",cultural:"🏛️",water_sports:"🚣",cycling:"🚲",playground:"🛝"};
+
+            // Filter by kids ages if family has kids
+            const hasKids=kids.length>0;
+            const kidAges=kids.map(k=>getAge(k.date_of_birth)).filter(a=>a!==null);
+            const youngest=kidAges.length>0?Math.min(...kidAges):0;
+            const oldest=kidAges.length>0?Math.max(...kidAges):99;
+
+            // Show things suited to the family
+            const suited=things.filter(t=>{
+              if(hasKids){
+                // At least one kid fits the age range
+                return kidAges.some(age=>age>=t.age_min&&age<=t.age_max)||t.audience==="all";
+              }
+              return t.audience!=="kids"; // Adults don't want kids-only things
+            });
+
+            return <div style={{marginTop:16}}>
+              <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:4}}>Things to do near you</h3>
+              <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>{hasKids?"Family activities suited to ages "+youngest+"–"+oldest:"Days out and activities in your area"}</p>
+              {suited.map(t=>{
+                const dist=userLoc&&t.latitude?calcKm(userLoc.lat,userLoc.lng,Number(t.latitude),Number(t.longitude)):null;
+                const suitedKids=hasKids?kids.filter(k=>{const age=getAge(k.date_of_birth);return age!==null&&age>=t.age_min&&age<=t.age_max}):[];
+                return <div key={t.id} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:16,padding:16,marginBottom:10,boxShadow:"var(--shadow)"}}>
+                  <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
+                    <div style={{width:40,height:40,borderRadius:10,background:"var(--sage)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{catIcon[t.category]||"🎯"}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:14,fontWeight:700,color:"var(--tx)"}}>{t.title}</div>
+                      {t.location_name&&<div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>{t.location_name}</div>}
+                      {t.description&&<div style={{fontSize:12,color:"var(--mt)",marginTop:4,lineHeight:1.4}}>{t.description.length>120?t.description.substring(0,120)+"...":t.description}</div>}
+                      <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
+                        {dist!==null&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#e8f0f5",color:"var(--gl)"}}>📍 {fmtDist(dist)}</span>}
+                        {t.cost_eur!==null&&<span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#c44030"}}>{t.cost_eur>0?"€"+t.cost_eur:"Free"}</span>}
+                        {suitedKids.length>0&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#e8f0fe",color:"#1a56db"}}>👧 Suits {suitedKids.map(k=>k.first_name).join(", ")}</span>}
+                        {t.age_max<99&&t.age_max<=14&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {t.age_min}–{t.age_max}</span>}
+                        {t.seasonal&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--goldl)",color:"#8a6d00"}}>{t.season_start}–{t.season_end}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  {t.website_url&&<a href={t.website_url} target="_blank" rel="noopener" style={{display:"block",marginTop:10,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:12,fontWeight:700,textDecoration:"none"}}>Visit website →</a>}
+                </div>;
+              })}
+            </div>;
+          };
+          return <ThingsToDo/>;
+        })()}
       </div>}
 
       </div>
