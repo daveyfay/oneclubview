@@ -1245,94 +1245,77 @@ function Hub({user,profile,onRefresh,onLogout}){
           );
         })()}
         <button onClick={()=>onRefresh("clubs")} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a club</button>
-        
-      </div>}
 
-      {tab==="discover"&&<div>
-        {/* Location */}
-        {userLoc&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10,fontSize:12,color:"var(--mt)"}}><span>📍</span> Showing activities near you</div>}
-        {!userLoc&&<button onClick={()=>{navigator.geolocation?.getCurrentPosition(pos=>{const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};setUserLoc(loc);db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}})},()=>{},{timeout:5000})}} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Enable location to see activities near you</button>}
-
-        {/* Search */}
-        <input value={discoverSearch} onChange={e=>setDiscoverSearch(e.target.value)} placeholder="Search clubs near you..." style={{width:"100%",padding:"12px 16px",borderRadius:14,border:"1px solid var(--bd)",fontSize:14,marginBottom:12,fontFamily:"var(--sn)"}}/>
-
-        {/* Search results */}
-        {discoverSearch&&<DiscoverResults query={discoverSearch} userLoc={userLoc} onAdd={(club)=>{setDiscoverSearch("");onRefresh("clubs");setEditClub(club)}}/>}
-
-        {/* Location-based content — ONLY from local clubs DB */}
-        {!discoverSearch&&(()=>{
-          const catEmoji={swimming:"🏊",gaa:"🏐",soccer:"⚽",rugby:"🏉",gymnastics:"🤸",dance:"💃",martial_arts:"🥋",tennis:"🎾",athletics:"🏃",hockey:"🏑",music:"🎵",coding:"💻",sailing:"⛵",scouts:"🏕️",basketball:"🏀",cricket:"🏏",horse_riding:"🐎",multi_activity:"🎯",drama:"🎭",art:"🎨",yoga:"🧘","multi-sport":"🏅",football:"⚽",youth:"👦"};
-          const catName={swimming:"Swimming",gaa:"GAA",soccer:"Soccer",rugby:"Rugby",gymnastics:"Gymnastics",dance:"Dance",martial_arts:"Martial Arts",tennis:"Tennis",athletics:"Athletics",hockey:"Hockey",music:"Music",coding:"Coding & STEM",sailing:"Sailing",scouts:"Scouts",basketball:"Basketball",cricket:"Cricket",horse_riding:"Horse Riding",multi_activity:"Multi-Activity",drama:"Drama",art:"Art",yoga:"Yoga","multi-sport":"Multi-Sport",football:"Football",youth:"Youth"};
-
-          const NearbySection=()=>{
-            const[nearbyClubs,setNearbyClubs]=useState([]);const[loadingN,setLoadingN]=useState(true);
+        {/* Clubs near you — from clubs DB, filtered by distance */}
+        {(()=>{
+          const catEmoji={swimming:"🏊",gaa:"🏐",soccer:"⚽",rugby:"🏉",gymnastics:"🤸",dance:"💃",martial_arts:"🥋",tennis:"🎾",athletics:"🏃",hockey:"🏑",music:"🎵",coding:"💻",sailing:"⛵",scouts:"🏕️",basketball:"🏀",cricket:"🏏",horse_riding:"🐎",multi_activity:"🎯",drama:"🎭",art:"🎨","multi-sport":"🏅",football:"⚽",youth:"👦"};
+          const NearbyClubs=()=>{
+            const[nearby,setNearby]=useState([]);const[loadNC,setLoadNC]=useState(true);const[ncSearch,setNcSearch]=useState("");
+            const myClubIds=new Set(clubs.map(c=>c.club_id));
             useEffect(()=>{
               db("clubs","GET",{select:"id,name,category,location,website_url,latitude,longitude",limit:200,order:"name.asc"}).then(r=>{
                 const all=r||[];
                 const local=userLoc?all.filter(c=>c.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(c.latitude),Number(c.longitude))<=30):all;
                 local.sort((a,b)=>{if(userLoc&&a.latitude&&b.latitude)return calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude));return 0});
-                setNearbyClubs(local);setLoadingN(false);
+                setNearby(local.filter(c=>!myClubIds.has(c.id)));setLoadNC(false);
               });
             },[]);
+            if(loadNC)return <p style={{textAlign:"center",padding:12,color:"var(--mt)",fontSize:12}}>Finding clubs near you...</p>;
+            if(nearby.length===0)return null;
 
-            if(loadingN)return <p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>Finding activities near you...</p>;
-
-            // Build categories from actual local clubs
+            // Build categories from local clubs
             const catCounts={};
-            nearbyClubs.forEach(c=>{const cat=c.category||"other";catCounts[cat]=(catCounts[cat]||0)+1});
+            nearby.forEach(c=>{const cat=c.category||"other";catCounts[cat]=(catCounts[cat]||0)+1});
             const sortedCats=Object.entries(catCounts).sort((a,b)=>b[1]-a[1]);
-            const hasKids=kids.length>0;
-            const kidFriendly=["gaa","swimming","soccer","rugby","gymnastics","dance","martial_arts","tennis","athletics","drama","art","coding","scouts","multi_activity","music","multi-sport","football"];
+            const filtered=ncSearch?nearby.filter(c=>c.name.toLowerCase().includes(ncSearch.toLowerCase())||c.category===ncSearch):nearby;
 
-            return <div>
-              {/* Category grid from REAL local data */}
-              <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:12}}>Activities near you</h3>
-              {sortedCats.length===0?<div style={{padding:20,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center",marginBottom:16}}>
-                <div style={{fontSize:28,marginBottom:6}}>🔍</div>
-                <p style={{fontSize:13,color:"var(--mt)"}}>No clubs found in your area yet</p>
-                <p style={{fontSize:12,color:"var(--mt)",marginTop:4}}>We are building our database. Check back soon.</p>
+            return <div style={{marginTop:20}}>
+              <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:4}}>Clubs near you</h3>
+              {userLoc&&<p style={{fontSize:12,color:"var(--mt)",marginBottom:10}}>📍 {nearby.length} clubs within 30km</p>}
+
+              {/* Category pills */}
+              <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:10,WebkitOverflowScrolling:"touch"}}>
+                <button onClick={()=>setNcSearch("")} className={"pill "+(ncSearch===""?"pon":"poff")}>All</button>
+                {sortedCats.slice(0,8).map(([cat,cnt])=><button key={cat} onClick={()=>setNcSearch(ncSearch===cat?"":cat)} className={"pill "+(ncSearch===cat?"pon":"poff")}>{catEmoji[cat]||"🏠"} {cnt}</button>)}
               </div>
-              :<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:24}}>
-                {sortedCats.map(([cat,count])=>(
-                  <button key={cat} onClick={()=>setDiscoverSearch(cat)} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:"14px 8px",cursor:"pointer",textAlign:"center"}}>
-                    <div style={{fontSize:24}}>{catEmoji[cat]||"🏠"}</div>
-                    <div style={{fontSize:12,fontWeight:600,color:"var(--tx)",marginTop:4,fontFamily:"var(--sn)"}}>{catName[cat]||cat}</div>
-                    <div style={{fontSize:10,color:"var(--mt)",marginTop:2}}>{count} club{count!==1?"s":""}</div>
-                  </button>
-                ))}
-              </div>}
 
-              {/* Suggested clubs */}
-              {nearbyClubs.length>0&&<div>
-                <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:4}}>{hasKids?"Suggested for your family":"Activities for you"}</h3>
-                <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>{hasKids?"Based on "+kids.map(k=>k.first_name).join(" & ")+"'s interests":"Clubs and activities in your area"}</p>
-                {nearbyClubs.filter(c=>hasKids?kidFriendly.includes(c.category):true).slice(0,8).map(club=>{
-                  const dist=userLoc&&club.latitude?calcKm(userLoc.lat,userLoc.lng,Number(club.latitude),Number(club.longitude)):null;
-                  return <div key={club.id} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:14,marginBottom:8,boxShadow:"var(--shadow)"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{fontSize:22,width:36,textAlign:"center"}}>{catEmoji[club.category]||"🏠"}</div>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:14,fontWeight:700,color:"var(--g)"}}>{club.name}</div>
-                        <div style={{display:"flex",gap:6,alignItems:"center",marginTop:2}}>
-                          {club.location&&<span style={{fontSize:12,color:"var(--mt)"}}>{club.location}</span>}
-                          {dist!==null&&<span style={{fontSize:11,fontWeight:600,padding:"2px 6px",borderRadius:5,background:"#e8f0f5",color:"var(--gl)"}}>📍 {fmtDist(dist)}</span>}
-                        </div>
-                        {club.website_url&&<a href={club.website_url} target="_blank" rel="noopener" onClick={e=>e.stopPropagation()} style={{fontSize:11,color:"var(--acc)",textDecoration:"none",marginTop:2,display:"block"}}>Visit website →</a>}
+              {/* Search */}
+              <input value={typeof ncSearch==="string"&&!sortedCats.some(([c])=>c===ncSearch)?ncSearch:""} onChange={e=>setNcSearch(e.target.value)} placeholder="Search clubs..." style={{width:"100%",padding:"10px 14px",borderRadius:12,border:"1px solid var(--bd)",fontSize:13,marginBottom:10,fontFamily:"var(--sn)"}}/>
+
+              {/* Results */}
+              {filtered.slice(0,12).map(club=>{
+                const dist=userLoc&&club.latitude?calcKm(userLoc.lat,userLoc.lng,Number(club.latitude),Number(club.longitude)):null;
+                return <div key={club.id} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:14,marginBottom:8,boxShadow:"var(--shadow)"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{fontSize:22,width:36,textAlign:"center"}}>{catEmoji[club.category]||"🏠"}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:14,fontWeight:700,color:"var(--g)"}}>{club.name}</div>
+                      <div style={{display:"flex",gap:6,alignItems:"center",marginTop:2}}>
+                        {club.location&&<span style={{fontSize:12,color:"var(--mt)"}}>{club.location}</span>}
+                        {dist!==null&&<span style={{fontSize:11,fontWeight:600,padding:"2px 6px",borderRadius:5,background:"#e8f0f5",color:"var(--gl)"}}>📍 {fmtDist(dist)}</span>}
                       </div>
-                      <button onClick={()=>{setEditClub(club)}} style={{padding:"6px 14px",borderRadius:10,border:"1.5px solid var(--g)",background:"none",fontSize:12,fontWeight:700,color:"var(--g)",cursor:"pointer",fontFamily:"var(--sn)"}}>+ Add</button>
+                      {club.website_url&&<a href={club.website_url} target="_blank" rel="noopener" onClick={e=>e.stopPropagation()} style={{fontSize:11,color:"var(--acc)",textDecoration:"none",marginTop:2,display:"block"}}>Visit website →</a>}
                     </div>
-                  </div>;
-                })}
-              </div>}
+                    <button onClick={()=>{setEditClub(club)}} style={{padding:"6px 14px",borderRadius:10,border:"1.5px solid var(--g)",background:"none",fontSize:12,fontWeight:700,color:"var(--g)",cursor:"pointer",fontFamily:"var(--sn)"}}>+ Add</button>
+                  </div>
+                </div>;
+              })}
+              {filtered.length>12&&<p style={{fontSize:12,color:"var(--mt)",textAlign:"center",padding:8}}>Showing 12 of {filtered.length} clubs. Search to find more.</p>}
             </div>;
           };
-          return <NearbySection/>;
+          return <NearbyClubs/>;
         })()}
+      </div>}
 
-        {/* Things to do near you — from things_to_do table */}
-        {!discoverSearch&&(()=>{
+      {tab==="discover"&&<div>
+        {/* Location */}
+        {userLoc&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10,fontSize:12,color:"var(--mt)"}}><span>📍</span> Showing things to do near you</div>}
+        {!userLoc&&<button onClick={()=>{navigator.geolocation?.getCurrentPosition(pos=>{const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};setUserLoc(loc);db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}})},()=>{},{timeout:5000})}} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Enable location to see things to do near you</button>}
+
+        {/* Things to do — activities, days out, attractions */}
+        {(()=>{
           const ThingsToDo=()=>{
-            const[things,setThings]=useState([]);const[loadingT,setLoadingT]=useState(true);
+            const[things,setThings]=useState([]);const[loadingT,setLoadingT]=useState(true);const[tdFilter,setTdFilter]=useState("all");
             useEffect(()=>{
               db("things_to_do","GET",{select:"*",filters:["status=eq.active"],order:"title.asc",limit:50}).then(r=>{
                 const all=r||[];
@@ -1342,30 +1325,39 @@ function Hub({user,profile,onRefresh,onLogout}){
               });
             },[]);
 
-            if(loadingT)return null;
-            if(things.length===0)return null;
+            if(loadingT)return <p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>Finding things to do near you...</p>;
+            if(things.length===0)return <div style={{padding:20,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center"}}><div style={{fontSize:28,marginBottom:6}}>🔍</div><p style={{fontSize:13,color:"var(--mt)"}}>No activities found in your area yet</p><p style={{fontSize:12,color:"var(--mt)",marginTop:4}}>We are building our database. Check back soon.</p></div>;
 
             const catIcon={outdoor:"🌲",indoor:"🏠",nature:"🍃",adventure:"🧗",farm:"🐄",beach:"🏖️",cultural:"🏛️",water_sports:"🚣",cycling:"🚲",playground:"🛝"};
+            const catLabel={outdoor:"Outdoor",indoor:"Indoor",nature:"Nature",adventure:"Adventure",farm:"Farms",beach:"Beach",cultural:"Heritage",water_sports:"Water",cycling:"Cycling",playground:"Play"};
 
-            // Filter by kids ages if family has kids
+            // Build category counts
+            const catCounts={};
+            things.forEach(t=>{const cat=t.category||"outdoor";catCounts[cat]=(catCounts[cat]||0)+1});
+            const sortedCats=Object.entries(catCounts).sort((a,b)=>b[1]-a[1]);
+
             const hasKids=kids.length>0;
             const kidAges=kids.map(k=>getAge(k.date_of_birth)).filter(a=>a!==null);
             const youngest=kidAges.length>0?Math.min(...kidAges):0;
             const oldest=kidAges.length>0?Math.max(...kidAges):99;
 
-            // Show things suited to the family
-            const suited=things.filter(t=>{
-              if(hasKids){
-                // At least one kid fits the age range
-                return kidAges.some(age=>age>=t.age_min&&age<=t.age_max)||t.audience==="all";
-              }
-              return t.audience!=="kids"; // Adults don't want kids-only things
+            const filtered=things.filter(t=>{
+              if(tdFilter!=="all"&&t.category!==tdFilter)return false;
+              if(hasKids)return kidAges.some(age=>age>=t.age_min&&age<=t.age_max)||t.audience==="all";
+              return t.audience!=="kids";
             });
 
-            return <div style={{marginTop:16}}>
+            return <div>
               <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:4}}>Things to do near you</h3>
-              <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>{hasKids?"Family activities suited to ages "+youngest+"–"+oldest:"Days out and activities in your area"}</p>
-              {suited.map(t=>{
+              <p style={{fontSize:12,color:"var(--mt)",marginBottom:10}}>{hasKids?"Activities suited to ages "+youngest+"–"+oldest:"Days out and activities in your area"}</p>
+
+              {/* Category pills */}
+              <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:12,WebkitOverflowScrolling:"touch"}}>
+                <button onClick={()=>setTdFilter("all")} className={"pill "+(tdFilter==="all"?"pon":"poff")}>All ({things.length})</button>
+                {sortedCats.map(([cat,cnt])=><button key={cat} onClick={()=>setTdFilter(tdFilter===cat?"all":cat)} className={"pill "+(tdFilter===cat?"pon":"poff")}>{catIcon[cat]||"🎯"} {catLabel[cat]||cat} ({cnt})</button>)}
+              </div>
+
+              {filtered.map(t=>{
                 const dist=userLoc&&t.latitude?calcKm(userLoc.lat,userLoc.lng,Number(t.latitude),Number(t.longitude)):null;
                 const suitedKids=hasKids?kids.filter(k=>{const age=getAge(k.date_of_birth);return age!==null&&age>=t.age_min&&age<=t.age_max}):[];
                 return <div key={t.id} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:16,padding:16,marginBottom:10,boxShadow:"var(--shadow)"}}>
@@ -1377,7 +1369,7 @@ function Hub({user,profile,onRefresh,onLogout}){
                       {t.description&&<div style={{fontSize:12,color:"var(--mt)",marginTop:4,lineHeight:1.4}}>{t.description.length>120?t.description.substring(0,120)+"...":t.description}</div>}
                       <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
                         {dist!==null&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#e8f0f5",color:"var(--gl)"}}>📍 {fmtDist(dist)}</span>}
-                        {t.cost_eur!==null&&<span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#c44030"}}>{t.cost_eur>0?"€"+t.cost_eur:"Free"}</span>}
+                        {t.cost_eur!==null&&<span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#c44030"}}>{Number(t.cost_eur)>0?"€"+t.cost_eur:"Free"}</span>}
                         {suitedKids.length>0&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#e8f0fe",color:"#1a56db"}}>👧 Suits {suitedKids.map(k=>k.first_name).join(", ")}</span>}
                         {t.age_max<99&&t.age_max<=14&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {t.age_min}–{t.age_max}</span>}
                         {t.seasonal&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--goldl)",color:"#8a6d00"}}>{t.season_start}–{t.season_end}</span>}
@@ -1387,6 +1379,7 @@ function Hub({user,profile,onRefresh,onLogout}){
                   {t.website_url&&<a href={t.website_url} target="_blank" rel="noopener" style={{display:"block",marginTop:10,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:12,fontWeight:700,textDecoration:"none"}}>Visit website →</a>}
                 </div>;
               })}
+              {filtered.length===0&&<p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>No activities match this filter</p>}
             </div>;
           };
           return <ThingsToDo/>;
