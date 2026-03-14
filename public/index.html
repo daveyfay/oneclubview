@@ -676,7 +676,7 @@ function Hub({user,profile,onRefresh,onLogout}){
       db("recurring_events","GET",{filters:[uidFilter]}),
       db("manual_events","GET",{filters:[uidFilter]}),
       db("payment_reminders","GET",{filters:[uidFilter],order:"due_date.asc"}),
-      db("camps","GET",{select:"id,title,camp_type,start_date,end_date,daily_start_time,daily_end_time,age_min,age_max,cost_eur,cost_notes,location_name,booking_url,source",filters:["status=eq.active"],order:"start_date.asc"}),
+      db("camps","GET",{select:"id,title,camp_type,start_date,end_date,daily_start_time,daily_end_time,age_min,age_max,cost_eur,cost_notes,location_name,latitude,longitude,booking_url,source",filters:["status=eq.active"],order:"start_date.asc"}),
       db("school_holidays","GET",{order:"start_date.asc"}),
       db("user_school_holidays","GET",{filters:[uidFilter],order:"start_date.asc"}),
       db("camp_bookings","GET",{filters:[uidFilter]}),
@@ -757,12 +757,15 @@ function Hub({user,profile,onRefresh,onLogout}){
 
   // Camps filtered by kid age
   const filtCamps=useMemo(()=>{
-    if(filter==="all"||filter==="self")return camps;
+    let fc=camps;
+    // Filter by distance — only show camps within 30km of user
+    if(userLoc)fc=fc.filter(c=>!c.latitude||calcKm(userLoc.lat,userLoc.lng,Number(c.latitude),Number(c.longitude))<=30);
+    if(filter==="all"||filter==="self")return fc;
     const kid=kids.find(k=>k.id===filter);
-    if(!kid||!kid.date_of_birth)return camps;
+    if(!kid||!kid.date_of_birth)return fc;
     const age=getAge(kid.date_of_birth);
-    return camps.filter(c=>age>=c.age_min&&age<=c.age_max);
-  },[camps,filter,kids]);
+    return fc.filter(c=>age>=c.age_min&&age<=c.age_max);
+  },[camps,filter,kids,userLoc]);
 
   const tabs=[{id:"week",l:"This Week",i:"📅"},{id:"money",l:"Money",i:"💳"},{id:"camps",l:"Camps",i:"🏕️"},{id:"clubs",l:"Clubs",i:"🏠"},{id:"discover",l:"Discover",i:"🔍"}];
 
@@ -1177,7 +1180,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           userHolidays.filter(uh=>!uh.base_holiday_id&&uh.holiday_type!=="hidden").forEach(uh=>{
             mergedHols.push({...uh,is_user_override:true});
           });
-          const futureHols=mergedHols.filter(h=>new Date(h.end_date+"T23:59:59")>=now).filter(c=>!userLoc||!c.latitude||calcKm(userLoc.lat,userLoc.lng,c.latitude,c.longitude)<=30).sort((a,b)=>{if(userLoc&&a.latitude&&b.latitude){const da=calcKm(userLoc.lat,userLoc.lng,a.latitude,a.longitude),db2=calcKm(userLoc.lat,userLoc.lng,b.latitude,b.longitude);if(Math.abs(da-db2)>2)return da-db2}return new Date(a.start_date)-new Date(b.start_date)});
+          const futureHols=mergedHols.filter(h=>new Date(h.end_date+"T23:59:59")>=now).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
           const kidName=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter)?.first_name:null;
           const kidAge=filter!=="all"&&filter!=="self"?getAge(kids.find(k=>k.id===filter)?.date_of_birth):null;
 
