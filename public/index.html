@@ -700,22 +700,23 @@ function Hub({user,profile,onRefresh,onLogout}){
   }
   useEffect(()=>{
     load();
-    // Get user location, populate local camps/clubs
+    // ALWAYS get fresh location — no caching. This ensures moving to a new area works.
     if(navigator.geolocation){
       navigator.geolocation.getCurrentPosition(pos=>{
         const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};
         setUserLoc(loc);
         db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}});
-        fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:loc.lat,longitude:loc.lng,user_id:user.id})}).then(r=>r.json()).then(d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0))load()}).catch(()=>{});
+        // Scrape for this location — will cache-hit if already scraped within 24hr/15km
+        fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:loc.lat,longitude:loc.lng,user_id:user.id})}).then(r=>r.json()).then(d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0||d.things_inserted>0))load()}).catch(()=>{});
       },()=>{
+        // Geolocation denied — use saved profile location
         db("profiles","GET",{filters:["id=eq."+user.id],select:"latitude,longitude"}).then(p=>{
           if(p&&p[0]&&p[0].latitude){
             const loc={lat:Number(p[0].latitude),lng:Number(p[0].longitude)};
             setUserLoc(loc);
-            fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:loc.lat,longitude:loc.lng,user_id:user.id})}).then(r=>r.json()).then(d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0))load()}).catch(()=>{});
           }
         });
-      },{enableHighAccuracy:false,timeout:5000,maximumAge:3600000});
+      },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
     }
   },[]);
 
