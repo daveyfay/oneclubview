@@ -1254,15 +1254,18 @@ function Hub({user,profile,onRefresh,onLogout}){
             const[nearby,setNearby]=useState([]);const[loadNC,setLoadNC]=useState(true);const[ncSearch,setNcSearch]=useState("");
             const myClubIds=new Set(clubs.map(c=>c.club_id));
             useEffect(()=>{
+              if(!userLoc){setLoadNC(false);return}
+              setLoadNC(true);
               db("clubs","GET",{select:"id,name,category,location,website_url,latitude,longitude",limit:200,order:"name.asc"}).then(r=>{
                 const all=r||[];
-                const local=userLoc?all.filter(c=>c.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(c.latitude),Number(c.longitude))<=30):all;
-                local.sort((a,b)=>{if(userLoc&&a.latitude&&b.latitude)return calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude));return 0});
+                const local=all.filter(c=>c.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(c.latitude),Number(c.longitude))<=30);
+                local.sort((a,b)=>calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude)));
                 setNearby(local.filter(c=>!myClubIds.has(c.id)));setLoadNC(false);
               });
-            },[]);
+            },[userLoc]);
             if(loadNC)return <p style={{textAlign:"center",padding:12,color:"var(--mt)",fontSize:12}}>Finding clubs near you...</p>;
-            if(nearby.length===0)return null;
+            if(!userLoc)return <p style={{textAlign:"center",padding:12,color:"var(--mt)",fontSize:12}}>Enable location to see clubs near you</p>;
+            if(nearby.length===0)return <div style={{padding:16,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center",marginTop:16}}><div style={{fontSize:24,marginBottom:6}}>🔍</div><p style={{fontSize:13,color:"var(--mt)"}}>No clubs found near you yet</p><p style={{fontSize:12,color:"var(--mt)",marginTop:4}}>We're building our database for your area. Try again soon.</p></div>;
 
             // Build categories from local clubs
             const catCounts={};
@@ -1318,13 +1321,15 @@ function Hub({user,profile,onRefresh,onLogout}){
           const ThingsToDo=()=>{
             const[things,setThings]=useState([]);const[loadingT,setLoadingT]=useState(true);const[tdFilter,setTdFilter]=useState("all");
             useEffect(()=>{
+              if(!userLoc){setLoadingT(false);return}
+              setLoadingT(true);
               db("things_to_do","GET",{select:"*",filters:["status=eq.active"],order:"title.asc",limit:50}).then(r=>{
                 const all=r||[];
-                const local=userLoc?all.filter(t=>t.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(t.latitude),Number(t.longitude))<=40):all;
-                local.sort((a,b)=>{if(userLoc&&a.latitude&&b.latitude)return calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude));return 0});
+                const local=all.filter(t=>t.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(t.latitude),Number(t.longitude))<=40);
+                local.sort((a,b)=>calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude)));
                 setThings(local);setLoadingT(false);
               });
-            },[]);
+            },[userLoc]);
 
             if(loadingT)return <p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>Finding things to do near you...</p>;
             if(things.length===0)return <div style={{padding:20,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center"}}><div style={{fontSize:28,marginBottom:6}}>🔍</div><p style={{fontSize:13,color:"var(--mt)"}}>No activities found in your area yet</p><p style={{fontSize:12,color:"var(--mt)",marginTop:4}}>We are building our database. Check back soon.</p></div>;
