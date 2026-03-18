@@ -637,7 +637,7 @@ function DiscoverResults({query,onAdd,userLoc}){
     {loading&&<p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>Loading...</p>}
     {!loading&&filtered.length===0&&<p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>No clubs found near you for "{query}"</p>}
     <div style={{display:"flex",flexDirection:"column",gap:6}}>
-    {filtered.map(club=>{const dist=userLoc&&club.latitude?calcKm(userLoc.lat,userLoc.lng,Number(club.latitude),Number(club.longitude)):null;return <div key={club.id} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:14,boxShadow:"var(--shadow)"}}>
+    {filtered.map(club=>{const dist=(()=>{if(!club.latitude)return null;const cL=Number(club.latitude),cN=Number(club.longitude);let min=999;if(userLoc)min=Math.min(min,calcKm(userLoc.lat,userLoc.lng,cL,cN));return min<999?min:null})();return <div key={club.id} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:14,boxShadow:"var(--shadow)"}}>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
         <div style={{fontSize:22,width:36,textAlign:"center"}}>{catEmoji[club.category]||"🏠"}</div>
         <div style={{flex:1}}>
@@ -1289,7 +1289,7 @@ function Hub({user,profile,onRefresh,onLogout}){
                   <p style={{fontSize:13,color:"var(--mt)"}}>No camps listed yet for this break</p>
                   <p style={{fontSize:12,color:"var(--mt)",marginTop:2}}>We'll alert you when camps appear</p>
                 </div>
-              :holCamps.map(camp=><CampCard key={camp.id} camp={camp} userLoc={userLoc} user={user} kids={kids} filter={filter} campBookings={campBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load} isAdmin={isAdmin}/>)}
+              :holCamps.map(camp=><CampCard key={camp.id} camp={camp} userLoc={userLoc} allLocs={allLocs} user={user} kids={kids} filter={filter} campBookings={campBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load} isAdmin={isAdmin}/>)}
             </div>
           });
         })()}
@@ -1365,7 +1365,7 @@ function Hub({user,profile,onRefresh,onLogout}){
 
               {/* Results */}
               {filtered.slice(0,12).map(club=>{
-                const dist=userLoc&&club.latitude?calcKm(userLoc.lat,userLoc.lng,Number(club.latitude),Number(club.longitude)):null;
+                const dist=(()=>{if(!club.latitude)return null;const cL=Number(club.latitude),cN=Number(club.longitude);let min=999;allLocs.forEach(loc=>{min=Math.min(min,calcKm(loc.lat,loc.lng,cL,cN))});return min<999?min:null})();
                 return <div key={club.id} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:14,padding:14,marginBottom:8,boxShadow:"var(--shadow)"}}>
                   <div style={{display:"flex",alignItems:"center",gap:10}}>
                     <div style={{fontSize:22,width:36,textAlign:"center"}}>{catEmoji[club.category]||"🏠"}</div>
@@ -1448,7 +1448,7 @@ function Hub({user,profile,onRefresh,onLogout}){
               </div>
 
               {filtered.map(t=>{
-                const dist=userLoc&&t.latitude?calcKm(userLoc.lat,userLoc.lng,Number(t.latitude),Number(t.longitude)):null;
+                const dist=(()=>{if(!t.latitude)return null;const tLat=Number(t.latitude),tLng=Number(t.longitude);let min=999;allLocs.forEach(loc=>{min=Math.min(min,calcKm(loc.lat,loc.lng,tLat,tLng))});return min<999?min:null})();
                 const suitedKids=hasKids?kids.filter(k=>{const age=getAge(k.date_of_birth);return age!==null&&age>=t.age_min&&age<=t.age_max}):[];
                 return <div key={t.id} style={{background:"var(--card)",border:"1px solid var(--bd)",borderRadius:16,padding:16,marginBottom:10,boxShadow:"var(--shadow)"}}>
                   <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
@@ -2171,7 +2171,7 @@ function AddHolidayModal({userId,onClose,onSaved}){
 }
 
 
-function CampCard({camp,userLoc,user,kids,filter,campBookings,CT,fmtDate,onBookingChange,isAdmin=true}){
+function CampCard({camp,userLoc,allLocs=[],user,kids,filter,campBookings,CT,fmtDate,onBookingChange,isAdmin=true}){
   const[classmateCount,setClassmateCount]=useState(0);
   const activeKid=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter):null;
   const hasSchool=activeKid?.school_name&&activeKid?.school_class;
@@ -2213,7 +2213,7 @@ function CampCard({camp,userLoc,user,kids,filter,campBookings,CT,fmtDate,onBooki
           <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {camp.age_min}–{camp.age_max}</span>
           {(()=>{const suited=kids.filter(k=>{const a=k.date_of_birth?Math.floor((new Date()-new Date(k.date_of_birth))/(365.25*86400000)):null;return a!==null&&a>=camp.age_min&&a<=camp.age_max});return suited.length>0?<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#e8f0fe",color:"#1a56db"}}>👧 Suits {suited.map(k=>k.first_name).join(", ")}</span>:null})()}
           {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--gxl)",color:"var(--gl)"}}>✓ Covers work day</span>}
-          {userLoc&&camp.latitude&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#e8f0f5",color:"var(--gl)"}}>📍 {fmtDist(calcKm(userLoc.lat,userLoc.lng,camp.latitude,camp.longitude))}</span>}
+          {camp.latitude&&allLocs.length>0&&(()=>{const cLat=Number(camp.latitude),cLng=Number(camp.longitude);let min=999;allLocs.forEach(loc=>{min=Math.min(min,calcKm(loc.lat,loc.lng,cLat,cLng))});return min<999?<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#e8f0f5",color:"var(--gl)"}}>📍 {fmtDist(min)}</span>:null})()}
         </div>
       </div>
     </div>
