@@ -193,7 +193,7 @@ function Logo({dark}){
 function FeatureTiles(){
   const[open,setOpen]=useState(null);
   const tiles=[
-    {i:"📅",t:"Weekly family view",d:"Every club, every kid, colour-coded.",
+    {i:"cal",t:"Weekly family view",d:"Every club, every kid, colour-coded.",
      ex:{title:"Your week at a glance",items:[
        {c:"#2d5a3f",who:"Penny",what:"Swimming Training",when:"Tue 17:00–18:00"},
        {c:"#2d7cb5",who:"Cooper",what:"GAA Training",when:"Tue 16:30–18:00"},
@@ -201,32 +201,32 @@ function FeatureTiles(){
        {c:"#2d5a3f",who:"Penny",what:"Gymnastics",when:"Thu 15:30–16:30"},
        {c:"#8e44ad",who:"You",what:"Tennis",when:"Sat 10:00–11:00"}
      ]}},
-    {i:"💳",t:"Fee tracker",d:"Total spend across every club, per kid.",
+    {i:"card",t:"Fee tracker",d:"Total spend across every club, per kid.",
      ex:{title:"Payment reminders",items:[
        {c:"#dc2626",who:"Penny",what:"Swimming — Term 3 fee",when:"€180 · Due 15 Apr · OVERDUE"},
        {c:"#2d7cb5",who:"Cooper",what:"GAA registration",when:"€50 · Due 1 May"},
        {c:"#2d5a3f",who:"Penny",what:"Gymnastics — April",when:"€65 · Paid ✓"}
      ]}},
-    {i:"🏕️",t:"Camp discovery",d:"Matched to your family's ages and interests.",
+    {i:"tent",t:"Camp discovery",d:"Matched to your family's ages and interests.",
      ex:{title:"🐣 Easter Break · 27 Mar – 10 Apr",items:[
        {c:"#1a56db",who:"👧 Suits Penny, Cooper",what:"Easter Adventure Camp – Bull Island",when:"€160 · Ages 5–12 · ✓ Covers work day"},
        {c:"#1a56db",who:"👧 Suits Penny",what:"Easter Drama & Musical Theatre",when:"€110 · Ages 6–10"},
        {c:"#2d5a3f",who:"🏫",what:"2 families from 2nd Class at Scoil Bhríde booked this camp",when:""}
      ]}},
-    {i:"👧",t:"Per-child view",d:"Tap a name — see only their stuff.",
+    {i:"child",t:"Per-child view",d:"Tap a name — see only their stuff.",
      ex:{title:"Filtered: Penny (7)",items:[
        {c:"#2d5a3f",who:"Penny",what:"Swimming Tue 17:00–18:00",when:""},
        {c:"#2d5a3f",who:"Penny",what:"Gymnastics Thu 15:30–16:30",when:""},
        {c:"#dc2626",who:"Penny",what:"Swimming fee — €180 overdue",when:""},
        {c:"#1a56db",who:"Penny",what:"3 Easter camps suit her age",when:""}
      ]}},
-    {i:"🔍",t:"Smart club search",d:"Type a name, find real clubs near you.",
+    {i:"search",t:"Smart club search",d:"Type a name, find real clubs near you.",
      ex:{title:"Search: 'swim'",items:[
        {c:"#2d5a3f",who:"⭐ 4.5",what:"Trojan Swim Club",when:"St Anne's Park, Raheny"},
        {c:"#2d7cb5",who:"⭐ 4.3",what:"Clontarf Swimming Club",when:"Clontarf Rd, Dublin 3"},
        {c:"#888",who:"+",what:"Not listed? Add your own club",when:""}
      ]}},
-    {i:"⏰",t:"Work-day filter",d:"Camps that run 9–3 so you can work.",
+    {i:"clock",t:"Work-day filter",d:"Camps that run 9–3 so you can work.",
      ex:{title:"Camps that cover your work day",items:[
        {c:"#2d5a3f",who:"✓ 09:00–15:30",what:"Easter Adventure Camp – Bull Island",when:"€160 · Covers work day"},
        {c:"#2d5a3f",who:"✓ 09:30–15:00",what:"Multi-Sport Easter Camp",when:"€140 · Covers work day"},
@@ -237,7 +237,7 @@ function FeatureTiles(){
     {tiles.map((f,i)=>(
       <div key={i} onClick={()=>setOpen(open===i?null:i)} style={{background:open===i?"rgba(255,255,255,.14)":"rgba(255,255,255,.07)",borderRadius:20,padding:24,border:open===i?"1px solid rgba(255,255,255,.25)":"1px solid rgba(255,255,255,.1)",cursor:"pointer",transition:"all .2s"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-          <span style={{fontSize:28}}>{f.i}</span>
+          {(()=>{const ic={cal:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="7" y="14" width="3" height="3" rx=".5" fill="rgba(255,255,255,.3)"/></svg>,card:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/><line x1="6" y1="16" x2="10" y2="16"/></svg>,tent:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 22h20L12 2z"/><path d="M12 2v20"/><path d="M8 22l4-8 4 8"/></svg>,child:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="3"/><path d="M12 8v6"/><path d="M8 14l4 8 4-8"/><path d="M9 11h6"/></svg>,search:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>,clock:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>};return ic[f.i]||<span style={{fontSize:28}}>{f.i}</span>})()}
           <span style={{fontSize:12,color:"rgba(255,255,255,.35)",fontWeight:600}}>{open===i?"▲":"TAP ▼"}</span>
         </div>
         <h3 style={{fontSize:16,fontWeight:700,color:"#fff",marginTop:12}}>{f.t}</h3>
@@ -285,11 +285,11 @@ function Landing({onGo,onLogin}){
     {/* SOCIAL PROOF */}
     <div style={{background:"#fff",padding:"20px 24px",borderBottom:"1px solid var(--bd)"}}>
       <div style={{maxWidth:520,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"center",gap:20,fontSize:12,color:"var(--mt)"}}>
-        <span>📅 <strong style={{color:"var(--tx)"}}>Schedule</strong> every club</span>
+        <span><strong style={{color:"var(--tx)"}}>Schedule</strong> every club</span>
         <span style={{width:4,height:4,borderRadius:2,background:"var(--bd)"}}/>
-        <span>💳 <strong style={{color:"var(--tx)"}}>Track</strong> every fee</span>
+        <span><strong style={{color:"var(--tx)"}}>Track</strong> every fee</span>
         <span style={{width:4,height:4,borderRadius:2,background:"var(--bd)"}}/>
-        <span>👨‍👩‍👧‍👦 <strong style={{color:"var(--tx)"}}>Both parents</strong> in the loop</span>
+        <span><strong style={{color:"var(--tx)"}}>Both parents</strong> in the loop</span>
       </div>
     </div>
     {/* PROBLEM */}
@@ -298,13 +298,13 @@ function Landing({onGo,onLogin}){
         <h2 style={{fontFamily:"var(--sr)",fontSize:"clamp(24px,4vw,32px)",fontWeight:800,color:"var(--g)",marginBottom:8}}>Sound familiar?</h2>
         <p style={{fontSize:14,color:"var(--mt)",marginBottom:24}}>The mental load of managing activities is real.</p>
         {[
-          {e:"📱",t:"3 WhatsApp groups for 3 clubs",d:"and you still miss things"},
-          {e:"💸",t:"Did I pay for swimming?",d:"nobody in the house knows"},
-          {e:"📅",t:"GAA clashes with gymnastics",d:"found out at 5:45pm in the car"},
-          {e:"🏕️",t:"Easter camps are full",d:"because you heard about them too late"},
-          {e:"🤷",t:'"What\'s on today?"',d:"partner asks — you check 4 places to answer"}
+          {e:"msg",t:"3 WhatsApp groups for 3 clubs",d:"and you still miss things"},
+          {e:"pay",t:"Did I pay for swimming?",d:"nobody in the house knows"},
+          {e:"clash",t:"GAA clashes with gymnastics",d:"found out at 5:45pm in the car"},
+          {e:"camp",t:"Easter camps are full",d:"because you heard about them too late"},
+          {e:"shrug",t:'"What\'s on today?"',d:"partner asks — you check 4 places to answer"}
         ].map((p,i)=><div key={i} className={"r"+(i+1>4?"4":i+1)} style={{display:"flex",gap:14,padding:"14px 0",borderBottom:i<4?"1px solid var(--bd)":"none"}}>
-          <span style={{fontSize:24,flexShrink:0,marginTop:2}}>{p.e}</span>
+          {(()=>{const ic={msg:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="13" y2="12"/></svg>,pay:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>,clash:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,camp:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 22h20L12 2z"/><path d="M12 2v20"/></svg>,shrug:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 15h8"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>};return <span style={{flexShrink:0,marginTop:2}}>{ic[p.e]||<span style={{fontSize:22}}>{p.e}</span>}</span>})()}
           <div><span style={{fontSize:14,fontWeight:700,color:"var(--tx)"}}>{p.t}</span> <span style={{fontSize:14,color:"var(--mt)"}}>— {p.d}</span></div>
         </div>)}
       </div>
