@@ -1292,18 +1292,29 @@ function Hub({user,profile,onRefresh,onLogout}){
             const[nearby,setNearby]=useState([]);const[loadNC,setLoadNC]=useState(true);const[ncSearch,setNcSearch]=useState("");
             const myClubIds=new Set(clubs.map(c=>c.club_id));
             useEffect(()=>{
-              if(!userLoc){setLoadNC(false);return}
+              if(!userLoc&&schoolLocs.length===0){setLoadNC(false);return}
               setLoadNC(true);
               db("clubs","GET",{select:"id,name,category,location,website_url,latitude,longitude",limit:200,order:"name.asc"}).then(r=>{
                 const all=r||[];
-                const local=all.filter(c=>c.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(c.latitude),Number(c.longitude))<=15);
-                local.sort((a,b)=>calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude)));
+                // Show clubs within 15km of user OR 15km of any kid's school
+                const local=all.filter(c=>{
+                  if(!c.latitude)return false;
+                  const cLat=Number(c.latitude),cLng=Number(c.longitude);
+                  if(userLoc&&calcKm(userLoc.lat,userLoc.lng,cLat,cLng)<=15)return true;
+                  if(schoolLocs.some(s=>calcKm(s.lat,s.lng,cLat,cLng)<=15))return true;
+                  return false;
+                });
+                // Sort by nearest distance (to user or school)
+                local.sort((a,b)=>{
+                  const dist=(c)=>{const cL=Number(c.latitude),cN=Number(c.longitude);let m=999;if(userLoc)m=Math.min(m,calcKm(userLoc.lat,userLoc.lng,cL,cN));schoolLocs.forEach(s=>{m=Math.min(m,calcKm(s.lat,s.lng,cL,cN))});return m};
+                  return dist(a)-dist(b);
+                });
                 setNearby(local.filter(c=>!myClubIds.has(c.id)));setLoadNC(false);
               });
-            },[userLoc]);
+            },[userLoc,schoolLocs.length]);
             if(loadNC)return <p style={{textAlign:"center",padding:12,color:"var(--mt)",fontSize:12}}>Finding clubs near you...</p>;
-            if(!userLoc)return <p style={{textAlign:"center",padding:12,color:"var(--mt)",fontSize:12}}>Enable location to see clubs near you</p>;
-            if(nearby.length===0)return <div style={{padding:16,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center",marginTop:16}}><div style={{fontSize:24,marginBottom:6}}>🔍</div><p style={{fontSize:13,color:"var(--mt)"}}>No clubs found near you yet</p><p style={{fontSize:12,color:"var(--mt)",marginTop:4}}>We're building our database for your area. Try again soon.</p></div>;
+            if(!userLoc&&schoolLocs.length===0)return <p style={{textAlign:"center",padding:12,color:"var(--mt)",fontSize:12}}>Enable location to see clubs near you</p>;
+            if(nearby.length===0)return <div style={{padding:16,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center",marginTop:16}}><div style={{fontSize:24,marginBottom:6}}>🔍</div><p style={{fontSize:13,color:"var(--mt)"}}>No clubs found near you yet</p><p style={{fontSize:12,color:"var(--mt)",marginTop:4}}>We're building our database for your area</p></div>;
 
             // Build categories from local clubs
             const catCounts={};
