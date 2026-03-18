@@ -659,6 +659,7 @@ function Hub({user,profile,onRefresh,onLogout}){
   const[tab,setTab]=useState("week");const[filter,setFilter]=useState("all");
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
   const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[campBookings,setCampBookings]=useState([]);const[holidays,setHolidays]=useState([]);const[userHolidays,setUserHolidays]=useState([]);
+  const[schoolLocs,setSchoolLocs]=useState([]);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
   const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("timeline");const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);
 
@@ -689,6 +690,14 @@ function Hub({user,profile,onRefresh,onLogout}){
       db("activity_categories","GET",{order:"name.asc"})
     ]);
     setKids(k||[]);
+    // Fetch school coordinates for kids' schools (for camp proximity matching)
+    const kidSchools=(k||[]).filter(kid=>kid.school_name).map(kid=>kid.school_name);
+    if(kidSchools.length>0){
+      const uniqueSchools=[...new Set(kidSchools)];
+      const schoolQ=uniqueSchools.map(s=>"name.ilike.*"+encodeURIComponent(s.replace(/'/g,"''"))+"*").join(",");
+      const sch=await db("schools","GET",{select:"name,latitude,longitude",filters:["or=("+schoolQ+")","latitude=not.is.null"],limit:20});
+      setSchoolLocs((sch||[]).filter(s=>s.latitude).map(s=>({lat:Number(s.latitude),lng:Number(s.longitude),name:s.name})));
+    }
     setClubs((c||[]).map(s=>({...s,club_id:s.club_id||s.clubs?.id,club_name:s.clubs?.name||"?",club_addr:s.clubs?.address})));
     setRecs(r||[]);setMans(m||[]);setPays(p||[]);setCamps(ca||[]);setHolidays(hols||[]);setUserHolidays(userHols||[]);setCampBookings(cBooks||[]);setLocalEvents(lEvts||[]);setActCats(aCats||[]);
     setLoading(false);
@@ -719,6 +728,14 @@ function Hub({user,profile,onRefresh,onLogout}){
       },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
     }
   },[]);
+
+  // Also scrape near kids' school locations (separate from user location)
+  useEffect(()=>{
+    if(schoolLocs.length===0)return;
+    schoolLocs.forEach(s=>{
+      fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:s.lat,longitude:s.lng})}).then(r=>r.json()).then(d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0||d.things_inserted>0))load()}).catch(()=>{});
+    });
+  },[schoolLocs.length]);
 
   const members=useMemo(()=>{
     const m=[{id:"all",name:"Everyone",emoji:"👨‍👩‍👧‍👦",type:"all"}];
@@ -761,17 +778,27 @@ function Hub({user,profile,onRefresh,onLogout}){
   const totalDue=filtPays.filter(p=>!p.paid).reduce((s,p)=>s+parseFloat(p.amount||0),0);
   const totalPaid=filtPays.filter(p=>p.paid).reduce((s,p)=>s+parseFloat(p.amount||0),0);
 
-  // Camps filtered by kid age
+  // Camps filtered by kid age + distance (user location OR school location)
   const filtCamps=useMemo(()=>{
     let fc=camps;
-    // Filter by distance — only show camps within 30km of user
-    if(userLoc)fc=fc.filter(c=>!c.latitude||calcKm(userLoc.lat,userLoc.lng,Number(c.latitude),Number(c.longitude))<=30);
+    // Filter by distance — show camps within 30km of user OR within 15km of any kid's school
+    if(userLoc||schoolLocs.length>0){
+      fc=fc.filter(c=>{
+        if(!c.latitude)return true; // No coords = show it
+        const cLat=Number(c.latitude),cLng=Number(c.longitude);
+        // Within 30km of user?
+        if(userLoc&&calcKm(userLoc.lat,userLoc.lng,cLat,cLng)<=30)return true;
+        // Within 15km of any kid's school?
+        if(schoolLocs.some(s=>calcKm(s.lat,s.lng,cLat,cLng)<=15))return true;
+        return false;
+      });
+    }
     if(filter==="all"||filter==="self")return fc;
     const kid=kids.find(k=>k.id===filter);
     if(!kid||!kid.date_of_birth)return fc;
     const age=getAge(kid.date_of_birth);
     return fc.filter(c=>age>=c.age_min&&age<=c.age_max);
-  },[camps,filter,kids,userLoc]);
+  },[camps,filter,kids,userLoc,schoolLocs]);
 
   const tabs=[{id:"week",l:"This Week",i:"📅"},{id:"money",l:"Money",i:"💳"},{id:"camps",l:"Camps",i:"🏕️"},{id:"clubs",l:"Clubs",i:"🏠"},{id:"discover",l:"Discover",i:"🔍"}];
 
@@ -1145,7 +1172,9 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       {/* CAMPS */}
       {tab==="camps"&&<div>
-        {userLoc&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,fontSize:12,color:"var(--mt)"}}><span>📍</span> Showing camps within 30km of you</div>}
+        {(userLoc||schoolLocs.length>0)&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,fontSize:12,color:"var(--mt)"}}>
+          <span>📍</span> Showing camps near you{schoolLocs.length>0?" and near school":""}
+        </div>}
         {!userLoc&&<button onClick={()=>{navigator.geolocation?.getCurrentPosition(pos=>{const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};setUserLoc(loc);db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}})},()=>alert("Could not get your location. Please enable location services."),{timeout:5000})}} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Enable location to see camps near you</button>}
         {/* Holiday coverage summary */}
         {kids.length>0&&(()=>{
