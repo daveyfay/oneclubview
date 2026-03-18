@@ -944,7 +944,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           </div>
           <div className="hsb" style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6,WebkitOverflowScrolling:"touch",msOverflowStyle:"none",flexWrap:"wrap"}}>
             {members.map(m=><button key={m.id} onClick={()=>setFilter(m.id)} className={"pill "+(filter===m.id?"pon":"poff")} style={{flexShrink:0}}>{m.type!=="all"&&<span style={{width:8,height:8,borderRadius:"50%",background:m.type==="kid"?COLS[members.indexOf(m)%COLS.length]:m.type==="adult"?"#8b5cf6":"var(--g)",flexShrink:0}}/>}{m.type==="all"?m.emoji:""} {m.name}{m.age!=null&&<span style={{opacity:.6,marginLeft:2}}>({m.age})</span>}</button>)}
-            <button onClick={()=>setShowAddKid(true)} className="pill poff" style={{border:"2px dashed var(--bd)",background:"none",flexShrink:0}}>+ member</button>
+            {isAdmin&&<button onClick={()=>setShowAddKid(true)} className="pill poff" style={{border:"2px dashed var(--bd)",background:"none",flexShrink:0}}>+ member</button>}
             
           </div>
         </div>
@@ -1638,10 +1638,10 @@ function Hub({user,profile,onRefresh,onLogout}){
                   <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>{k.first_name}{age!=null&&<span style={{color:"var(--mt)",fontWeight:400,marginLeft:4}}>({age})</span>}</div>
                   {k.school_name&&<div style={{fontSize:11,color:"var(--mt)"}}>{k.school_name}{k.school_class?" · "+k.school_class:""}</div>}
                 </div>
-                <button onClick={()=>{setShowFamily(false);setShowAddKid(k)}} style={{padding:"6px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"#fff",fontSize:12,fontWeight:600,color:"var(--tx)",cursor:"pointer",fontFamily:"var(--sn)"}}>Edit</button>
+                {isAdmin&&<button onClick={()=>{setShowFamily(false);setShowAddKid(k)}} style={{padding:"6px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"#fff",fontSize:12,fontWeight:600,color:"var(--tx)",cursor:"pointer",fontFamily:"var(--sn)"}}>Edit</button>}
               </div>;
             })}
-            <button onClick={()=>{setShowFamily(false);setShowAddKid(true)}} style={{width:"100%",marginTop:8,padding:10,borderRadius:10,border:"2px dashed var(--bd)",background:"none",fontSize:13,fontWeight:600,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>+ Add kid</button>
+            {isAdmin&&<button onClick={()=>{setShowFamily(false);setShowAddKid(true)}} style={{width:"100%",marginTop:8,padding:10,borderRadius:10,border:"2px dashed var(--bd)",background:"none",fontSize:13,fontWeight:600,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>+ Add kid</button>}
           </div>
 
           {/* ADULTS */}
@@ -1661,7 +1661,7 @@ function Hub({user,profile,onRefresh,onLogout}){
                 <div style={{fontSize:11,color:"var(--mt)"}}>{fm.email} · {roleBadge[rl]||"Admin"}</div>
               </div>
             </div>})}
-            {isAdmin&&<button onClick={()=>{setShowFamily(false);setShowInvite(true)}} style={{width:"100%",marginTop:8,padding:10,borderRadius:10,border:"2px dashed var(--bd)",background:"none",fontSize:13,fontWeight:600,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>+ Invite adult</button>}
+            {isAdmin&&<button onClick={()=>{setShowFamily(false);setShowAddKid(true)}} style={{width:"100%",marginTop:8,padding:10,borderRadius:10,border:"2px dashed var(--bd)",background:"none",fontSize:13,fontWeight:600,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>+ Add family member</button>}
           </div>
         </div>
       </div>}
