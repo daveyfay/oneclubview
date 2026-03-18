@@ -1224,6 +1224,17 @@ function Hub({user,profile,onRefresh,onLogout}){
             const holCamps=filtCamps.filter(camp=>{
               const cs=new Date(camp.start_date+"T00:00:00");
               return cs>=hs&&cs<=he;
+            }).sort((a,b)=>{
+              // Sort by nearest distance — either to user or to any school
+              const distTo=(c)=>{
+                if(!c.latitude)return 999;
+                const cLat=Number(c.latitude),cLng=Number(c.longitude);
+                let min=999;
+                if(userLoc)min=Math.min(min,calcKm(userLoc.lat,userLoc.lng,cLat,cLng));
+                schoolLocs.forEach(s=>{min=Math.min(min,calcKm(s.lat,s.lng,cLat,cLng))});
+                return min;
+              };
+              return distTo(a)-distTo(b);
             });
             const holEmoji=hol.holiday_type==="easter"?"🐣":hol.holiday_type==="summer"?"☀️":hol.holiday_type==="christmas"?"🎄":"🍂";
             const weeks=Math.max(1,Math.ceil((he-hs)/(7*86400000)));
