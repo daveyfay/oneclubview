@@ -660,7 +660,7 @@ const catEmoji={swimming:"🏊",gaa:"🏐",soccer:"⚽",rugby:"🏉",gymnastics:
 
 function NearbyClubsSection({userLoc,familyLocs,clubs:myClubs,setEditClub,isAdmin}){
   const[nearby,setNearby]=useState([]);const[loadNC,setLoadNC]=useState(true);const[ncSearch,setNcSearch]=useState("");
-  const[activeLoc,setActiveLoc]=useState(null);
+  const[activeLoc,setActiveLoc]=useState("current");
   const[allClubsCache,setAllClubsCache]=useState(null);
   const myClubIds=useMemo(()=>new Set(myClubs.map(c=>c.club_id)),[myClubs]);
 
@@ -673,20 +673,11 @@ function NearbyClubsSection({userLoc,familyLocs,clubs:myClubs,setEditClub,isAdmi
 
   const selectedLoc=locOptions.find(l=>l.id===activeLoc)||locOptions[0];
 
-  // Fetch all clubs once, then auto-pick the location with most clubs
+  // Fetch all clubs once and cache
   useEffect(()=>{
     if(locOptions.length===0)return;
     db("clubs","GET",{select:"id,name,category,location,website_url,latitude,longitude",limit:500,order:"name.asc"}).then(r=>{
-      const all=(r||[]).filter(c=>c.latitude);
-      setAllClubsCache(all);
-      if(activeLoc===null){
-        let bestId=locOptions[0]?.id;let bestCount=0;
-        locOptions.forEach(lo=>{
-          const cnt=all.filter(c=>calcKm(lo.lat,lo.lng,Number(c.latitude),Number(c.longitude))<=lo.radius).length;
-          if(cnt>bestCount){bestCount=cnt;bestId=lo.id}
-        });
-        setActiveLoc(bestId);
-      }
+      setAllClubsCache((r||[]).filter(c=>c.latitude));
     });
   },[locOptions.length]);
 
