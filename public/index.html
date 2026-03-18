@@ -660,6 +660,7 @@ function Hub({user,profile,onRefresh,onLogout}){
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
   const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[campBookings,setCampBookings]=useState([]);const[holidays,setHolidays]=useState([]);const[userHolidays,setUserHolidays]=useState([]);
   const[schoolLocs,setSchoolLocs]=useState([]);
+  const[familyLocs,setFamilyLocs]=useState([]);const[showLocations,setShowLocations]=useState(false);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
   const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("timeline");const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);
 
@@ -700,6 +701,25 @@ function Hub({user,profile,onRefresh,onLogout}){
     }
     setClubs((c||[]).map(s=>({...s,club_id:s.club_id||s.clubs?.id,club_name:s.clubs?.name||"?",club_addr:s.clubs?.address})));
     setRecs(r||[]);setMans(m||[]);setPays(p||[]);setCamps(ca||[]);setHolidays(hols||[]);setUserHolidays(userHols||[]);setCampBookings(cBooks||[]);setLocalEvents(lEvts||[]);setActCats(aCats||[]);
+    // Load family locations
+    const fLocs=await db("family_locations","GET",{filters:["user_id=eq."+user.id,"active=eq.true"],order:"label.asc"});
+    setFamilyLocs(fLocs||[]);
+    // Auto-add school locations if not already saved
+    if(schoolLocs.length===0&&kidSchools.length>0){
+      const uniqueSchools2=[...new Set(kidSchools)];
+      const schoolQ2=uniqueSchools2.map(s=>"name.ilike.*"+encodeURIComponent(s.replace(/'/g,"''"))+"*").join(",");
+      const sch2=await db("schools","GET",{select:"name,latitude,longitude",filters:["or=("+schoolQ2+")","latitude=not.is.null"],limit:20});
+      const newSchLocs=(sch2||[]).filter(s=>s.latitude).map(s=>({lat:Number(s.latitude),lng:Number(s.longitude),name:s.name}));
+      setSchoolLocs(newSchLocs);
+      // Auto-insert school locations into family_locations if not there yet
+      for(const sl of newSchLocs){
+        const exists=(fLocs||[]).find(fl=>fl.label.includes("School")&&Math.abs(Number(fl.latitude)-sl.lat)<0.01);
+        if(!exists)await db("family_locations","POST",{body:{user_id:user.id,label:"🏫 "+sl.name,latitude:sl.lat,longitude:sl.lng,radius_km:15,auto_source:"school",active:true}});
+      }
+      // Re-fetch after auto-insert
+      const fLocs2=await db("family_locations","GET",{filters:["user_id=eq."+user.id,"active=eq.true"],order:"label.asc"});
+      setFamilyLocs(fLocs2||[]);
+    }
     setLoading(false);
     // Load notifications (inbound messages)
     const notifs=await db("inbound_messages","GET",{filters:["user_id=eq."+user.id],order:"created_at.desc",limit:10});
@@ -729,13 +749,13 @@ function Hub({user,profile,onRefresh,onLogout}){
     }
   },[]);
 
-  // Also scrape near kids' school locations (separate from user location)
+  // Scrape near ALL family locations (school, home, work, grandparents)
   useEffect(()=>{
-    if(schoolLocs.length===0)return;
-    schoolLocs.forEach(s=>{
-      fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:s.lat,longitude:s.lng})}).then(r=>r.json()).then(d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0||d.things_inserted>0))load()}).catch(()=>{});
+    if(familyLocs.length===0)return;
+    familyLocs.forEach(fl=>{
+      fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:Number(fl.latitude),longitude:Number(fl.longitude)})}).then(r=>r.json()).then(d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0||d.things_inserted>0))load()}).catch(()=>{});
     });
-  },[schoolLocs.length]);
+  },[familyLocs.length]);
 
   const members=useMemo(()=>{
     const m=[{id:"all",name:"Everyone",emoji:"👨‍👩‍👧‍👦",type:"all"}];
@@ -778,17 +798,24 @@ function Hub({user,profile,onRefresh,onLogout}){
   const totalDue=filtPays.filter(p=>!p.paid).reduce((s,p)=>s+parseFloat(p.amount||0),0);
   const totalPaid=filtPays.filter(p=>p.paid).reduce((s,p)=>s+parseFloat(p.amount||0),0);
 
-  // Camps filtered by kid age + distance (user location OR school location)
+  // Build all active location points — GPS + family_locations
+  const allLocs=useMemo(()=>{
+    const locs=[];
+    if(userLoc)locs.push({...userLoc,radius:15,label:"📍 Current"});
+    familyLocs.forEach(fl=>locs.push({lat:Number(fl.latitude),lng:Number(fl.longitude),radius:fl.radius_km||15,label:fl.label}));
+    // Add school locs as fallback if no family_locations yet
+    if(familyLocs.length===0)schoolLocs.forEach(s=>locs.push({...s,radius:10,label:"🏫 "+s.name}));
+    return locs;
+  },[userLoc,familyLocs,schoolLocs]);
+
   const filtCamps=useMemo(()=>{
     let fc=camps;
-    // Filter by distance — show camps within 15km of user OR within 10km of any kid's school
-    if(userLoc||schoolLocs.length>0){
+    // Filter by distance — show camps within radius of ANY family location
+    if(allLocs.length>0){
       fc=fc.filter(c=>{
-        if(!c.latitude)return false; // No coords = hide when we have location data
+        if(!c.latitude)return false;
         const cLat=Number(c.latitude),cLng=Number(c.longitude);
-        if(userLoc&&calcKm(userLoc.lat,userLoc.lng,cLat,cLng)<=15)return true;
-        if(schoolLocs.some(s=>calcKm(s.lat,s.lng,cLat,cLng)<=10))return true;
-        return false;
+        return allLocs.some(loc=>calcKm(loc.lat,loc.lng,cLat,cLng)<=loc.radius);
       });
     }
     if(filter==="all"||filter==="self")return fc;
@@ -796,7 +823,7 @@ function Hub({user,profile,onRefresh,onLogout}){
     if(!kid||!kid.date_of_birth)return fc;
     const age=getAge(kid.date_of_birth);
     return fc.filter(c=>age>=c.age_min&&age<=c.age_max);
-  },[camps,filter,kids,userLoc,schoolLocs]);
+  },[camps,filter,kids,allLocs]);
 
   const tabs=[{id:"week",l:"This Week",i:"📅"},{id:"money",l:"Money",i:"💳"},{id:"camps",l:"Camps",i:"🏕️"},{id:"clubs",l:"Clubs",i:"🏠"},{id:"discover",l:"Discover",i:"🔍"}];
 
@@ -1170,10 +1197,14 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       {/* CAMPS */}
       {tab==="camps"&&<div>
-        {(userLoc||schoolLocs.length>0)&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,fontSize:12,color:"var(--mt)"}}>
-          <span>📍</span> Showing camps near you{schoolLocs.length>0?" and near school":""}
+        {allLocs.length>0&&<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"var(--mt)",flexWrap:"wrap"}}>
+            <span>📍</span> {allLocs.slice(0,3).map(l=>l.label.replace(/^[^\w]*\s*/,'')).join(" · ")}
+            {allLocs.length>3&&<span>+{allLocs.length-3} more</span>}
+          </div>
+          <button onClick={()=>setShowLocations(true)} style={{fontSize:11,fontWeight:600,color:"var(--acc)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)",whiteSpace:"nowrap"}}>Manage</button>
         </div>}
-        {!userLoc&&<button onClick={()=>{navigator.geolocation?.getCurrentPosition(pos=>{const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};setUserLoc(loc);db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}})},()=>alert("Could not get your location. Please enable location services."),{timeout:5000})}} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Enable location to see camps near you</button>}
+        {allLocs.length===0&&<button onClick={()=>setShowLocations(true)} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Add your locations to see nearby camps</button>}
         {/* Holiday coverage summary */}
         {kids.length>0&&(()=>{
           const now=new Date();
@@ -1225,13 +1256,11 @@ function Hub({user,profile,onRefresh,onLogout}){
               const cs=new Date(camp.start_date+"T00:00:00");
               return cs>=hs&&cs<=he;
             }).sort((a,b)=>{
-              // Sort by nearest distance — either to user or to any school
               const distTo=(c)=>{
                 if(!c.latitude)return 999;
                 const cLat=Number(c.latitude),cLng=Number(c.longitude);
                 let min=999;
-                if(userLoc)min=Math.min(min,calcKm(userLoc.lat,userLoc.lng,cLat,cLng));
-                schoolLocs.forEach(s=>{min=Math.min(min,calcKm(s.lat,s.lng,cLat,cLng))});
+                allLocs.forEach(loc=>{min=Math.min(min,calcKm(loc.lat,loc.lng,cLat,cLng))});
                 return min;
               };
               return distTo(a)-distTo(b);
@@ -1292,28 +1321,24 @@ function Hub({user,profile,onRefresh,onLogout}){
             const[nearby,setNearby]=useState([]);const[loadNC,setLoadNC]=useState(true);const[ncSearch,setNcSearch]=useState("");
             const myClubIds=new Set(clubs.map(c=>c.club_id));
             useEffect(()=>{
-              if(!userLoc&&schoolLocs.length===0){setLoadNC(false);return}
+              if(allLocs.length===0){setLoadNC(false);return}
               setLoadNC(true);
               db("clubs","GET",{select:"id,name,category,location,website_url,latitude,longitude",limit:200,order:"name.asc"}).then(r=>{
                 const all=r||[];
-                // Show clubs within 15km of user OR 15km of any kid's school
                 const local=all.filter(c=>{
                   if(!c.latitude)return false;
                   const cLat=Number(c.latitude),cLng=Number(c.longitude);
-                  if(userLoc&&calcKm(userLoc.lat,userLoc.lng,cLat,cLng)<=15)return true;
-                  if(schoolLocs.some(s=>calcKm(s.lat,s.lng,cLat,cLng)<=15))return true;
-                  return false;
+                  return allLocs.some(loc=>calcKm(loc.lat,loc.lng,cLat,cLng)<=loc.radius);
                 });
-                // Sort by nearest distance (to user or school)
                 local.sort((a,b)=>{
-                  const dist=(c)=>{const cL=Number(c.latitude),cN=Number(c.longitude);let m=999;if(userLoc)m=Math.min(m,calcKm(userLoc.lat,userLoc.lng,cL,cN));schoolLocs.forEach(s=>{m=Math.min(m,calcKm(s.lat,s.lng,cL,cN))});return m};
+                  const dist=(c)=>{const cL=Number(c.latitude),cN=Number(c.longitude);let m=999;allLocs.forEach(loc=>{m=Math.min(m,calcKm(loc.lat,loc.lng,cL,cN))});return m};
                   return dist(a)-dist(b);
                 });
                 setNearby(local.filter(c=>!myClubIds.has(c.id)));setLoadNC(false);
               });
-            },[userLoc,schoolLocs.length]);
+            },[allLocs.length]);
             if(loadNC)return <p style={{textAlign:"center",padding:12,color:"var(--mt)",fontSize:12}}>Finding clubs near you...</p>;
-            if(!userLoc&&schoolLocs.length===0)return <p style={{textAlign:"center",padding:12,color:"var(--mt)",fontSize:12}}>Enable location to see clubs near you</p>;
+            if(allLocs.length===0)return <p style={{textAlign:"center",padding:12,color:"var(--mt)",fontSize:12}}>Add locations to see clubs near you</p>;
             if(nearby.length===0)return <div style={{padding:16,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center",marginTop:16}}><div style={{fontSize:24,marginBottom:6}}>🔍</div><p style={{fontSize:13,color:"var(--mt)"}}>No clubs found near you yet</p><p style={{fontSize:12,color:"var(--mt)",marginTop:4}}>We're building our database for your area</p></div>;
 
             // Build categories from local clubs
@@ -1370,15 +1395,22 @@ function Hub({user,profile,onRefresh,onLogout}){
           const ThingsToDo=()=>{
             const[things,setThings]=useState([]);const[loadingT,setLoadingT]=useState(true);const[tdFilter,setTdFilter]=useState("all");
             useEffect(()=>{
-              if(!userLoc){setLoadingT(false);return}
+              if(allLocs.length===0){setLoadingT(false);return}
               setLoadingT(true);
               db("things_to_do","GET",{select:"*",filters:["status=eq.active"],order:"title.asc",limit:50}).then(r=>{
                 const all=r||[];
-                const local=all.filter(t=>t.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(t.latitude),Number(t.longitude))<=20);
-                local.sort((a,b)=>calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude)));
+                const local=all.filter(t=>{
+                  if(!t.latitude)return false;
+                  const tLat=Number(t.latitude),tLng=Number(t.longitude);
+                  return allLocs.some(loc=>calcKm(loc.lat,loc.lng,tLat,tLng)<=loc.radius+5);
+                });
+                local.sort((a,b)=>{
+                  const dist=(t)=>{let m=999;allLocs.forEach(loc=>{m=Math.min(m,calcKm(loc.lat,loc.lng,Number(t.latitude),Number(t.longitude)))});return m};
+                  return dist(a)-dist(b);
+                });
                 setThings(local);setLoadingT(false);
               });
-            },[userLoc]);
+            },[allLocs.length]);
 
             if(loadingT)return <p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>Finding things to do near you...</p>;
             if(things.length===0)return <div style={{padding:20,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center"}}><div style={{fontSize:28,marginBottom:6}}>🔍</div><p style={{fontSize:13,color:"var(--mt)"}}>No activities found in your area yet</p><p style={{fontSize:12,color:"var(--mt)",marginTop:4}}>We are building our database. Check back soon.</p></div>;
@@ -1443,6 +1475,54 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       </div>
 
+
+            {/* Manage Locations Modal */}
+      {showLocations&&<div onClick={()=>setShowLocations(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.4)",zIndex:70}}/>}
+      {showLocations&&<div style={{position:"fixed",top:"5vh",left:12,right:12,zIndex:71,background:"#fff",borderRadius:20,boxShadow:"0 12px 40px rgba(0,0,0,.15)",padding:20,maxHeight:"85vh",overflowY:"auto",maxWidth:440,margin:"0 auto"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Your locations</h3>
+          <button onClick={()=>setShowLocations(false)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button>
+        </div>
+        <p style={{fontSize:12,color:"var(--mt)",marginBottom:16}}>Camps, clubs, and activities are shown near all your active locations.</p>
+
+        {/* Current locations */}
+        {familyLocs.map(fl=><div key={fl.id} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 0",borderBottom:"1px solid var(--bd)"}}>
+          <div style={{flex:1}}>
+            <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>{fl.label}</div>
+            {fl.address&&<div style={{fontSize:12,color:"var(--mt)"}}>{fl.address}</div>}
+            <div style={{fontSize:11,color:"var(--mt)"}}>Within {fl.radius_km}km</div>
+          </div>
+          <button onClick={async()=>{await db("family_locations","DELETE",{filters:["id=eq."+fl.id]});setFamilyLocs(familyLocs.filter(f=>f.id!==fl.id))}} style={{padding:"4px 10px",borderRadius:8,border:"1px solid #e5e5e5",background:"none",fontSize:11,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>Remove</button>
+        </div>)}
+
+        {/* GPS location if not saved */}
+        {userLoc&&!familyLocs.find(fl=>Math.abs(Number(fl.latitude)-userLoc.lat)<0.01&&Math.abs(Number(fl.longitude)-userLoc.lng)<0.01)&&<div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 0",borderBottom:"1px solid var(--bd)"}}>
+          <div style={{flex:1}}>
+            <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>📍 Current location</div>
+            <div style={{fontSize:11,color:"var(--mt)"}}>Detected via GPS</div>
+          </div>
+          <button onClick={async()=>{const label=prompt("Name this location:","Home")||"Home";await db("family_locations","POST",{body:{user_id:user.id,label:"🏠 "+label,latitude:userLoc.lat,longitude:userLoc.lng,radius_km:15,auto_source:"gps",active:true}});load()}} style={{padding:"4px 10px",borderRadius:8,border:"1.5px solid var(--g)",background:"none",fontSize:11,color:"var(--g)",cursor:"pointer",fontWeight:600,fontFamily:"var(--sn)"}}>+ Save</button>
+        </div>}
+
+        {/* Add new location */}
+        <div style={{marginTop:16}}>
+          <button onClick={()=>{
+            const label=prompt("Location name (e.g. Work, Grandparents, Holiday home):");
+            if(!label)return;
+            const addr=prompt("Town or address:");
+            if(!addr)return;
+            // Use Nominatim to geocode
+            fetch("https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(addr+", Ireland")+"&format=json&limit=1",{headers:{"User-Agent":"OneClubView/1.0"}}).then(r=>r.json()).then(async d=>{
+              if(d&&d[0]){
+                await db("family_locations","POST",{body:{user_id:user.id,label:label,latitude:Number(d[0].lat),longitude:Number(d[0].lon),address:d[0].display_name?.split(",").slice(0,3).join(","),radius_km:15,auto_source:"manual",active:true}});
+                load();
+              } else { alert("Could not find that location. Try a more specific address."); }
+            }).catch(()=>alert("Location search failed."));
+          }} style={{width:"100%",padding:12,borderRadius:12,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)"}}>+ Add a location</button>
+        </div>
+
+        <p style={{fontSize:11,color:"var(--mt)",marginTop:12,textAlign:"center"}}>Add home, work, grandparents — see camps and clubs near all of them</p>
+      </div>}
 
             {/* Notification Panel */}
       {showNotifs&&<div onClick={()=>setShowNotifs(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.3)",zIndex:60}}/>}
