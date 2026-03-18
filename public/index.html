@@ -714,7 +714,7 @@ function Hub({user,profile,onRefresh,onLogout}){
       // Auto-insert school locations into family_locations if not there yet
       for(const sl of newSchLocs){
         const exists=(fLocs||[]).find(fl=>fl.label.includes("School")&&Math.abs(Number(fl.latitude)-sl.lat)<0.01);
-        if(!exists)await db("family_locations","POST",{body:{user_id:user.id,label:"🏫 "+sl.name,latitude:sl.lat,longitude:sl.lng,radius_km:15,auto_source:"school",active:true}});
+        if(!exists)await db("family_locations","POST",{body:{user_id:user.id,label:"🏫 "+sl.name,latitude:sl.lat,longitude:sl.lng,radius_km:10,auto_source:"school",active:true}});
       }
       // Re-fetch after auto-insert
       const fLocs2=await db("family_locations","GET",{filters:["user_id=eq."+user.id,"active=eq.true"],order:"label.asc"});
