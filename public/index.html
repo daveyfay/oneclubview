@@ -671,7 +671,7 @@ function Hub({user,profile,onRefresh,onLogout}){
     const myFamilyId=freshProfile?.[0]?.family_id||profile?.family_id;
     let famIds=[user.id];
     if(myFamilyId){
-      const famMembers=await db("profiles","GET",{filters:["family_id=eq."+myFamilyId],select:"id,first_name,email,subscription_status,is_beta"});
+      const famMembers=await db("profiles","GET",{filters:["family_id=eq."+myFamilyId],select:"id,first_name,email,subscription_status,is_beta,family_role"});
       if(famMembers){famIds=famMembers.map(m=>m.id);setFamilyMembers(famMembers);}
     }
     const uidFilter=famIds.length>1?"user_id=in.("+famIds.join(",")+")":"user_id=eq."+user.id;
@@ -825,7 +825,10 @@ function Hub({user,profile,onRefresh,onLogout}){
     return fc.filter(c=>age>=c.age_min&&age<=c.age_max);
   },[camps,filter,kids,allLocs]);
 
-  const tabs=[{id:"week",l:"This Week",i:"📅"},{id:"money",l:"Money",i:"💳"},{id:"camps",l:"Camps",i:"🏕️"},{id:"clubs",l:"Clubs",i:"🏠"},{id:"discover",l:"Discover",i:"🔍"}];
+  const myRole=profile?.family_role||"admin";
+  const isAdmin=myRole==="admin";
+  const allTabs=[{id:"week",l:"This Week",i:"📅"},{id:"money",l:"Money",i:"💳"},{id:"camps",l:"Camps",i:"🏕️"},{id:"clubs",l:"Clubs",i:"🏠"},{id:"discover",l:"Discover",i:"🔍"}];
+  const tabs=isAdmin?allTabs:allTabs.filter(t=>t.id!=="money");
 
   if(loading)return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--warm)"}}><p style={{color:"var(--mt)"}}>Loading...</p></div>;
 
@@ -989,13 +992,13 @@ function Hub({user,profile,onRefresh,onLogout}){
         const in3d=new Date(now);in3d.setDate(in3d.getDate()+3);
         const in7d=new Date(now);in7d.setDate(in7d.getDate()+7);
         
-        // Fee alerts
-        pays.filter(p=>!p.paid).forEach(p=>{
+        // Fee alerts (admin only)
+        if(isAdmin){pays.filter(p=>!p.paid).forEach(p=>{
           const due=new Date(p.due_date);
           const days=Math.ceil((due-now)/(86400000));
           if(days<0)alerts.push({type:"urgent",icon:"🚨",text:p.description+" is €"+parseFloat(p.amount).toFixed(0)+" overdue ("+Math.abs(days)+" days)",action:"money"});
           else if(days<=3)alerts.push({type:"warn",icon:"💳",text:p.description+" — €"+parseFloat(p.amount).toFixed(0)+" due in "+days+" day"+(days!==1?"s":""),action:"money"});
-        });
+        });}
 
         // Uncovered holiday weeks (kids with no camp booked)
         if(camps&&camps.length>0&&kids.length>0){
@@ -1286,7 +1289,7 @@ function Hub({user,profile,onRefresh,onLogout}){
                   <p style={{fontSize:13,color:"var(--mt)"}}>No camps listed yet for this break</p>
                   <p style={{fontSize:12,color:"var(--mt)",marginTop:2}}>We'll alert you when camps appear</p>
                 </div>
-              :holCamps.map(camp=><CampCard key={camp.id} camp={camp} userLoc={userLoc} user={user} kids={kids} filter={filter} campBookings={campBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load}/>)}
+              :holCamps.map(camp=><CampCard key={camp.id} camp={camp} userLoc={userLoc} user={user} kids={kids} filter={filter} campBookings={campBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load} isAdmin={isAdmin}/>)}
             </div>
           });
         })()}
@@ -1312,7 +1315,7 @@ function Hub({user,profile,onRefresh,onLogout}){
             </div>
           );
         })()}
-        <button onClick={()=>onRefresh("clubs")} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a club</button>
+        {isAdmin&&<button onClick={()=>onRefresh("clubs")} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a club</button>}
 
         {/* Clubs near you — from clubs DB, filtered by distance */}
         {(()=>{
@@ -1605,13 +1608,13 @@ function Hub({user,profile,onRefresh,onLogout}){
       {showFab&&<div onClick={()=>setShowFab(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:70}}/>}
       {showFab&&<div style={{position:"fixed",bottom:76,right:20,zIndex:71,display:"flex",flexDirection:"column",gap:8,alignItems:"flex-end"}}>
         {[
-          {icon:"📅",label:"Add event",fn:()=>{setShowFab(false);setShowAddEv(true)}},
-          {icon:"📋",label:"Paste schedule",fn:()=>{setShowFab(false);setShowPaste(true)}},
-          {icon:"🏠",label:"Add club",fn:()=>{setShowFab(false);onRefresh("clubs")}},
-          {icon:"👤",label:"Add member",fn:()=>{setShowFab(false);setShowAddKid(true)}},
-          {icon:"💳",label:"Add fee reminder",fn:()=>{setShowFab(false);setShowAddPay(true)}},
-          {icon:"📤",label:"Share my week",fn:()=>{setShowFab(false);shareWeek()}},
-        ].map(a=><button key={a.label} onClick={a.fn} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 16px",borderRadius:12,background:"#fff",border:"1px solid var(--bd)",boxShadow:"0 4px 16px rgba(0,0,0,.1)",fontSize:13,fontWeight:600,color:"var(--g)",cursor:"pointer",fontFamily:"var(--sn)"}}>{a.icon} {a.label}</button>)}
+          {icon:"📅",label:"Add event",fn:()=>{setShowFab(false);setShowAddEv(true)},admin:true},
+          {icon:"📋",label:"Paste schedule",fn:()=>{setShowFab(false);setShowPaste(true)},admin:true},
+          {icon:"🏠",label:"Add club",fn:()=>{setShowFab(false);onRefresh("clubs")},admin:true},
+          {icon:"👤",label:"Add member",fn:()=>{setShowFab(false);setShowAddKid(true)},admin:true},
+          {icon:"💳",label:"Add fee reminder",fn:()=>{setShowFab(false);setShowAddPay(true)},admin:true},
+          {icon:"📤",label:"Share my week",fn:()=>{setShowFab(false);shareWeek()},admin:false},
+        ].filter(a=>isAdmin||!a.admin).map(a=><button key={a.label} onClick={a.fn} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 16px",borderRadius:12,background:"#fff",border:"1px solid var(--bd)",boxShadow:"0 4px 16px rgba(0,0,0,.1)",fontSize:13,fontWeight:600,color:"var(--g)",cursor:"pointer",fontFamily:"var(--sn)"}}>{a.icon} {a.label}</button>)}
       </div>}
       <button onClick={()=>setShowFab(!showFab)} style={{position:"fixed",bottom:"calc(20px + env(safe-area-inset-bottom, 0px))",right:20,width:52,height:52,borderRadius:"50%",background:showFab?"var(--mt)":"var(--g)",color:"#fff",border:"none",fontSize:24,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(26,42,58,.25)",zIndex:72,transition:"transform .15s,background .15s",transform:showFab?"rotate(45deg)":"none"}}>+</button>
 
@@ -1651,14 +1654,14 @@ function Hub({user,profile,onRefresh,onLogout}){
                 <div style={{fontSize:11,color:"var(--mt)"}}>{profile?.email} · Account owner</div>
               </div>
             </div>
-            {familyMembers.filter(fm=>fm.id!==user.id).map(fm=><div key={fm.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid var(--bd)"}}>
-              <div style={{width:36,height:36,borderRadius:10,background:"#8b5cf6",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:14,fontWeight:700}}>{(fm.first_name||fm.email||"?")[0]}</div>
+            {familyMembers.filter(fm=>fm.id!==user.id).map(fm=>{const rl=fm.family_role||"admin";const roleBadge={admin:"👨‍👩‍👧 Parent",carer:"🧑‍🍳 Carer",viewer:"👁️ Viewer"};return <div key={fm.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid var(--bd)"}}>
+              <div style={{width:36,height:36,borderRadius:10,background:rl==="admin"?"#8b5cf6":rl==="carer"?"#2d7cb5":"#888",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:14,fontWeight:700}}>{(fm.first_name||fm.email||"?")[0]}</div>
               <div style={{flex:1}}>
                 <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>{fm.first_name||fm.email}</div>
-                <div style={{fontSize:11,color:"var(--mt)"}}>{fm.email}</div>
+                <div style={{fontSize:11,color:"var(--mt)"}}>{fm.email} · {roleBadge[rl]||"Admin"}</div>
               </div>
-            </div>)}
-            <button onClick={()=>{setShowFamily(false);setShowInvite(true)}} style={{width:"100%",marginTop:8,padding:10,borderRadius:10,border:"2px dashed var(--bd)",background:"none",fontSize:13,fontWeight:600,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>+ Invite adult</button>
+            </div>})}
+            {isAdmin&&<button onClick={()=>{setShowFamily(false);setShowInvite(true)}} style={{width:"100%",marginTop:8,padding:10,borderRadius:10,border:"2px dashed var(--bd)",background:"none",fontSize:13,fontWeight:600,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>+ Invite adult</button>}
           </div>
         </div>
       </div>}
@@ -1793,6 +1796,7 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
   const[teacher,setTeacher]=useState(editKid?.teacher_name||"");
   const[showSchool,setShowSchool]=useState(!!(editKid?.school_name));
   const[adultEmail,setAdultEmail]=useState("");
+  const[inviteRole,setInviteRole]=useState("admin");
   const[sv,setSv]=useState(false);
   const[done,setDone]=useState(false);
 
@@ -1823,7 +1827,7 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
         if(fam&&fam[0]){fid=fam[0].id;await db("profiles","PATCH",{body:{family_id:fid},filters:["id=eq."+userId]})}
       }
       if(fid&&adultEmail.trim()){
-        await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:adultEmail.trim(),invited_name:name.trim()}});
+        await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:adultEmail.trim(),invited_name:name.trim(),role:inviteRole}});
         try{await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({to_email:adultEmail.trim(),to_name:name.trim(),from_name:profile?.first_name||"Your partner",site_url:window.location.origin})})}catch(e){}
       }
       setSv(false);setDone(true);return;
@@ -1875,7 +1879,18 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
       <div><span className="lbl">Name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="First name"/></div>
       {memberType==="adult"&&<>
         <div><span className="lbl">Their email</span><input type="email" value={adultEmail} onChange={e=>setAdultEmail(e.target.value)} placeholder="email@example.com"/></div>
-        <p style={{fontSize:12,color:"var(--mt)",lineHeight:1.4}}>They'll get an invite email and can sign up to see the same family calendar.</p>
+        <div><span className="lbl">What can they see?</span>
+          <div style={{display:"flex",flexDirection:"column",gap:6,marginTop:6}}>
+            {[
+              {v:"admin",l:"👨‍👩‍👧 Full access (parent/partner)",d:"See everything — schedule, fees, camps, can edit and invite"},
+              {v:"carer",l:"🧑‍🍳 Carer (grandparent/childminder)",d:"See schedule only — no fees, no editing, no payments"},
+              {v:"viewer",l:"👁️ Viewer (au pair/family friend)",d:"See schedule only — read-only, no changes"}
+            ].map(r=><button key={r.v} onClick={()=>setInviteRole(r.v)} style={{padding:"10px 12px",borderRadius:10,border:inviteRole===r.v?"2px solid var(--g)":"1px solid var(--bd)",background:inviteRole===r.v?"var(--gxl)":"#fff",cursor:"pointer",textAlign:"left"}}>
+              <div style={{fontSize:13,fontWeight:600,color:"var(--tx)"}}>{r.l}</div>
+              <div style={{fontSize:11,color:"var(--mt)",marginTop:2}}>{r.d}</div>
+            </button>)}
+          </div>
+        </div>
       </>}
       {memberType==="kid"&&<>
         <div><span className="lbl">Date of birth</span><input type="date" value={dob} onChange={e=>setDob(e.target.value)}/></div>
@@ -2156,7 +2171,7 @@ function AddHolidayModal({userId,onClose,onSaved}){
 }
 
 
-function CampCard({camp,userLoc,user,kids,filter,campBookings,CT,fmtDate,onBookingChange}){
+function CampCard({camp,userLoc,user,kids,filter,campBookings,CT,fmtDate,onBookingChange,isAdmin=true}){
   const[classmateCount,setClassmateCount]=useState(0);
   const activeKid=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter):null;
   const hasSchool=activeKid?.school_name&&activeKid?.school_class;
@@ -2212,8 +2227,8 @@ function CampCard({camp,userLoc,user,kids,filter,campBookings,CT,fmtDate,onBooki
       🏫 We’ll notify you when classmates from {activeKid.school_class} book this camp
     </div>}
 
-    {/* Interested / Booked buttons */}
-    <div style={{display:"flex",gap:6,marginTop:10}}>
+    {/* Interested / Booked buttons — admin only for actions */}
+    {isAdmin&&<div style={{display:"flex",gap:6,marginTop:10}}>
       {!myBooking?<>
         <button onClick={()=>markCamp("interested")} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--bd)",background:"var(--card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--mt)",fontFamily:"var(--sn)"}}>❤️ Interested</button>
         <button onClick={()=>markCamp("booked")} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--g)",background:"var(--card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--g)",fontFamily:"var(--sn)"}}>Mark booked</button>
@@ -2223,7 +2238,8 @@ function CampCard({camp,userLoc,user,kids,filter,campBookings,CT,fmtDate,onBooki
           <button onClick={removeCamp} style={{marginLeft:8,background:"none",border:"none",fontSize:11,color:"var(--mt)",cursor:"pointer",textDecoration:"underline"}}>undo</button>
         </div>
       }
-    </div>
+    </div>}
+    {!isAdmin&&myBooking&&<div style={{marginTop:10,padding:8,borderRadius:10,background:myBooking.status==="booked"?"var(--gxl)":"var(--accl)",textAlign:"center",fontSize:12,fontWeight:700,color:myBooking.status==="booked"?"var(--gl)":"#8a6d00"}}>{myBooking.status==="booked"?"✓ Booked":"❤️ Interested"}</div>}
 
     {camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site →</a>}
   </div>;
