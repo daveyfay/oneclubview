@@ -660,10 +660,10 @@ const catEmoji={swimming:"🏊",gaa:"🏐",soccer:"⚽",rugby:"🏉",gymnastics:
 
 function NearbyClubsSection({userLoc,familyLocs,clubs:myClubs,setEditClub,isAdmin}){
   const[nearby,setNearby]=useState([]);const[loadNC,setLoadNC]=useState(true);const[ncSearch,setNcSearch]=useState("");
-  const[activeLoc,setActiveLoc]=useState("current");
+  const[activeLoc,setActiveLoc]=useState(null);
+  const[allClubsCache,setAllClubsCache]=useState(null);
   const myClubIds=useMemo(()=>new Set(myClubs.map(c=>c.club_id)),[myClubs]);
 
-  // Build location options
   const locOptions=useMemo(()=>{
     const opts=[];
     if(userLoc)opts.push({id:"current",label:"📍 Near me",lat:userLoc.lat,lng:userLoc.lng,radius:10});
@@ -673,16 +673,31 @@ function NearbyClubsSection({userLoc,familyLocs,clubs:myClubs,setEditClub,isAdmi
 
   const selectedLoc=locOptions.find(l=>l.id===activeLoc)||locOptions[0];
 
+  // Fetch all clubs once, then auto-pick the location with most clubs
   useEffect(()=>{
-    if(!selectedLoc){setLoadNC(false);return}
-    setLoadNC(true);setNcSearch("");
+    if(locOptions.length===0)return;
     db("clubs","GET",{select:"id,name,category,location,website_url,latitude,longitude",limit:500,order:"name.asc"}).then(r=>{
-      const all=r||[];
-      const local=all.filter(c=>c.latitude&&calcKm(selectedLoc.lat,selectedLoc.lng,Number(c.latitude),Number(c.longitude))<=selectedLoc.radius);
-      local.sort((a,b)=>calcKm(selectedLoc.lat,selectedLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(selectedLoc.lat,selectedLoc.lng,Number(b.latitude),Number(b.longitude)));
-      setNearby(local.filter(c=>!myClubIds.has(c.id)));setLoadNC(false);
+      const all=(r||[]).filter(c=>c.latitude);
+      setAllClubsCache(all);
+      if(activeLoc===null){
+        let bestId=locOptions[0]?.id;let bestCount=0;
+        locOptions.forEach(lo=>{
+          const cnt=all.filter(c=>calcKm(lo.lat,lo.lng,Number(c.latitude),Number(c.longitude))<=lo.radius).length;
+          if(cnt>bestCount){bestCount=cnt;bestId=lo.id}
+        });
+        setActiveLoc(bestId);
+      }
     });
-  },[activeLoc,selectedLoc?.lat,selectedLoc?.lng]);
+  },[locOptions.length]);
+
+  // Filter clubs when location changes
+  useEffect(()=>{
+    if(!allClubsCache||!selectedLoc)return;
+    setLoadNC(true);setNcSearch("");
+    const local=allClubsCache.filter(c=>calcKm(selectedLoc.lat,selectedLoc.lng,Number(c.latitude),Number(c.longitude))<=selectedLoc.radius);
+    local.sort((a,b)=>calcKm(selectedLoc.lat,selectedLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(selectedLoc.lat,selectedLoc.lng,Number(b.latitude),Number(b.longitude)));
+    setNearby(local.filter(c=>!myClubIds.has(c.id)));setLoadNC(false);
+  },[activeLoc,allClubsCache,selectedLoc?.lat]);
 
   if(!selectedLoc)return <p style={{textAlign:"center",padding:12,color:"var(--mt)",fontSize:12}}>Enable location to see clubs near you</p>;
   if(loadNC)return <div style={{marginTop:20}}><h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:8}}>Clubs near you</h3><p style={{textAlign:"center",padding:12,color:"var(--mt)",fontSize:12}}>Finding clubs...</p></div>;
