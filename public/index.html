@@ -630,7 +630,7 @@ function DiscoverResults({query,onAdd,userLoc}){
   const catEmoji={swimming:"🏊",gaa:"🏐",soccer:"⚽",rugby:"🏉",gymnastics:"🤸",dance:"💃",martial_arts:"🥋",tennis:"🎾",athletics:"🏃",hockey:"🏑",music:"🎵",coding:"💻",sailing:"⛵",scouts:"🏕️",basketball:"🏀",cricket:"🏏",horse_riding:"🐎",multi_activity:"🎯"};
   const catName={swimming:"Swimming",gaa:"GAA",soccer:"Soccer",rugby:"Rugby",gymnastics:"Gymnastics",dance:"Dance & Drama",martial_arts:"Martial Arts",tennis:"Tennis",athletics:"Athletics",hockey:"Hockey",music:"Music",coding:"Coding & STEM",sailing:"Sailing",scouts:"Scouts",basketball:"Basketball",cricket:"Cricket",horse_riding:"Horse Riding",multi_activity:"Multi-Activity"};
   // Filter by distance then sort
-  const filtered=results.filter(c=>!userLoc||!c.latitude||calcKm(userLoc.lat,userLoc.lng,Number(c.latitude),Number(c.longitude))<=30).sort((a,b)=>{if(userLoc&&a.latitude&&b.latitude){return calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude))}return 0});
+  const filtered=results.filter(c=>!userLoc||!c.latitude||calcKm(userLoc.lat,userLoc.lng,Number(c.latitude),Number(c.longitude))<=15).sort((a,b)=>{if(userLoc&&a.latitude&&b.latitude){return calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude))}return 0});
   return <div style={{marginBottom:24}}>
     <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:4}}>{catName[query]||query}</h3>
     <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>{filtered.length} club{filtered.length!==1?"s":""} near you</p>
@@ -781,15 +781,13 @@ function Hub({user,profile,onRefresh,onLogout}){
   // Camps filtered by kid age + distance (user location OR school location)
   const filtCamps=useMemo(()=>{
     let fc=camps;
-    // Filter by distance — show camps within 30km of user OR within 15km of any kid's school
+    // Filter by distance — show camps within 15km of user OR within 10km of any kid's school
     if(userLoc||schoolLocs.length>0){
       fc=fc.filter(c=>{
-        if(!c.latitude)return true; // No coords = show it
+        if(!c.latitude)return false; // No coords = hide when we have location data
         const cLat=Number(c.latitude),cLng=Number(c.longitude);
-        // Within 30km of user?
-        if(userLoc&&calcKm(userLoc.lat,userLoc.lng,cLat,cLng)<=30)return true;
-        // Within 15km of any kid's school?
-        if(schoolLocs.some(s=>calcKm(s.lat,s.lng,cLat,cLng)<=15))return true;
+        if(userLoc&&calcKm(userLoc.lat,userLoc.lng,cLat,cLng)<=15)return true;
+        if(schoolLocs.some(s=>calcKm(s.lat,s.lng,cLat,cLng)<=10))return true;
         return false;
       });
     }
@@ -1287,7 +1285,7 @@ function Hub({user,profile,onRefresh,onLogout}){
               setLoadNC(true);
               db("clubs","GET",{select:"id,name,category,location,website_url,latitude,longitude",limit:200,order:"name.asc"}).then(r=>{
                 const all=r||[];
-                const local=all.filter(c=>c.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(c.latitude),Number(c.longitude))<=30);
+                const local=all.filter(c=>c.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(c.latitude),Number(c.longitude))<=15);
                 local.sort((a,b)=>calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude)));
                 setNearby(local.filter(c=>!myClubIds.has(c.id)));setLoadNC(false);
               });
@@ -1304,7 +1302,7 @@ function Hub({user,profile,onRefresh,onLogout}){
 
             return <div style={{marginTop:20}}>
               <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:4}}>Clubs near you</h3>
-              {userLoc&&<p style={{fontSize:12,color:"var(--mt)",marginBottom:10}}>📍 {nearby.length} clubs within 30km</p>}
+              {userLoc&&<p style={{fontSize:12,color:"var(--mt)",marginBottom:10}}>📍 {nearby.length} clubs within 15km</p>}
 
               {/* Category pills */}
               <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:10,WebkitOverflowScrolling:"touch"}}>
@@ -1354,7 +1352,7 @@ function Hub({user,profile,onRefresh,onLogout}){
               setLoadingT(true);
               db("things_to_do","GET",{select:"*",filters:["status=eq.active"],order:"title.asc",limit:50}).then(r=>{
                 const all=r||[];
-                const local=all.filter(t=>t.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(t.latitude),Number(t.longitude))<=40);
+                const local=all.filter(t=>t.latitude&&calcKm(userLoc.lat,userLoc.lng,Number(t.latitude),Number(t.longitude))<=20);
                 local.sort((a,b)=>calcKm(userLoc.lat,userLoc.lng,Number(a.latitude),Number(a.longitude))-calcKm(userLoc.lat,userLoc.lng,Number(b.latitude),Number(b.longitude)));
                 setThings(local);setLoadingT(false);
               });
