@@ -1620,7 +1620,7 @@ function SchoolPicker({school,setSchool,schoolId,setSchoolId,cls,setCls}){
     if(v.length<2){setResults([]);return}
     tmr.current=setTimeout(async()=>{
       setSearching(true);
-      const r=await db("schools","GET",{filters:["name=ilike.*"+v+"*","school_type=eq.primary"],limit:8,order:"name.asc"});
+      const r=await db("schools","GET",{filters:["or=(name.ilike.*"+v+"*,address.ilike.*"+v+"*)","school_type=eq.primary"],limit:8,order:"name.asc"});
       setResults(r||[]);setSearching(false);
     },300);
   }
