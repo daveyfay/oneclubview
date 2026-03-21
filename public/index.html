@@ -496,9 +496,12 @@ function Auth({onAuth,mode:im}){
           const betaCount=await db("profiles","GET",{filters:["is_beta=eq.true"]});
           const isBeta=(betaCount||[]).length<10;
           // Check if this email has a pending family invite — assign role + family_id
+          console.log("Signup: checking invite for",email.trim().toLowerCase(),"token:",_t?.slice(0,20)+"...");
           const invite=await db("family_invites","GET",{filters:["invited_email=eq."+email.trim().toLowerCase(),"accepted_at=is.null"],limit:1});
+          console.log("Signup: invite result:",JSON.stringify(invite));
           const inviteRole=invite&&invite[0]?invite[0].role||"admin":"admin";
           const familyId=invite&&invite[0]?invite[0].family_id:null;
+          console.log("Signup: role=",inviteRole,"familyId=",familyId);
           await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false,family_role:inviteRole,...(familyId?{family_id:familyId}:{})}});
           // Mark invite as accepted
           if(invite&&invite[0])await db("family_invites","PATCH",{filters:["id=eq."+invite[0].id],body:{accepted_at:new Date().toISOString(),accepted_user_id:u.id}});
