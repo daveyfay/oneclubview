@@ -485,7 +485,13 @@ function Auth({onAuth,mode:im}){
         if(u&&u.id){
           const betaCount=await db("profiles","GET",{filters:["is_beta=eq.true"]});
           const isBeta=(betaCount||[]).length<10;
-          await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false}});
+          // Check if this email has a pending family invite — assign role + family_id
+          const invite=await db("family_invites","GET",{filters:["invited_email=eq."+email.trim().toLowerCase(),"accepted_at=is.null"],limit:1});
+          const inviteRole=invite&&invite[0]?invite[0].role||"admin":"admin";
+          const familyId=invite&&invite[0]?invite[0].family_id:null;
+          await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false,family_role:inviteRole,...(familyId?{family_id:familyId}:{})}});
+          // Mark invite as accepted
+          if(invite&&invite[0])await db("family_invites","PATCH",{filters:["id=eq."+invite[0].id],body:{accepted_at:new Date().toISOString(),accepted_user_id:u.id}});
         }
         onAuth(u);
       }
@@ -1459,13 +1465,13 @@ function Hub({user,profile,onRefresh,onLogout}){
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div><div style={{fontSize:14,fontWeight:600}}>{kid?.first_name||profile?.first_name||"You"} — {p.description}</div><div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>{cl?.club_name||""} • Due {new Date(p.due_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</div></div>
               <div style={{textAlign:"right"}}><div style={{fontSize:18,fontWeight:800,color:p.paid?"var(--gl)":overdue?"#dc2626":"var(--tx)",fontFamily:"var(--sr)"}}>€{parseFloat(p.amount).toFixed(0)}</div>
-                {!p.paid&&<button onClick={async()=>{await db("payment_reminders","PATCH",{body:{paid:true},filters:["id=eq."+p.id]});await load()}} style={{fontSize:11,fontWeight:700,color:"var(--gl)",background:"var(--gxl)",border:"none",borderRadius:8,padding:"3px 10px",cursor:"pointer",marginTop:4}}>Mark paid</button>}
+                {isAdmin&&!p.paid&&<button onClick={async()=>{await db("payment_reminders","PATCH",{body:{paid:true},filters:["id=eq."+p.id]});await load()}} style={{fontSize:11,fontWeight:700,color:"var(--gl)",background:"var(--gxl)",border:"none",borderRadius:8,padding:"3px 10px",cursor:"pointer",marginTop:4}}>Mark paid</button>}
                 {p.paid&&<span style={{fontSize:11,color:"var(--gl)",fontWeight:700}}>✓ Paid</span>}
               </div>
             </div>
           </div>
         })}
-        <button onClick={()=>setShowAddPay(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add payment reminder</button>
+        {isAdmin&&<button onClick={()=>setShowAddPay(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add payment reminder</button>}
       </div>}
 
       {/* CAMPS */}
@@ -2240,7 +2246,7 @@ function EditClubModal({club,kids,profile,userId,onClose,onSaved,onDelete}){
 }
 
 function InviteAdultModal({userId,familyId,onClose,onSaved}){
-  const[email,setEmail]=useState("");const[name,setName]=useState("");const[sv,setSv]=useState(false);const[done,setDone]=useState(false);
+  const[email,setEmail]=useState("");const[name,setName]=useState("");const[role,setRole]=useState("admin");const[sv,setSv]=useState(false);const[done,setDone]=useState(false);
 
   async function send(){
     if(!email.trim())return;setSv(true);
@@ -2251,7 +2257,7 @@ function InviteAdultModal({userId,familyId,onClose,onSaved}){
       if(fam&&fam[0]){fid=fam[0].id;await db("profiles","PATCH",{body:{family_id:fid},filters:["id=eq."+userId]})}
     }
     if(fid){
-      await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:email.trim(),invited_name:name.trim()||null}});
+      await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:email.trim(),invited_name:name.trim()||null,role:role}});
       // Send email via edge function
       try{
         const prof=await db("profiles","GET",{filters:["id=eq."+userId]});
@@ -2288,6 +2294,9 @@ function InviteAdultModal({userId,familyId,onClose,onSaved}){
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div><span className="lbl">Their name</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="First name"/></div>
       <div><span className="lbl">Their email</span><input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="email@example.com"/></div>
+      <div><span className="lbl">Their role</span><div style={{display:"flex",gap:6}}>
+        {[{v:"admin",l:"👨‍👩‍👧 Parent"},{v:"carer",l:"🧑‍🍳 Carer"},{v:"viewer",l:"👁️ Viewer"}].map(r=><button key={r.v} onClick={()=>setRole(r.v)} style={{flex:1,padding:"8px 4px",borderRadius:10,border:role===r.v?"2px solid var(--g)":"2px solid var(--bd)",background:role===r.v?"var(--gxl)":"var(--card)",fontSize:11,fontWeight:700,color:role===r.v?"var(--g)":"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>{r.l}</button>)}
+      </div></div>
       <button onClick={send} disabled={sv||!email.trim()} className="btn bp">{sv?"Sending...":"Send invite"}</button>
     </div>
   </div></div>;
