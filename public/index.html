@@ -176,6 +176,55 @@ function calcKm(lat1,lng1,lat2,lng2){
 }
 function fmtDist(km){return km<1?(km*1000).toFixed(0)+"m":km<10?km.toFixed(1)+"km":Math.round(km)+"km"}
 
+async function geocodeNewItems(scrapeLat, scrapeLng) {
+  const threshold = 0.005;
+  const tables = [
+    { name: "clubs", locationField: "location", select: "id,name,location,latitude,longitude" },
+    { name: "camps", locationField: "location_name", select: "id,title,location_name,latitude,longitude" },
+    { name: "things_to_do", locationField: "location_name", select: "id,title,location_name,latitude,longitude" }
+  ];
+  for (const table of tables) {
+    const rows = await db(table.name, "GET", {
+      select: table.select,
+      filters: [
+        "latitude=gte." + (scrapeLat - threshold),
+        "latitude=lte." + (scrapeLat + threshold),
+        "longitude=gte." + (scrapeLng - threshold),
+        "longitude=lte." + (scrapeLng + threshold)
+      ],
+      limit: 100
+    });
+    if (!rows || rows.length === 0) continue;
+    for (const row of rows) {
+      const locText = row[table.locationField];
+      if (!locText) continue;
+      await new Promise(r => setTimeout(r, 1100));
+      try {
+        const res = await fetch(
+          "https://nominatim.openstreetmap.org/search?q=" +
+          encodeURIComponent(locText + ", Ireland") +
+          "&format=json&limit=1",
+          { headers: { "User-Agent": "OneClubView/1.0" } }
+        );
+        const data = await res.json();
+        if (data && data[0]) {
+          const newLat = Number(data[0].lat);
+          const newLng = Number(data[0].lon);
+          if (calcKm(scrapeLat, scrapeLng, newLat, newLng) > 0.5) {
+            await db(table.name, "PATCH", {
+              filters: ["id=eq." + row.id],
+              body: { latitude: newLat, longitude: newLng }
+            });
+            console.log("Geocoded:", table.name, row.name || row.title, "→", newLat, newLng);
+          }
+        }
+      } catch (e) {
+        console.warn("Geocode failed for", row.name || row.title, e);
+      }
+    }
+  }
+}
+
 function fmtDate(d){return d.toLocaleDateString("en-IE",{weekday:"short",day:"numeric",month:"short"})}
 const CT={sport:{i:"⚽"},arts:{i:"🎨"},stem:{i:"🤖"},outdoor:{i:"🏔"},drama:{i:"🎭"},multi_activity:{i:"🎪"},music:{i:"🎵"},other:{i:"📌"}};
 
@@ -799,7 +848,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         setUserLoc(loc);
         db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}});
         // Scrape for this location — will cache-hit if already scraped within 24hr/15km
-        fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:loc.lat,longitude:loc.lng,user_id:user.id})}).then(r=>r.json()).then(d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0||d.things_inserted>0))load()}).catch(()=>{});
+        fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:loc.lat,longitude:loc.lng,user_id:user.id})}).then(r=>r.json()).then(async d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0||d.things_inserted>0)){await geocodeNewItems(loc.lat,loc.lng);load()}}).catch(()=>{});
       },()=>{
         // Geolocation denied — use saved profile location
         db("profiles","GET",{filters:["id=eq."+user.id],select:"latitude,longitude"}).then(p=>{
@@ -816,7 +865,7 @@ function Hub({user,profile,onRefresh,onLogout}){
   useEffect(()=>{
     if(familyLocs.length===0)return;
     familyLocs.forEach(fl=>{
-      fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:Number(fl.latitude),longitude:Number(fl.longitude)})}).then(r=>r.json()).then(d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0||d.things_inserted>0))load()}).catch(()=>{});
+      fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:Number(fl.latitude),longitude:Number(fl.longitude)})}).then(r=>r.json()).then(async d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0||d.things_inserted>0)){await geocodeNewItems(Number(fl.latitude),Number(fl.longitude));load()}}).catch(()=>{});
     });
   },[familyLocs.length]);
 
