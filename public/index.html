@@ -86,6 +86,7 @@ select{-webkit-appearance:none;appearance:none}
 @keyframes ri{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .r{animation:ri .5s ease both}.r2{animation:ri .5s ease .1s both}.r3{animation:ri .5s ease .2s both}.r4{animation:ri .5s ease .3s both}
 @keyframes fi{from{opacity:0}to{opacity:1}}.fi{animation:fi .3s ease both}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .lbl{font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;display:block}
 .btn{width:100%;padding:14px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sn);transition:transform .15s,box-shadow .15s}.btn:disabled{opacity:.5}.btn:active{transform:scale(.98)}
 .bp{background:var(--g);color:#fff;box-shadow:0 4px 12px rgba(26,42,58,.2)}.bp:hover{box-shadow:0 6px 20px rgba(26,42,58,.25)}
@@ -775,7 +776,7 @@ function Hub({user,profile,onRefresh,onLogout}){
   const[schoolLocs,setSchoolLocs]=useState([]);
   const[familyLocs,setFamilyLocs]=useState([]);const[showLocations,setShowLocations]=useState(false);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
-  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("timeline");const[selectedDay,setSelectedDay]=useState(null);const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);
+  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("timeline");const[selectedDay,setSelectedDay]=useState(null);const[calMonth,setCalMonth]=useState(new Date().getMonth());const[calYear,setCalYear]=useState(new Date().getFullYear());const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);
 
   async function load(){
     // Get family member IDs for shared data
@@ -1152,19 +1153,47 @@ function Hub({user,profile,onRefresh,onLogout}){
       {/* MONTH CALENDAR VIEW */}
       {tab==="week"&&weekView==="calendar"&&(()=>{
         const now=new Date();
-        const [calMonth,setCalMonth]=window.__calMonth||[now.getMonth(),()=>{}];
-        // Use React state via a trick — store in component
-        const month=now.getMonth(),year=now.getFullYear();
+        const month=calMonth,year=calYear;
         const firstDay=new Date(year,month,1).getDay();
         const daysInMonth=new Date(year,month+1,0).getDate();
-        const startOffset=(firstDay+6)%7; // Monday start
+        const startOffset=(firstDay+6)%7;
         const cells=[];
         for(let i=0;i<startOffset;i++)cells.push(null);
         for(let d=1;d<=daysInMonth;d++)cells.push(d);
-        
+
+        // Build events for full month from recurring + manual
+        const monthEvts=(day)=>{
+          const cellDate=new Date(year,month,day);
+          const dow=cellDate.getDay();
+          const evts=[];
+          (recs||[]).forEach(re=>{
+            if(!re.active||re.day_of_week!==dow)return;
+            const cl=clubs.find(c=>c.club_id===re.club_id);
+            const kid=re.dependant_id?kids.find(k=>k.id===re.dependant_id):null;
+            evts.push({id:re.id+cellDate.toISOString(),source_id:re.id,source_type:"recurring",title:re.title,date:cellDate,time:re.start_time?.slice(0,5)||"",
+              endTime:re.start_time&&re.duration_minutes?((()=>{const t=parseInt(re.start_time.slice(0,2))*60+parseInt(re.start_time.slice(3,5))+re.duration_minutes;return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()):"",
+              club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null});
+          });
+          (mans||[]).forEach(me=>{
+            const d=new Date(me.event_date);
+            if(d.getDate()===day&&d.getMonth()===month&&d.getFullYear()===year){
+              const cl=clubs.find(c=>c.club_id===me.club_id);
+              const kid=me.dependant_id?kids.find(k=>k.id===me.dependant_id):null;
+              evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:d.toTimeString().slice(0,5),club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
+            }
+          });
+          return evts.sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+        };
+
+        const prevMonth=()=>{if(month===0){setCalMonth(11);setCalYear(year-1)}else setCalMonth(month-1);setSelectedDay(null)};
+        const nextMonth=()=>{if(month===11){setCalMonth(0);setCalYear(year+1)}else setCalMonth(month+1);setSelectedDay(null)};
+        const goToday=()=>{setCalMonth(now.getMonth());setCalYear(now.getFullYear());setSelectedDay(null)};
+
         return <div style={{marginBottom:16}}>
-          <div style={{textAlign:"center",marginBottom:8}}>
-            <span style={{fontFamily:"var(--sr)",fontSize:15,fontWeight:700,color:"var(--g)"}}>{now.toLocaleDateString("en-IE",{month:"long",year:"numeric"})}</span>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+            <button onClick={prevMonth} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",padding:"4px 8px",color:"var(--gl)"}}>‹</button>
+            <span onClick={goToday} style={{fontFamily:"var(--sr)",fontSize:15,fontWeight:700,color:"var(--g)",cursor:"pointer"}}>{new Date(year,month).toLocaleDateString("en-IE",{month:"long",year:"numeric"})}</span>
+            <button onClick={nextMonth} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",padding:"4px 8px",color:"var(--gl)"}}>›</button>
           </div>
           {/* Day headers */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:4}}>
@@ -1175,21 +1204,50 @@ function Hub({user,profile,onRefresh,onLogout}){
             {cells.map((day,i)=>{
               if(!day)return <div key={i}/>;
               const cellDate=new Date(year,month,day);
-              const isToday2=day===now.getDate()&&month===now.getMonth();
-              const dayEvts=weekEvts.filter(e=>e.date.getDate()===day&&e.date.getMonth()===month);
-              // Also check for events from recs/mans that aren't in this week
-              const allEvts=[...(recs||[]).filter(r=>r.day_of_week!=null),...(mans||[]).filter(m=>new Date(m.event_date).getDate()===day&&new Date(m.event_date).getMonth()===month)];
-              const hasEvents=dayEvts.length>0||allEvts.length>0;
+              const isToday2=day===now.getDate()&&month===now.getMonth()&&year===now.getFullYear();
+              const dayEvts=monthEvts(day);
               const isHoliday=(holidays||[]).some(h=>{const s=new Date(h.start_date),e=new Date(h.end_date);return cellDate>=s&&cellDate<=e});
-              return <div key={i} style={{textAlign:"center",padding:"6px 2px",borderRadius:10,background:isToday2?"var(--g)":isHoliday?"#fef3e2":"transparent",cursor:"pointer",position:"relative"}} onClick={()=>setSelectedDay(cellDate)}>
-                <span style={{fontSize:13,fontWeight:isToday2?800:500,color:isToday2?"#fff":isHoliday?"#b8860b":"var(--tx)"}}>{day}</span>
-                {hasEvents&&<div style={{display:"flex",gap:2,justifyContent:"center",marginTop:2}}>
+              const isSelected=selectedDay&&selectedDay.getDate()===day&&selectedDay.getMonth()===month&&selectedDay.getFullYear()===year;
+              return <div key={i} style={{textAlign:"center",padding:"6px 2px",borderRadius:10,background:isToday2?"var(--g)":isSelected?"var(--gxl)":isHoliday?"#fef3e2":"transparent",cursor:"pointer",position:"relative",border:isSelected?"1.5px solid var(--g)":"1.5px solid transparent"}} onClick={()=>setSelectedDay(cellDate)}>
+                <span style={{fontSize:13,fontWeight:isToday2||isSelected?800:500,color:isToday2?"#fff":isHoliday?"#b8860b":"var(--tx)"}}>{day}</span>
+                {dayEvts.length>0&&<div style={{display:"flex",gap:2,justifyContent:"center",marginTop:2}}>
                   {dayEvts.slice(0,3).map((e,j)=><div key={j} style={{width:4,height:4,borderRadius:"50%",background:isToday2?"rgba(255,255,255,.6)":(e.colour||"var(--acc)")}}/>)}
-                  {dayEvts.length===0&&allEvts.length>0&&<div style={{width:4,height:4,borderRadius:"50%",background:"var(--mt)"}}/>}
                 </div>}
               </div>;
             })}
           </div>
+
+          {/* SLIDE-UP DAY PANEL */}
+          {selectedDay&&(()=>{
+            const dayE=monthEvts(selectedDay.getDate());
+            const isHol=(holidays||[]).some(h=>{const s=new Date(h.start_date),e=new Date(h.end_date);return selectedDay>=s&&selectedDay<=e});
+            const holName=isHol?(holidays||[]).find(h=>selectedDay>=new Date(h.start_date)&&selectedDay<=new Date(h.end_date))?.name:"";
+            return <div style={{marginTop:12,background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"var(--shadow)",overflow:"hidden",animation:"slideUp .2s ease"}}>
+              <div style={{padding:"12px 16px",borderBottom:"1px solid var(--bd)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:14,fontWeight:700,color:"var(--g)"}}>{selectedDay.toLocaleDateString("en-IE",{weekday:"long",day:"numeric",month:"long"})}</div>
+                  {isHol&&<div style={{fontSize:11,color:"#b8860b",fontWeight:600}}>{holName}</div>}
+                </div>
+                <button onClick={()=>setSelectedDay(null)} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"var(--mt)",padding:"4px"}}>✕</button>
+              </div>
+              <div style={{padding:"8px 12px",maxHeight:240,overflowY:"auto"}}>
+                {dayE.length===0?<div style={{padding:"16px 0",textAlign:"center",color:"var(--mt)",fontSize:13}}>No activities this day</div>
+                :dayE.map((e,i)=><div key={e.id||i} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6}}>
+                  <div style={{width:4,background:e.colour||"#999",flexShrink:0}}/>
+                  <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:700,color:"var(--tx)"}}>{e.member}</div>
+                      <div style={{fontSize:12,color:"var(--mt)"}}>{e.club||e.title||""}</div>
+                    </div>
+                    <div style={{textAlign:"right",flexShrink:0}}>
+                      <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
+                      {e.driver&&<div style={{fontSize:10,fontWeight:600,color:"var(--acc)",marginTop:2}}>🚗 {e.driver}</div>}
+                    </div>
+                  </div>
+                </div>)}
+              </div>
+            </div>;
+          })()}
         </div>;
       })()}
 
@@ -1291,7 +1349,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         
 
         {/* SWIMLANE TIMELINE VIEW */}
-        {true&&<div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
+        {weekView==="timeline"&&<div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
           {wd.map(d=>{
             const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate());
             const today=isToday(d);
