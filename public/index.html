@@ -170,7 +170,7 @@ function getAge(d){if(!d)return null;const t=new Date(),b=new Date(d);let a=t.ge
 function weekDates(){const n=new Date(),d=n.getDay(),m=new Date(n);m.setDate(n.getDate()-((d+6)%7));return Array.from({length:7},(_,i)=>{const x=new Date(m);x.setDate(m.getDate()+i);return x})}
 function isToday(d){const n=new Date();return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate()}
 function calcKm(lat1,lng1,lat2,lng2){
-  if(!lat1||!lng1||!lat2||!lng2)return 999;
+  if(lat1==null||lng1==null||lat2==null||lng2==null)return 999;
   const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
   const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
   return R*2*Math.asin(Math.sqrt(a));
@@ -212,13 +212,11 @@ async function geocodeNewItems(scrapeLat, scrapeLng) {
         if (data && data[0]) {
           const newLat = Number(data[0].lat);
           const newLng = Number(data[0].lon);
-          if (calcKm(scrapeLat, scrapeLng, newLat, newLng) > 0.5) {
-            await db(table.name, "PATCH", {
-              filters: ["id=eq." + row.id],
-              body: { latitude: newLat, longitude: newLng }
-            });
-            console.log("Geocoded:", table.name, row.name || row.title, "→", newLat, newLng);
-          }
+          await db(table.name, "PATCH", {
+            filters: ["id=eq." + row.id],
+            body: { latitude: newLat, longitude: newLng }
+          });
+          console.log("Geocoded:", table.name, row.name || row.title, "→", newLat, newLng);
         }
       } catch (e) {
         console.warn("Geocode failed for", row.name || row.title, e);
@@ -1092,7 +1090,7 @@ function Hub({user,profile,onRefresh,onLogout}){
       {/* TRIAL BANNER */}
       {!needsPayment&&!profile?.is_beta&&trialStart&&profile?.subscription_status!=="active"&&<div style={{background:"linear-gradient(135deg,#1a2a3a,#2d4a5f)",borderRadius:12,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",color:"#fff"}}>
         <div><span style={{fontSize:12,fontWeight:700}}>Free trial</span><span style={{fontSize:11,color:"rgba(255,255,255,.6)",marginLeft:6}}>{14-trialDays} days left</span></div>
-        <button onClick={startCheckout} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Subscribe</button>
+        <button onClick={()=>startCheckout("standard")} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Subscribe</button>
       </div>}
 
       {/* WEEK/MONTH HEADER — Flo-inspired */}
@@ -1894,10 +1892,10 @@ function AddEventModal({clubs,userId,kids,profile,onClose,onSaved}){
     if(!title.trim()||!cid)return;setSv(true);const dep=mid==="self"?null:mid;
     let result;
     if(type==="recurring"){
-      result=await db("recurring_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),frequency:"weekly",day_of_week:parseInt(dow),start_time:time+":00",duration_minutes:endTime?Math.max(30,Math.round((new Date("2000-01-01T"+endTime)-new Date("2000-01-01T"+time))/60000)):parseInt(dur),starts_from:new Date().toISOString().split("T")[0],excluded_dates:[]}});
+      result=await db("recurring_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),frequency:"weekly",day_of_week:parseInt(dow),start_time:time+":00",duration_minutes:endTime?Math.max(30,Math.round((new Date("2000-01-01T"+endTime)-new Date("2000-01-01T"+time))/60000)):parseInt(dur),starts_from:new Date().toISOString().split("T")[0],excluded_dates:[],driver:driver||null}});
     }else{
       if(!date){setSv(false);return}
-      result=await db("manual_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),event_date:date+"T"+time+":00"}});
+      result=await db("manual_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),event_date:date+"T"+time+":00",driver:driver||null}});
     }
     setSv(false);
     if(!result){alert("Failed to save event. Please try again.");return}
@@ -2862,7 +2860,7 @@ function App(){
   if(screen==="auth_login")return <Auth onAuth={onAuth} mode="login"/>;
   if(screen==="onboard_kids")return <OnboardKids userId={user.id} onDone={afterKids}/>;
   if(screen==="onboard_clubs")return <OnboardClubs userId={user.id} kids={kids} onDone={()=>setScreen("hub")}/>;
-  if(screen==="hub"&&profile?.role==="admin")return <AdminDashboard user={user} onBack={logout}/>;
+  if(screen==="hub"&&profile?.family_role==="admin")return <AdminDashboard user={user} onBack={logout}/>;
   if(screen==="hub")return <Hub user={user} profile={profile} onRefresh={(s)=>{if(s==="clubs")setScreen("onboard_clubs")}} onLogout={logout}/>;
   return null;
 }
