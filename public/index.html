@@ -2046,10 +2046,15 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
         const fam=await db("families","POST",{body:{created_by:userId}});
         if(fam&&fam[0]){fid=fam[0].id;await db("profiles","PATCH",{body:{family_id:fid},filters:["id=eq."+userId]})}
       }
+      console.log("Invite flow — fid:",fid,"email:",adultEmail.trim(),"role:",inviteRole);
       if(fid&&adultEmail.trim()){
-        await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:adultEmail.trim(),invited_name:name.trim(),role:inviteRole}});
-        try{await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({to_email:adultEmail.trim(),to_name:name.trim(),from_name:profile?.first_name||"Your partner",site_url:window.location.origin})})}catch(e){}
-      }
+        const invResult=await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:adultEmail.trim(),invited_name:name.trim(),role:inviteRole}});
+        console.log("Invite DB result:",invResult);
+        try{
+          const emailRes=await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({to_email:adultEmail.trim(),to_name:name.trim(),from_name:profile?.first_name||"Your partner",site_url:window.location.origin})});
+          console.log("Email response:",emailRes.status,await emailRes.text());
+        }catch(e){console.error("Email send failed:",e)}
+      } else { console.error("Invite skipped — fid:",fid,"email:",adultEmail.trim()); }
       setSv(false);setDone(true);return;
     }
     // Check kid limit
