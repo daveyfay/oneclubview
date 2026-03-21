@@ -1407,6 +1407,15 @@ function Hub({user,profile,onRefresh,onLogout}){
           alerts.push({type:"info",icon:"⏰",text:noEnd.length+" event"+(noEnd.length>1?"s":"")+" this week with no end time — makes pickup planning harder",action:"week"});
         }
 
+        // Camp recommendations from carers
+        if(isAdmin&&campBookings){
+          const recs2=(campBookings||[]).filter(b=>b.status==="recommended");
+          recs2.forEach(b=>{
+            const camp=(camps||[]).find(c=>c.id===b.camp_id);
+            if(camp)alerts.push({type:"info",icon:"💡",text:"A carer recommended "+camp.title+" — tap to review",action:"camps"});
+          });
+        }
+
         if(alerts.length===0)return null;
 
         const colors={urgent:{bg:"#fef2f2",border:"#fecaca",text:"#dc2626"},warn:{bg:"var(--accl)",border:"#f8c4bc",text:"var(--acc)"},info:{bg:"var(--gxl)",border:"#c8dce8",text:"var(--gl)"}};
@@ -2472,8 +2481,10 @@ function CampCard({camp,userLoc,allLocs=[],user,kids,filter,campBookings,CT,fmtD
       }
     </div>}
     {!isAdmin&&myBooking&&<div style={{marginTop:10,padding:8,borderRadius:10,background:myBooking.status==="booked"?"var(--gxl)":"var(--accl)",textAlign:"center",fontSize:12,fontWeight:700,color:myBooking.status==="booked"?"var(--gl)":"#8a6d00"}}>{myBooking.status==="booked"?"✓ Booked":"❤️ Interested"}</div>}
+    {!isAdmin&&!myBooking&&<button onClick={async()=>{await db("camp_bookings","POST",{body:{user_id:user.id,dependant_id:activeKid?.id||null,camp_id:camp.id,status:"recommended"}});onBookingChange()}} style={{display:"block",width:"100%",marginTop:10,textAlign:"center",padding:10,borderRadius:10,background:"var(--gxl)",border:"1.5px solid var(--g)",color:"var(--g)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>💡 Recommend to family</button>}
+    {!isAdmin&&myBooking&&myBooking.status==="recommended"&&<div style={{marginTop:10,padding:8,borderRadius:10,background:"var(--gxl)",textAlign:"center",fontSize:12,fontWeight:700,color:"var(--gl)"}}>💡 Recommended — parents will be notified</div>}
 
-    {camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site →</a>}
+    {isAdmin&&camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site →</a>}
   </div>;
 }
 
