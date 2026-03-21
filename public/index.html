@@ -425,29 +425,16 @@ function Auth({onAuth,mode:im}){
     setLd(true);setErr(null);
     try{
       if(mode==="signup"){
-        const d=await au("signup",{email,password:pw,data:{first_name:name.trim()}});
-        const u=d.user||d;
-        // If no token (email confirmation required), auto-login immediately
-        if(!_t&&u){
-          try{
-            const loginD=await au("login",{email,password:pw});
-            if(loginD.user||loginD.id){
-              const lu=loginD.user||loginD;
-              // Create profile after successful login
-              await db("profiles","POST",{body:{id:lu.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:"trial"}});
-              onAuth(lu);setLd(false);return;
-            }
-          }catch(loginErr){
-            // Login failed — email might need confirmation
-            setErr("Account created! Please check your email to verify, then log in.");
-            setMode("login");setLd(false);return;
-          }
-        }
-        // Token was issued (no email confirm required)
+        // Use custom signup endpoint that bypasses email confirmation
+        const signupRes=await fetch(SB+"/functions/v1/auth-signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password:pw,first_name:name.trim()})});
+        const signupData=await signupRes.json();
+        if(!signupRes.ok)throw new Error(signupData.error||"Signup failed");
+        if(signupData.access_token)_t=signupData.access_token;
+        const u=signupData.user;
         if(u&&u.id){
           const betaCount=await db("profiles","GET",{filters:["is_beta=eq.true"]});
-              const isBeta=(betaCount||[]).length<10;
-              await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false}});
+          const isBeta=(betaCount||[]).length<10;
+          await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false}});
         }
         onAuth(u);
       }
