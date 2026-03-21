@@ -978,12 +978,12 @@ function Hub({user,profile,onRefresh,onLogout}){
       wd.forEach(d=>{
         if(d.getDay()===re.day_of_week){
           const dStr=d.toISOString().split("T")[0];
-          if((re.excluded_dates||[]).includes(dStr))return;
+          const isSkipped=(re.excluded_dates||[]).includes(dStr);
           const cl=clubs.find(c=>c.club_id===re.club_id);
           const kid=re.dependant_id?kids.find(k=>k.id===re.dependant_id):null;
           evts.push({id:re.id+d.toISOString(),source_id:re.id,source_type:"recurring",title:re.title,date:d,time:re.start_time?.slice(0,5)||"",
             endTime:re.start_time&&re.duration_minutes?((h,m)=>{const t=parseInt(re.start_time.slice(0,2))*60+parseInt(re.start_time.slice(3,5))+re.duration_minutes;return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()||"":"",
-            club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null});
+            club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null,skipped:isSkipped});
         }
       });
     });
@@ -999,7 +999,8 @@ function Hub({user,profile,onRefresh,onLogout}){
     return evts.sort((a,b)=>a.date-b.date||(a.time||"").localeCompare(b.time||""));
   },[recs,mans,clubs,kids,profile,wd]);
 
-  const filtEvts=filter==="all"?weekEvts:weekEvts.filter(e=>e.memberId===filter);
+  const activeWeekEvts=weekEvts.filter(e=>!e.skipped);
+  const filtEvts=filter==="all"?activeWeekEvts:activeWeekEvts.filter(e=>e.memberId===filter);
   const filtPays=filter==="all"?pays:pays.filter(p=>(p.dependant_id||"self")===filter);
   const totalDue=filtPays.filter(p=>!p.paid).reduce((s,p)=>s+parseFloat(p.amount||0),0);
   const totalPaid=filtPays.filter(p=>p.paid).reduce((s,p)=>s+parseFloat(p.amount||0),0);
@@ -1205,8 +1206,8 @@ function Hub({user,profile,onRefresh,onLogout}){
       {/* INSIGHT CARDS — inspired by Flo's "My daily insights" */}
       {tab==="week"&&(()=>{
         const now=new Date();
-        const todayEvts=weekEvts.filter(e=>isToday(e.date));
-        const thisWeekCount=weekEvts.length;
+        const todayEvts=activeWeekEvts.filter(e=>isToday(e.date));
+        const thisWeekCount=activeWeekEvts.length;
         // Next school holiday
         const nextHol=(holidays||[]).find(h=>new Date(h.start_date)>now);
         const daysToHol=nextHol?Math.ceil((new Date(nextHol.start_date)-now)/(86400000)):null;
@@ -1467,12 +1468,12 @@ function Hub({user,profile,onRefresh,onLogout}){
               {lanes.length===0?<div style={{padding:"8px 0 4px 48px",fontSize:13,color:"var(--mt)"}}>Free day ✨</div>
               :<div style={{display:"flex",flexDirection:"column",gap:6,paddingLeft:48}}>
                 {lanes.map((lane,li)=>lane.events.map((e,ei)=>
-                  <div key={e.id||li+"-"+ei} onClick={()=>setEditEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:"var(--card)",border:"1px solid var(--bd)",boxShadow:"var(--shadow)",cursor:"pointer"}}>
-                    <div style={{width:5,background:e.colour||COLS[li%COLS.length],flexShrink:0}}/>
+                  <div key={e.id||li+"-"+ei} onClick={()=>setEditEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:e.skipped?"#f9f9f9":"var(--card)",border:"1px solid var(--bd)",boxShadow:e.skipped?"none":"var(--shadow)",cursor:"pointer",opacity:e.skipped?.5:1}}>
+                    <div style={{width:5,background:e.skipped?"var(--bd)":(e.colour||COLS[li%COLS.length]),flexShrink:0}}/>
                     <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
                       <div>
-                        <div style={{fontSize:13,fontWeight:700,color:"var(--tx)"}}>{e.member}</div>
-                        <div style={{fontSize:12,color:"var(--mt)"}}>{e.club||e.title||""}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:e.skipped?"var(--mt)":"var(--tx)",textDecoration:e.skipped?"line-through":"none"}}>{e.member}</div>
+                        <div style={{fontSize:12,color:"var(--mt)"}}>{e.club||e.title||""}{e.skipped?" — Skipped":""}</div>
                       </div>
                       <div style={{textAlign:"right",flexShrink:0}}>
                         <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
@@ -1817,7 +1818,8 @@ function Hub({user,profile,onRefresh,onLogout}){
           </div>
           <div style={{display:"flex",gap:8,marginTop:14}}>
             <button onClick={()=>setEditEvent(null)} className="btn bp" style={{flex:1}}>Done</button>
-            {editEvent.source_type==="recurring"&&<button onClick={async()=>{const evDate=editEvent.date instanceof Date?editEvent.date.toISOString().split("T")[0]:editEvent.date;const re=await db("recurring_events","GET",{filters:["id=eq."+editEvent.source_id]});if(re&&re[0]){const excluded=[...(re[0].excluded_dates||[]),evDate];await db("recurring_events","PATCH",{filters:["id=eq."+editEvent.source_id],body:{excluded_dates:excluded}});setEditEvent(null);load()}}} style={{padding:"12px 16px",borderRadius:14,border:"none",background:"#fef2f2",color:"#dc2626",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"var(--sn)"}}>Skip this week</button>}
+            {editEvent.source_type==="recurring"&&!editEvent.skipped&&<button onClick={async()=>{const evDate=editEvent.date instanceof Date?editEvent.date.toISOString().split("T")[0]:editEvent.date;const re=await db("recurring_events","GET",{filters:["id=eq."+editEvent.source_id]});if(re&&re[0]){const excluded=[...(re[0].excluded_dates||[]),evDate];await db("recurring_events","PATCH",{filters:["id=eq."+editEvent.source_id],body:{excluded_dates:excluded}});setEditEvent(null);load()}}} style={{padding:"12px 16px",borderRadius:14,border:"none",background:"#fef2f2",color:"#dc2626",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"var(--sn)"}}>Skip this week</button>}
+            {editEvent.source_type==="recurring"&&editEvent.skipped&&<button onClick={async()=>{const evDate=editEvent.date instanceof Date?editEvent.date.toISOString().split("T")[0]:editEvent.date;const re=await db("recurring_events","GET",{filters:["id=eq."+editEvent.source_id]});if(re&&re[0]){const excluded=(re[0].excluded_dates||[]).filter(d=>d!==evDate);await db("recurring_events","PATCH",{filters:["id=eq."+editEvent.source_id],body:{excluded_dates:excluded}});setEditEvent(null);load()}}} style={{padding:"12px 16px",borderRadius:14,border:"none",background:"var(--gxl)",color:"var(--g)",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"var(--sn)"}}>Undo skip</button>}
           </div>
         </div>
       </>}
