@@ -738,7 +738,7 @@ function Hub({user,profile,onRefresh,onLogout}){
   const[schoolLocs,setSchoolLocs]=useState([]);
   const[familyLocs,setFamilyLocs]=useState([]);const[showLocations,setShowLocations]=useState(false);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
-  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("timeline");const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);
+  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("timeline");const[selectedDay,setSelectedDay]=useState(null);const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[discoverSearch,setDiscoverSearch]=useState("");const[discoverFilter,setDiscoverFilter]=useState("all");const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);
 
   async function load(){
     // Get family member IDs for shared data
@@ -1051,11 +1051,110 @@ function Hub({user,profile,onRefresh,onLogout}){
         <button onClick={startCheckout} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Subscribe</button>
       </div>}
 
-      {/* WEEK HEADER */}
-      <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:14}}>
+      {/* WEEK/MONTH HEADER — Flo-inspired */}
+      <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:4}}>
         <h2 style={{fontFamily:"var(--sr)",fontSize:20,fontWeight:800,color:"var(--g)"}}>This week</h2>
-        <span style={{fontSize:11,color:"var(--mt)"}}>{wd[0].toLocaleDateString("en-IE",{day:"numeric",month:"short"})+" – "+wd[6].toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</span>
+        <div style={{display:"flex",gap:4}}>
+          <button onClick={()=>setWeekView(weekView==="calendar"?"timeline":"calendar")} style={{fontSize:11,fontWeight:600,color:weekView==="calendar"?"var(--acc)":"var(--mt)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)"}}>{weekView==="calendar"?"Week view":"Calendar"}</button>
+        </div>
       </div>
+
+      {/* HORIZONTAL DAY PILLS — inspired by Flo's week strip */}
+      <div style={{display:"flex",gap:4,marginBottom:12,overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
+        {wd.map(d=>{
+          const today=isToday(d);
+          const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate());
+          return <div key={d.toISOString()} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,minWidth:44,padding:"6px 4px",borderRadius:12,background:today?"var(--g)":"transparent",cursor:"pointer"}} onClick={()=>{if(weekView==="calendar")setSelectedDay(d)}}>
+            <span style={{fontSize:10,fontWeight:700,color:today?"rgba(255,255,255,.7)":"var(--mt)",textTransform:"uppercase"}}>{d.toLocaleDateString("en-IE",{weekday:"short"}).slice(0,3)}</span>
+            <span style={{fontSize:16,fontWeight:800,color:today?"#fff":"var(--tx)"}}>{d.getDate()}</span>
+            {dayEvts.length>0&&<div style={{display:"flex",gap:2}}>{dayEvts.slice(0,3).map((e,i)=><div key={i} style={{width:5,height:5,borderRadius:"50%",background:today?"rgba(255,255,255,.6)":(e.colour||"var(--acc)")}}/>)}</div>}
+          </div>;
+        })}
+      </div>
+
+      {/* INSIGHT CARDS — inspired by Flo's "My daily insights" */}
+      {tab==="week"&&(()=>{
+        const now=new Date();
+        const todayEvts=weekEvts.filter(e=>isToday(e.date));
+        const thisWeekCount=weekEvts.length;
+        // Next school holiday
+        const nextHol=(holidays||[]).find(h=>new Date(h.start_date)>now);
+        const daysToHol=nextHol?Math.ceil((new Date(nextHol.start_date)-now)/(86400000)):null;
+        // Unpaid fees
+        const unpaidCount=isAdmin?(pays||[]).filter(p=>!p.paid).length:0;
+        const unpaidTotal=isAdmin?(pays||[]).filter(p=>!p.paid).reduce((s,p)=>s+parseFloat(p.amount||0),0):0;
+        
+        return <div style={{display:"flex",gap:8,overflowX:"auto",marginBottom:14,WebkitOverflowScrolling:"touch",paddingBottom:4}} className="hsb">
+          {/* Today's events */}
+          <div style={{minWidth:110,padding:"12px 14px",borderRadius:14,background:"var(--gxl)",border:"1.5px solid #c8dce8",textAlign:"center",flexShrink:0}}>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--gl)"}}>Today</div>
+            <div style={{fontSize:28,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)",lineHeight:1.2}}>{todayEvts.length}</div>
+            <div style={{fontSize:10,color:"var(--mt)"}}>{todayEvts.length===1?"event":"events"}</div>
+          </div>
+          {/* This week */}
+          <div style={{minWidth:110,padding:"12px 14px",borderRadius:14,background:"#f5f0eb",border:"1.5px solid #e5ddd4",textAlign:"center",flexShrink:0}}>
+            <div style={{fontSize:11,fontWeight:700,color:"#8a7560"}}>This week</div>
+            <div style={{fontSize:28,fontWeight:800,color:"var(--tx)",fontFamily:"var(--sr)",lineHeight:1.2}}>{thisWeekCount}</div>
+            <div style={{fontSize:10,color:"var(--mt)"}}>activities</div>
+          </div>
+          {/* Holidays countdown */}
+          {nextHol&&daysToHol!==null&&daysToHol<=60&&<div style={{minWidth:110,padding:"12px 14px",borderRadius:14,background:"#fef3e2",border:"1.5px solid #fad9a1",textAlign:"center",flexShrink:0}}>
+            <div style={{fontSize:11,fontWeight:700,color:"#b8860b"}}>{nextHol.name}</div>
+            <div style={{fontSize:28,fontWeight:800,color:"#d4a017",fontFamily:"var(--sr)",lineHeight:1.2}}>{daysToHol}</div>
+            <div style={{fontSize:10,color:"var(--mt)"}}>days away</div>
+          </div>}
+          {/* Fees due */}
+          {isAdmin&&unpaidCount>0&&<div style={{minWidth:110,padding:"12px 14px",borderRadius:14,background:"#fef2f2",border:"1.5px solid #fecaca",textAlign:"center",flexShrink:0}} onClick={()=>setTab("money")}>
+            <div style={{fontSize:11,fontWeight:700,color:"#dc2626"}}>Fees due</div>
+            <div style={{fontSize:28,fontWeight:800,color:"#dc2626",fontFamily:"var(--sr)",lineHeight:1.2}}>€{unpaidTotal.toFixed(0)}</div>
+            <div style={{fontSize:10,color:"var(--mt)"}}>{unpaidCount} unpaid</div>
+          </div>}
+        </div>;
+      })()}
+
+      {/* MONTH CALENDAR VIEW */}
+      {tab==="week"&&weekView==="calendar"&&(()=>{
+        const now=new Date();
+        const [calMonth,setCalMonth]=window.__calMonth||[now.getMonth(),()=>{}];
+        // Use React state via a trick — store in component
+        const month=now.getMonth(),year=now.getFullYear();
+        const firstDay=new Date(year,month,1).getDay();
+        const daysInMonth=new Date(year,month+1,0).getDate();
+        const startOffset=(firstDay+6)%7; // Monday start
+        const cells=[];
+        for(let i=0;i<startOffset;i++)cells.push(null);
+        for(let d=1;d<=daysInMonth;d++)cells.push(d);
+        
+        return <div style={{marginBottom:16}}>
+          <div style={{textAlign:"center",marginBottom:8}}>
+            <span style={{fontFamily:"var(--sr)",fontSize:15,fontWeight:700,color:"var(--g)"}}>{now.toLocaleDateString("en-IE",{month:"long",year:"numeric"})}</span>
+          </div>
+          {/* Day headers */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:4}}>
+            {["M","T","W","T","F","S","S"].map((d,i)=><div key={i} style={{textAlign:"center",fontSize:10,fontWeight:700,color:"var(--mt)",padding:"2px 0"}}>{d}</div>)}
+          </div>
+          {/* Calendar grid */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2}}>
+            {cells.map((day,i)=>{
+              if(!day)return <div key={i}/>;
+              const cellDate=new Date(year,month,day);
+              const isToday2=day===now.getDate()&&month===now.getMonth();
+              const dayEvts=weekEvts.filter(e=>e.date.getDate()===day&&e.date.getMonth()===month);
+              // Also check for events from recs/mans that aren't in this week
+              const allEvts=[...(recs||[]).filter(r=>r.day_of_week!=null),...(mans||[]).filter(m=>new Date(m.event_date).getDate()===day&&new Date(m.event_date).getMonth()===month)];
+              const hasEvents=dayEvts.length>0||allEvts.length>0;
+              const isHoliday=(holidays||[]).some(h=>{const s=new Date(h.start_date),e=new Date(h.end_date);return cellDate>=s&&cellDate<=e});
+              return <div key={i} style={{textAlign:"center",padding:"6px 2px",borderRadius:10,background:isToday2?"var(--g)":isHoliday?"#fef3e2":"transparent",cursor:"pointer",position:"relative"}} onClick={()=>setSelectedDay(cellDate)}>
+                <span style={{fontSize:13,fontWeight:isToday2?800:500,color:isToday2?"#fff":isHoliday?"#b8860b":"var(--tx)"}}>{day}</span>
+                {hasEvents&&<div style={{display:"flex",gap:2,justifyContent:"center",marginTop:2}}>
+                  {dayEvts.slice(0,3).map((e,j)=><div key={j} style={{width:4,height:4,borderRadius:"50%",background:isToday2?"rgba(255,255,255,.6)":(e.colour||"var(--acc)")}}/>)}
+                  {dayEvts.length===0&&allEvts.length>0&&<div style={{width:4,height:4,borderRadius:"50%",background:"var(--mt)"}}/>}
+                </div>}
+              </div>;
+            })}
+          </div>
+        </div>;
+      })()}
 
       
 
