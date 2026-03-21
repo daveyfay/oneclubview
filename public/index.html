@@ -2875,7 +2875,7 @@ function App(){
   if(screen==="auth_login")return <Auth onAuth={onAuth} mode="login"/>;
   if(screen==="onboard_kids")return <OnboardKids userId={user.id} onDone={afterKids}/>;
   if(screen==="onboard_clubs")return <OnboardClubs userId={user.id} kids={kids} onDone={()=>setScreen("hub")}/>;
-  if(screen==="hub"&&profile?.family_role==="admin")return <AdminDashboard user={user} onBack={logout}/>;
+  if(screen==="hub"&&profile?.email==="hello@oneclubview.com")return <AdminDashboard user={user} onBack={logout}/>;
   if(screen==="hub")return <Hub user={user} profile={profile} onRefresh={(s)=>{if(s==="clubs")setScreen("onboard_clubs")}} onLogout={logout}/>;
   return null;
 }
