@@ -3012,9 +3012,17 @@ function App(){
 
   useEffect(()=>{
     const t=localStorage.getItem("ocv_token");const rt=localStorage.getItem("ocv_rt");
+    const urlParams=new URLSearchParams(window.location.search);
+    const justSubscribed=urlParams.get("subscribed")==="true";
+    if(justSubscribed)window.history.replaceState({},"",window.location.pathname);
     if(t){_t=t;if(rt)_rt=rt;au("user").then(async u=>{
       const p=await db("profiles","GET",{filters:["id=eq."+u.id]});
-      const pr=p&&p[0]?p[0]:null;
+      let pr=p&&p[0]?p[0]:null;
+      // If returning from Stripe checkout, mark onboarding complete
+      if(justSubscribed&&pr&&!pr.onboarding_completed){
+        await db("profiles","PATCH",{filters:["id=eq."+u.id],body:{onboarding_completed:true,onboarding_step:"done",subscription_status:"active"}});
+        pr={...pr,onboarding_completed:true,subscription_status:"active"};
+      }
       setUser(u);setProfile(pr);
       if(pr&&pr.onboarding_completed)setScreen("hub");
       else setScreen("onboard_kids");
