@@ -1221,9 +1221,17 @@ function Hub({user,profile,onRefresh,onLogout}){
     <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
       <div style={{textAlign:"center",maxWidth:400}}>
         <Logo/>
-        <div style={{fontSize:48,margin:"24px 0 12px"}}>⏰</div>
-        <h2 style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>Your free trial has ended</h2>
-        <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 4px"}}>You had {trialDays} days with OneClubView. Subscribe to keep your family's schedule, fees, and clubs all in one place.</p>
+        {profile?.subscription_status==="churned"?<>
+          {/* CHURNED USER — cancelled subscription */}
+          <div style={{fontSize:48,margin:"24px 0 12px"}}>👋</div>
+          <h2 style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>We miss you!</h2>
+          <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 16px",lineHeight:1.6}}>Your subscription has ended but your data is safe. You can pick up right where you left off.</p>
+        </>:<>
+          {/* TRIAL EXPIRED */}
+          <div style={{fontSize:48,margin:"24px 0 12px"}}>⏰</div>
+          <h2 style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>Your free trial has ended</h2>
+          <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 4px"}}>You had {trialDays} days with OneClubView. Subscribe to keep your family's schedule, fees, and clubs all in one place.</p>
+        </>}
         <div style={{background:"var(--card)",borderRadius:20,border:"1px solid var(--bd)",padding:24,margin:"20px 0",textAlign:"left"}}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
             <div onClick={()=>startCheckout("standard")} style={{background:"var(--warm)",borderRadius:16,padding:16,border:"2px solid var(--bd)",cursor:"pointer",textAlign:"center"}}>
@@ -1242,6 +1250,8 @@ function Hub({user,profile,onRefresh,onLogout}){
           </div>
         </div>
         <p style={{fontSize:11,color:"var(--mt)",marginTop:8}}>Cancel anytime. Secure payment via Stripe.</p>
+        {/* FEEDBACK — only show for churned users or if trial ended */}
+        <CancelFeedback userId={user.id} email={user.email} status={profile?.subscription_status} trialDays={trialDays}/>
         <button onClick={onLogout} style={{marginTop:16,background:"none",border:"none",fontSize:13,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>Log out</button>
       </div>
     </div>
@@ -2668,6 +2678,36 @@ function CampCard({camp,userLoc,allLocs=[],user,kids,filter,campBookings,CT,fmtD
     {!isAdmin&&(myBooking||anyBooking)&&<div style={{marginTop:10,padding:8,borderRadius:10,background:anyBooking?.status==="booked"?"var(--gxl)":myBooking?"var(--gxl)":"#f5f0eb",textAlign:"center",fontSize:12,fontWeight:700,color:anyBooking?.status==="booked"?"var(--gl)":"var(--mt)"}}>{anyBooking?.status==="booked"?"✓ Booked by family":myBooking?.status==="recommended"?"💡 Recommended — parents will be notified":anyBooking&&!myBooking?"📋 On family's list":"❤️ Interested"}</div>}
 
     {isAdmin&&camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site →</a>}
+  </div>;
+}
+
+function CancelFeedback({userId,email,status,trialDays}){
+  const[show,setShow]=useState(false);const[reason,setReason]=useState("");const[detail,setDetail]=useState("");const[sent,setSent]=useState(false);
+  const reasons=[
+    {v:"too_expensive",l:"💰 Too expensive"},
+    {v:"not_useful",l:"🤷 Didn't find it useful"},
+    {v:"missing_features",l:"🔧 Missing features I need"},
+    {v:"too_complicated",l:"😕 Too complicated"},
+    {v:"not_enough_clubs",l:"🏠 My clubs weren't there"},
+    {v:"using_alternative",l:"📱 Using something else"},
+    {v:"kids_stopped",l:"👧 Kids stopped activities"},
+    {v:"other",l:"💬 Other reason"},
+  ];
+  if(sent)return <div style={{marginTop:16,padding:12,background:"var(--sage)",borderRadius:12,fontSize:13,color:"var(--gl)",fontWeight:600}}>Thanks for the feedback — it really helps us improve.</div>;
+  if(!show)return <button onClick={()=>setShow(true)} style={{marginTop:12,background:"none",border:"none",fontSize:12,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)",textDecoration:"underline"}}>Not ready to subscribe? Tell us why</button>;
+  return <div style={{marginTop:16,background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,textAlign:"left"}}>
+    <div style={{fontSize:14,fontWeight:700,color:"var(--g)",marginBottom:4}}>We'd love to know why</div>
+    <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>Your feedback helps us build a better product for every parent.</p>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:12}}>
+      {reasons.map(r=><button key={r.v} onClick={()=>setReason(r.v)} style={{padding:"8px 10px",borderRadius:10,border:reason===r.v?"2px solid var(--g)":"1px solid var(--bd)",background:reason===r.v?"var(--gxl)":"#fff",fontSize:11,fontWeight:600,color:"var(--tx)",cursor:"pointer",fontFamily:"var(--sn)",textAlign:"left"}}>{r.l}</button>)}
+    </div>
+    {reason&&<>
+      <textarea value={detail} onChange={e=>setDetail(e.target.value)} placeholder="Anything else you'd like to share? (optional)" rows={2} style={{width:"100%",padding:10,borderRadius:10,border:"1px solid var(--bd)",fontSize:12,fontFamily:"var(--sn)",resize:"vertical",marginBottom:8}}/>
+      <button onClick={async()=>{
+        await db("cancellation_feedback","POST",{body:{user_id:userId,user_email:email,reason,detail:detail.trim()||null,subscription_status:status,days_active:trialDays||null}});
+        setSent(true);
+      }} style={{width:"100%",padding:10,borderRadius:12,border:"none",background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Send feedback</button>
+    </>}
   </div>;
 }
 
