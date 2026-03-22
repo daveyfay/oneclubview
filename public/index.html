@@ -505,17 +505,16 @@ function Auth({onAuth,mode:im}){
         if(!signupRes.ok)throw new Error(signupData.error||"Signup failed");
         if(signupData.access_token){_t=signupData.access_token;localStorage.setItem("ocv_token",_t);if(signupData.refresh_token){_rt=signupData.refresh_token;localStorage.setItem("ocv_rt",_rt)}}
         const u=signupData.user;
-        if(u&&u.id){
-          const betaCount=await db("profiles","GET",{filters:["is_beta=eq.true"]});
-          const isBeta=(betaCount||[]).length<10;
-          // Check if this email has a pending family invite — assign role + family_id
-          const invite=await db("family_invites","GET",{filters:["invited_email=eq."+email.trim().toLowerCase(),"accepted_at=is.null"],limit:1});
-          const inviteRole=invite&&invite[0]?invite[0].role||"admin":"admin";
-          const familyId=invite&&invite[0]?invite[0].family_id:null;
-          await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false,family_role:inviteRole,...(familyId?{family_id:familyId}:{})}});
-          // Mark invite as accepted
-          if(invite&&invite[0])await db("family_invites","PATCH",{filters:["id=eq."+invite[0].id],body:{accepted_at:new Date().toISOString(),accepted_user_id:u.id}});
-        }
+        if(!u||!u.id)throw new Error("Signup failed — please try again");
+        const betaCount=await db("profiles","GET",{filters:["is_beta=eq.true"]});
+        const isBeta=(betaCount||[]).length<10;
+        // Check if this email has a pending family invite — assign role + family_id
+        const invite=await db("family_invites","GET",{filters:["invited_email=eq."+email.trim().toLowerCase(),"accepted_at=is.null"],limit:1});
+        const inviteRole=invite&&invite[0]?invite[0].role||"admin":"admin";
+        const familyId=invite&&invite[0]?invite[0].family_id:null;
+        await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false,family_role:inviteRole,...(familyId?{family_id:familyId}:{})}});
+        // Mark invite as accepted
+        if(invite&&invite[0])await db("family_invites","PATCH",{filters:["id=eq."+invite[0].id],body:{accepted_at:new Date().toISOString(),accepted_user_id:u.id}});
         onAuth(u);
       }
       else{const d=await au("login",{email,password:pw});onAuth(d.user)}
@@ -1463,7 +1462,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         }
 
         // Clash today
-        const todayEvts=weekEvts.filter(e=>isToday(e.date)&&e.time);
+        const todayEvts=activeWeekEvts.filter(e=>isToday(e.date)&&e.time);
         for(let i=0;i<todayEvts.length;i++){
           for(let j=i+1;j<todayEvts.length;j++){
             const a=todayEvts[i],b=todayEvts[j];
@@ -1499,7 +1498,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         const colors={urgent:{bg:"#fef2f2",border:"#fecaca",text:"#dc2626"},warn:{bg:"var(--accl)",border:"#f8c4bc",text:"var(--acc)"},info:{bg:"var(--gxl)",border:"#c8dce8",text:"var(--gl)"}};
         return <div style={{marginBottom:14}}>
           
-          {alerts.slice(0,false?99:2).map((a,i)=>{
+          {alerts.slice(0,5).map((a,i)=>{
             const col=colors[a.type]||colors.info;
             return <div key={i} onClick={()=>{if(a.action){setTab(a.action);window.scrollTo(0,0)}}} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",borderRadius:12,background:col.bg,border:"1px solid "+col.border,marginBottom:6,cursor:a.action?"pointer":"default"}}>
               <span style={{fontSize:16,flexShrink:0}}>{a.icon}</span>
@@ -1512,7 +1511,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         {(()=>{
           const clashes=[];
           wd.forEach(d=>{
-            const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate()&&e.time);
+            const dayEvts=activeWeekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate()&&e.time);
             for(let i=0;i<dayEvts.length;i++){
               for(let j=i+1;j<dayEvts.length;j++){
                 const a=dayEvts[i],b=dayEvts[j];
@@ -2144,7 +2143,7 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
         if(fam&&fam[0]){fid=fam[0].id;await db("profiles","PATCH",{body:{family_id:fid},filters:["id=eq."+userId]})}
       }
       if(fid&&adultEmail.trim()){
-        await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:adultEmail.trim(),invited_name:name.trim(),role:inviteRole}});
+        await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:adultEmail.trim().toLowerCase(),invited_name:name.trim(),role:inviteRole}});
         try{await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({to_email:adultEmail.trim(),to_name:name.trim(),from_name:profile?.first_name||"Your partner",site_url:window.location.origin})})}catch(e){}
       }
       setSv(false);setDone(true);return;
@@ -2365,7 +2364,7 @@ function InviteAdultModal({userId,familyId,onClose,onSaved}){
       if(fam&&fam[0]){fid=fam[0].id;await db("profiles","PATCH",{body:{family_id:fid},filters:["id=eq."+userId]})}
     }
     if(fid){
-      await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:email.trim(),invited_name:name.trim()||null,role:role}});
+      await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:email.trim().toLowerCase(),invited_name:name.trim()||null,role:role}});
       // Send email via edge function
       try{
         const prof=await db("profiles","GET",{filters:["id=eq."+userId]});
@@ -2563,7 +2562,7 @@ function CampCard({camp,userLoc,allLocs=[],user,kids,filter,campBookings,CT,fmtD
     </div>}
     {!isAdmin&&myBooking&&<div style={{marginTop:10,padding:8,borderRadius:10,background:myBooking.status==="booked"?"var(--gxl)":"var(--accl)",textAlign:"center",fontSize:12,fontWeight:700,color:myBooking.status==="booked"?"var(--gl)":"#8a6d00"}}>{myBooking.status==="booked"?"✓ Booked":"❤️ Interested"}</div>}
     {!isAdmin&&!myBooking&&!anyBooking&&<button onClick={async()=>{await db("camp_bookings","POST",{body:{user_id:user.id,dependant_id:activeKid?.id||null,camp_id:camp.id,status:"recommended"}});onBookingChange()}} style={{display:"block",width:"100%",marginTop:10,textAlign:"center",padding:10,borderRadius:10,background:"var(--gxl)",border:"1.5px solid var(--g)",color:"var(--g)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>💡 Recommend to family</button>}
-    {!isAdmin&&(myBooking||anyBooking)&&<div style={{marginTop:10,padding:8,borderRadius:10,background:anyBooking?.status==="booked"?"var(--gxl)":myBooking?"var(--gxl)":"var(--accl)",textAlign:"center",fontSize:12,fontWeight:700,color:"var(--gl)"}}>{anyBooking?.status==="booked"?"✓ Booked by family":myBooking?.status==="recommended"?"💡 Recommended — parents will be notified":"❤️ Interested"}</div>}
+    {!isAdmin&&(myBooking||anyBooking)&&<div style={{marginTop:10,padding:8,borderRadius:10,background:anyBooking?.status==="booked"?"var(--gxl)":myBooking?"var(--gxl)":"#f5f0eb",textAlign:"center",fontSize:12,fontWeight:700,color:anyBooking?.status==="booked"?"var(--gl)":"var(--mt)"}}>{anyBooking?.status==="booked"?"✓ Booked by family":myBooking?.status==="recommended"?"💡 Recommended — parents will be notified":anyBooking&&!myBooking?"📋 On family's list":"❤️ Interested"}</div>}
 
     {isAdmin&&camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site →</a>}
   </div>;
@@ -3005,7 +3004,7 @@ function App(){
     let pr=p&&p[0]?p[0]:null;
     // Check for pending invite and apply role+family (works for existing users logging in)
     if(pr&&!pr.family_id){
-      const inv=await db("family_invites","GET",{filters:["invited_email=eq."+(pr.email||u.email),"accepted_at=is.null"],limit:1});
+      const inv=await db("family_invites","GET",{filters:["invited_email=eq."+(pr.email||u.email).toLowerCase(),"accepted_at=is.null"],limit:1});
       if(inv&&inv[0]){
         await db("profiles","PATCH",{filters:["id=eq."+u.id],body:{family_role:inv[0].role||"admin",family_id:inv[0].family_id}});
         await db("family_invites","PATCH",{filters:["id=eq."+inv[0].id],body:{accepted_at:new Date().toISOString(),accepted_user_id:u.id}});
