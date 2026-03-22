@@ -159,6 +159,7 @@ async function db(t,m,o={}){
   if(o.order)p.push("order="+o.order);
   if(o.limit)p.push("limit="+o.limit);
   if(p.length)u+="?"+p.join("&");
+  if(m==="DELETE"&&(!o.filters||o.filters.length===0)){console.error("db() DELETE blocked — no filters");return null}
   const h=hd();
   if(m==="POST"||m==="PATCH")h.Prefer="return=representation";
   let r=await fetch(u,{method:m,headers:h,body:o.body?JSON.stringify(o.body):undefined});
@@ -197,7 +198,8 @@ async function geocodeNewItems(scrapeLat, scrapeLng) {
     { name: "things_to_do", locationField: "location_name", select: "id,title,location_name,latitude,longitude" }
   ];
   for (const table of tables) {
-    const rows = await db(table.name, "GET", {
+    // Get items with bad coords (matching scrape point) AND items with no coords
+    const badCoords = await db(table.name, "GET", {
       select: table.select,
       filters: [
         "latitude=gte." + (scrapeLat - threshold),
@@ -207,7 +209,18 @@ async function geocodeNewItems(scrapeLat, scrapeLng) {
       ],
       limit: 100
     });
-    if (!rows || rows.length === 0) continue;
+    const nullCoords = await db(table.name, "GET", {
+      select: table.select,
+      filters: ["latitude=is.null"],
+      limit: 50
+    });
+    const seen = new Set();
+    const rows = [...(badCoords||[]), ...(nullCoords||[])].filter(r => {
+      if (seen.has(r.id)) return false;
+      seen.add(r.id);
+      return true;
+    });
+    if (rows.length === 0) continue;
     for (const row of rows) {
       const locText = row[table.locationField];
       if (!locText) continue;
@@ -588,7 +601,7 @@ function OnboardKids({userId,onDone}){
   );
 }
 
-function OnboardClubs({userId,kids,onDone}){
+function OnboardClubs({userId,kids,email,onDone}){
   const[q,setQ]=useState("");const[res,setRes]=useState([]);const[added,setAdded]=useState([]);const[sv,setSv]=useState(false);
   const[assign,setAssign]=useState(null);const[searching,setSearching]=useState(false);const tmr=useRef(null);
 
@@ -679,7 +692,7 @@ function OnboardClubs({userId,kids,onDone}){
           </div>
           <button onClick={async()=>{
             try{
-              const res=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"checkout",user_id:userId,email:profile?.email,tier:"standard",return_url:window.location.origin})});
+              const res=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"checkout",user_id:userId,email:email,tier:"standard",return_url:window.location.origin})});
               const data=await res.json();
               if(data.url)window.location.href=data.url;
               else{finish()}
@@ -2478,7 +2491,8 @@ function CampCard({camp,userLoc,allLocs=[],user,kids,filter,campBookings,CT,fmtD
   const[classmateCount,setClassmateCount]=useState(0);
   const activeKid=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter):null;
   const hasSchool=activeKid?.school_name&&activeKid?.school_class;
-  const myBooking=campBookings.find(b=>b.camp_id===camp.id);
+  const myBooking=campBookings.find(b=>b.camp_id===camp.id&&b.user_id===user.id);
+  const anyBooking=campBookings.find(b=>b.camp_id===camp.id);
   const ct=CT[camp.camp_type]||CT.other;
   const coversWork=camp.daily_end_time&&camp.daily_end_time>="15:00";
 
@@ -2544,8 +2558,8 @@ function CampCard({camp,userLoc,allLocs=[],user,kids,filter,campBookings,CT,fmtD
       }
     </div>}
     {!isAdmin&&myBooking&&<div style={{marginTop:10,padding:8,borderRadius:10,background:myBooking.status==="booked"?"var(--gxl)":"var(--accl)",textAlign:"center",fontSize:12,fontWeight:700,color:myBooking.status==="booked"?"var(--gl)":"#8a6d00"}}>{myBooking.status==="booked"?"✓ Booked":"❤️ Interested"}</div>}
-    {!isAdmin&&!myBooking&&<button onClick={async()=>{await db("camp_bookings","POST",{body:{user_id:user.id,dependant_id:activeKid?.id||null,camp_id:camp.id,status:"recommended"}});onBookingChange()}} style={{display:"block",width:"100%",marginTop:10,textAlign:"center",padding:10,borderRadius:10,background:"var(--gxl)",border:"1.5px solid var(--g)",color:"var(--g)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>💡 Recommend to family</button>}
-    {!isAdmin&&myBooking&&myBooking.status==="recommended"&&<div style={{marginTop:10,padding:8,borderRadius:10,background:"var(--gxl)",textAlign:"center",fontSize:12,fontWeight:700,color:"var(--gl)"}}>💡 Recommended — parents will be notified</div>}
+    {!isAdmin&&!myBooking&&!anyBooking&&<button onClick={async()=>{await db("camp_bookings","POST",{body:{user_id:user.id,dependant_id:activeKid?.id||null,camp_id:camp.id,status:"recommended"}});onBookingChange()}} style={{display:"block",width:"100%",marginTop:10,textAlign:"center",padding:10,borderRadius:10,background:"var(--gxl)",border:"1.5px solid var(--g)",color:"var(--g)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>💡 Recommend to family</button>}
+    {!isAdmin&&(myBooking||anyBooking)&&<div style={{marginTop:10,padding:8,borderRadius:10,background:anyBooking?.status==="booked"?"var(--gxl)":myBooking?"var(--gxl)":"var(--accl)",textAlign:"center",fontSize:12,fontWeight:700,color:"var(--gl)"}}>{anyBooking?.status==="booked"?"✓ Booked by family":myBooking?.status==="recommended"?"💡 Recommended — parents will be notified":"❤️ Interested"}</div>}
 
     {isAdmin&&camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site →</a>}
   </div>;
@@ -2984,7 +2998,17 @@ function App(){
     if(_rt)localStorage.setItem("ocv_rt",_rt);
     setUser(u);
     const p=await db("profiles","GET",{filters:["id=eq."+u.id]});
-    const pr=p&&p[0]?p[0]:null;
+    let pr=p&&p[0]?p[0]:null;
+    // Check for pending invite and apply role+family (works for existing users logging in)
+    if(pr&&!pr.family_id){
+      const inv=await db("family_invites","GET",{filters:["invited_email=eq."+(pr.email||u.email),"accepted_at=is.null"],limit:1});
+      if(inv&&inv[0]){
+        await db("profiles","PATCH",{filters:["id=eq."+u.id],body:{family_role:inv[0].role||"admin",family_id:inv[0].family_id}});
+        await db("family_invites","PATCH",{filters:["id=eq."+inv[0].id],body:{accepted_at:new Date().toISOString(),accepted_user_id:u.id}});
+        const p2=await db("profiles","GET",{filters:["id=eq."+u.id]});
+        pr=p2&&p2[0]?p2[0]:pr;
+      }
+    }
     setProfile(pr);
     if(pr&&pr.onboarding_completed)setScreen("hub");
     else setScreen("onboard_kids");
@@ -3003,7 +3027,7 @@ function App(){
   if(screen==="auth_signup")return <Auth onAuth={onAuth} mode="signup"/>;
   if(screen==="auth_login")return <Auth onAuth={onAuth} mode="login"/>;
   if(screen==="onboard_kids")return <OnboardKids userId={user.id} onDone={afterKids}/>;
-  if(screen==="onboard_clubs")return <OnboardClubs userId={user.id} kids={kids} onDone={()=>setScreen("hub")}/>;
+  if(screen==="onboard_clubs")return <OnboardClubs userId={user.id} kids={kids} email={user?.email||profile?.email} onDone={()=>setScreen("hub")}/>;
   if(screen==="hub"&&profile?.email==="hello@oneclubview.com")return <AdminDashboard user={user} onBack={logout}/>;
   if(screen==="hub")return <Hub user={user} profile={profile} onRefresh={(s)=>{if(s==="clubs")setScreen("onboard_clubs")}} onLogout={logout}/>;
   return null;
