@@ -490,7 +490,7 @@ function Auth({onAuth,mode:im}){
         const signupRes=await fetch(SB+"/functions/v1/auth-signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password:pw,first_name:name.trim()})});
         const signupData=await signupRes.json();
         if(!signupRes.ok)throw new Error(signupData.error||"Signup failed");
-        if(signupData.access_token)_t=signupData.access_token;
+        if(signupData.access_token){_t=signupData.access_token;localStorage.setItem("ocv_token",_t);if(signupData.refresh_token){_rt=signupData.refresh_token;localStorage.setItem("ocv_rt",_rt)}}
         const u=signupData.user;
         if(u&&u.id){
           const betaCount=await db("profiles","GET",{filters:["is_beta=eq.true"]});
@@ -631,6 +631,38 @@ function OnboardClubs({userId,kids,onDone}){
     onDone();
   }
 
+  // Trial subscription screen — shown after adding kids/clubs
+  const[showTrial,setShowTrial]=useState(false);
+  if(showTrial)return(
+    <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
+      <div style={{width:"100%",maxWidth:440,textAlign:"center"}}>
+        <div style={{fontSize:48,marginBottom:16}}>🎉</div>
+        <h2 style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800,color:"var(--g)",marginBottom:8}}>You're all set!</h2>
+        <p style={{fontSize:15,color:"var(--mt)",marginBottom:24,lineHeight:1.6}}>Your first 14 days are completely free.<br/>After that, it's just €7.99/month to keep your family organised.</p>
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--bd)",padding:20,marginBottom:16,textAlign:"left"}}>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {["See your whole family's week in one place","Fee reminders across all clubs","Easter & summer camp finder","Clash detection & pickup planning","Works for both parents"].map((t,i)=>
+              <div key={i} style={{display:"flex",gap:10,alignItems:"center"}}>
+                <span style={{color:"var(--gl)",fontSize:16}}>✓</span>
+                <span style={{fontSize:13,color:"var(--tx)"}}>{t}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <button onClick={async()=>{
+          try{
+            const res=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"checkout",user_id:userId,email:profile?.email,tier:"standard",return_url:window.location.origin})});
+            const data=await res.json();
+            if(data.url)window.location.href=data.url;
+            else{finish()}
+          }catch(e){finish()}
+        }} style={{width:"100%",padding:14,borderRadius:14,border:"none",background:"var(--g)",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",marginBottom:10}}>Start free trial — add card</button>
+        <button onClick={finish} style={{width:"100%",padding:12,borderRadius:14,border:"none",background:"none",color:"var(--mt)",fontSize:13,cursor:"pointer",fontFamily:"var(--sn)"}}>Maybe later — skip for now</button>
+        <p style={{fontSize:11,color:"var(--mt)",marginTop:12}}>Cancel anytime. No charge during your 14-day trial.</p>
+      </div>
+    </div>
+  );
+
   const initials=(n)=>n.split(" ").map(w=>w[0]).join("").substring(0,2).toUpperCase();
 
   return (
@@ -670,7 +702,7 @@ function OnboardClubs({userId,kids,onDone}){
             </div>
           </div>
         </div>}
-        <button onClick={finish} className={"btn "+(added.length?"bp":"bs")} style={{marginTop:24}}>{added.length?"Go to my hub →":"Skip"}</button>
+        <button onClick={()=>setShowTrial(true)} className={"btn "+(added.length?"bp":"bs")} style={{marginTop:24}}>{added.length?"Continue →":"Skip"}</button>
       </div>
     </div>
   );
