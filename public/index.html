@@ -593,7 +593,7 @@ function OnboardKids({userId,onDone}){
           <input value={cls} onChange={e=>setCls(e.target.value)} placeholder="Class (e.g. 2nd Class, Senior Infants)"/>
           <button onClick={add} disabled={sv||!name.trim()} className="btn bp" style={{opacity:(!name.trim()||sv)?.4:1}}>Add child</button>
         </div>
-        <button onClick={onDone} className={"btn "+(kids.length?"bp":"bs")} style={{marginTop:24}}>
+        <button onClick={()=>{if(kids.length)db("profiles","PATCH",{body:{onboarding_step:"kids_done"},filters:["id=eq."+userId]});onDone()}} className={"btn "+(kids.length?"bp":"bs")} style={{marginTop:24}}>
           {kids.length?"Next — add clubs →":"Skip — just me"}
         </button>
       </div>
@@ -1048,6 +1048,8 @@ function Hub({user,profile,onRefresh,onLogout}){
 
   // Build weekly events with member names
   const wd=useMemo(()=>weekDates(),[]);
+  const clubMap=useMemo(()=>{const m=new Map();(clubs||[]).forEach(c=>m.set(c.club_id,c));return m},[clubs]);
+  const kidMap=useMemo(()=>{const m=new Map();(kids||[]).forEach(k=>m.set(k.id,k));return m},[kids]);
   const weekEvts=useMemo(()=>{
     const evts=[];
     (recs||[]).forEach(re=>{
@@ -1056,8 +1058,8 @@ function Hub({user,profile,onRefresh,onLogout}){
         if(d.getDay()===re.day_of_week){
           const dStr=d.toISOString().split("T")[0];
           const isSkipped=(re.excluded_dates||[]).includes(dStr);
-          const cl=clubs.find(c=>c.club_id===re.club_id);
-          const kid=re.dependant_id?kids.find(k=>k.id===re.dependant_id):null;
+          const cl=clubMap.get(re.club_id);
+          const kid=re.dependant_id?kidMap.get(re.dependant_id):null;
           evts.push({id:re.id+d.toISOString(),source_id:re.id,source_type:"recurring",title:re.title,date:d,time:re.start_time?.slice(0,5)||"",
             endTime:re.start_time&&re.duration_minutes?((h,m)=>{const t=parseInt(re.start_time.slice(0,2))*60+parseInt(re.start_time.slice(3,5))+re.duration_minutes;return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()||"":"",
             club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null,skipped:isSkipped});
@@ -1068,13 +1070,13 @@ function Hub({user,profile,onRefresh,onLogout}){
       const d=new Date(me.event_date);
       const end=new Date(wd[6]);end.setDate(end.getDate()+1);
       if(d>=wd[0]&&d<end){
-        const cl=clubs.find(c=>c.club_id===me.club_id);
-        const kid=me.dependant_id?kids.find(k=>k.id===me.dependant_id):null;
+        const cl=clubMap.get(me.club_id);
+        const kid=me.dependant_id?kidMap.get(me.dependant_id):null;
         evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:d.toTimeString().slice(0,5),club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
       }
     });
     return evts.sort((a,b)=>a.date-b.date||(a.time||"").localeCompare(b.time||""));
-  },[recs,mans,clubs,kids,profile,wd]);
+  },[recs,mans,clubMap,kidMap,profile,wd]);
 
   const activeWeekEvts=weekEvts.filter(e=>!e.skipped);
   const filtEvts=filter==="all"?activeWeekEvts:activeWeekEvts.filter(e=>e.memberId===filter);
@@ -1170,7 +1172,7 @@ function Hub({user,profile,onRefresh,onLogout}){
     if(data.url)window.location.href=data.url;
   }
 
-  if(needsPayment)return (
+  if(!loading&&needsPayment)return (
     <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
       <div style={{textAlign:"center",maxWidth:400}}>
         <Logo/>
@@ -1331,8 +1333,9 @@ function Hub({user,profile,onRefresh,onLogout}){
         for(let i=0;i<startOffset;i++)cells.push(null);
         for(let d=1;d<=daysInMonth;d++)cells.push(d);
 
-        // Build events for full month from recurring + manual
-        const monthEvts=(day)=>{
+        // Pre-compute events for all days in month (O(recs+mans) once, not per-cell)
+        const monthEvtsMap={};
+        for(let day=1;day<=daysInMonth;day++){
           const cellDate=new Date(year,month,day);
           const dow=cellDate.getDay();
           const evts=[];
@@ -1340,8 +1343,8 @@ function Hub({user,profile,onRefresh,onLogout}){
             if(!re.active||re.day_of_week!==dow)return;
             const dStr=cellDate.toISOString().split("T")[0];
             if((re.excluded_dates||[]).includes(dStr))return;
-            const cl=clubs.find(c=>c.club_id===re.club_id);
-            const kid=re.dependant_id?kids.find(k=>k.id===re.dependant_id):null;
+            const cl=clubMap.get(re.club_id);
+            const kid=re.dependant_id?kidMap.get(re.dependant_id):null;
             evts.push({id:re.id+cellDate.toISOString(),source_id:re.id,source_type:"recurring",title:re.title,date:cellDate,time:re.start_time?.slice(0,5)||"",
               endTime:re.start_time&&re.duration_minutes?((()=>{const t=parseInt(re.start_time.slice(0,2))*60+parseInt(re.start_time.slice(3,5))+re.duration_minutes;return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()):"",
               club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null});
@@ -1349,13 +1352,14 @@ function Hub({user,profile,onRefresh,onLogout}){
           (mans||[]).forEach(me=>{
             const d=new Date(me.event_date);
             if(d.getDate()===day&&d.getMonth()===month&&d.getFullYear()===year){
-              const cl=clubs.find(c=>c.club_id===me.club_id);
-              const kid=me.dependant_id?kids.find(k=>k.id===me.dependant_id):null;
+              const cl=clubMap.get(me.club_id);
+              const kid=me.dependant_id?kidMap.get(me.dependant_id):null;
               evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:d.toTimeString().slice(0,5),club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
             }
           });
-          return evts.sort((a,b)=>(a.time||"").localeCompare(b.time||""));
-        };
+          monthEvtsMap[day]=evts.sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+        }
+        const monthEvts=(day)=>monthEvtsMap[day]||[];
 
         const prevMonth=()=>{if(month===0){setCalMonth(11);setCalYear(year-1)}else setCalMonth(month-1);setSelectedDay(null)};
         const nextMonth=()=>{if(month===11){setCalMonth(0);setCalYear(year+1)}else setCalMonth(month+1);setSelectedDay(null)};
@@ -1390,7 +1394,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           </div>
 
           {/* SLIDE-UP DAY PANEL */}
-          {selectedDay&&(()=>{
+          {selectedDay&&selectedDay.getMonth()===month&&selectedDay.getFullYear()===year&&(()=>{
             const dayE=monthEvts(selectedDay.getDate());
             const isHol=(holidays||[]).some(h=>{const s=new Date(h.start_date),e=new Date(h.end_date);return selectedDay>=s&&selectedDay<=e});
             const holName=isHol?(holidays||[]).find(h=>selectedDay>=new Date(h.start_date)&&selectedDay<=new Date(h.end_date))?.name:"";
