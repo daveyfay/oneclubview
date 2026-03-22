@@ -1071,7 +1071,9 @@ function Hub({user,profile,onRefresh,onLogout}){
       if(d>=wd[0]&&d<end){
         const cl=clubMap.get(me.club_id);
         const kid=me.dependant_id?kidMap.get(me.dependant_id):null;
-        evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:d.toTimeString().slice(0,5),club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
+        const mTime=d.toTimeString().slice(0,5);
+        const mEnd=me.duration_minutes&&mTime?((()=>{const t=parseInt(mTime.slice(0,2))*60+parseInt(mTime.slice(3,5))+(me.duration_minutes||60);return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()):"";
+        evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:mTime,endTime:mEnd,club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
       }
     });
     return evts.sort((a,b)=>a.date-b.date||(a.time||"").localeCompare(b.time||""));
@@ -1201,16 +1203,7 @@ function Hub({user,profile,onRefresh,onLogout}){
     </div>
   );
 
-  if(clubs.length===0)return (
-    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
-      <div style={{textAlign:"center",maxWidth:360}}>
-        <div style={{fontSize:48,marginBottom:16}}>🏠</div>
-        <h2 style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>No clubs yet</h2>
-        <p style={{fontSize:14,color:"var(--mt)",margin:"8px 0 24px"}}>Add your first club to get started</p>
-        <button onClick={()=>onRefresh("clubs")} className="btn bp">+ Add a club</button>
-      </div>
-    </div>
-  );
+  const noClubsBanner=clubs.length===0;
 
   return (
     <div className="fi" style={{background:"var(--warm)",minHeight:"100vh"}}>
@@ -1260,6 +1253,14 @@ function Hub({user,profile,onRefresh,onLogout}){
         <button onClick={()=>startCheckout("standard")} style={{padding:"5px 12px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Subscribe</button>
       </div>}
 
+      {/* No clubs prompt — inline, not blocking */}
+      {noClubsBanner&&<div style={{background:"var(--gxl)",border:"1.5px solid #c8dce8",borderRadius:14,padding:16,marginBottom:14,textAlign:"center"}}>
+        <div style={{fontSize:28,marginBottom:6}}>🏠</div>
+        <div style={{fontSize:14,fontWeight:700,color:"var(--g)",marginBottom:4}}>Add your first club</div>
+        <p style={{fontSize:12,color:"var(--mt)",marginBottom:10}}>Add clubs to see schedules, fees, and nearby options</p>
+        <button onClick={()=>onRefresh("clubs")} className="btn bp" style={{padding:"10px 24px",fontSize:13}}>+ Add a club</button>
+      </div>}
+
       {/* WEEK/MONTH HEADER — Flo-inspired */}
       <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:4}}>
         <h2 style={{fontFamily:"var(--sr)",fontSize:20,fontWeight:800,color:"var(--g)"}}>This week</h2>
@@ -1284,8 +1285,8 @@ function Hub({user,profile,onRefresh,onLogout}){
       {/* INSIGHT CARDS — inspired by Flo's "My daily insights" */}
       {tab==="week"&&(()=>{
         const now=new Date();
-        const todayEvts=activeWeekEvts.filter(e=>isToday(e.date));
-        const thisWeekCount=activeWeekEvts.length;
+        const todayEvts=filtEvts.filter(e=>isToday(e.date));
+        const thisWeekCount=filtEvts.length;
         // Next school holiday
         const nextHol=(holidays||[]).find(h=>new Date(h.start_date)>now);
         const daysToHol=nextHol?Math.ceil((new Date(nextHol.start_date)-now)/(86400000)):null;
@@ -1353,7 +1354,9 @@ function Hub({user,profile,onRefresh,onLogout}){
             if(d.getDate()===day&&d.getMonth()===month&&d.getFullYear()===year){
               const cl=clubMap.get(me.club_id);
               const kid=me.dependant_id?kidMap.get(me.dependant_id):null;
-              evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:d.toTimeString().slice(0,5),club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
+              const mTime=d.toTimeString().slice(0,5);
+              const mEnd=me.duration_minutes&&mTime?((()=>{const t=parseInt(mTime.slice(0,2))*60+parseInt(mTime.slice(3,5))+(me.duration_minutes||60);return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()):"";
+              evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:mTime,endTime:mEnd,club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
             }
           });
           monthEvtsMap[day]=evts.sort((a,b)=>(a.time||"").localeCompare(b.time||""));
@@ -1535,7 +1538,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         {/* SWIMLANE TIMELINE VIEW */}
         {weekView==="timeline"&&<div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
           {wd.map(d=>{
-            const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate());
+            const dayEvts=(filter==="all"?weekEvts:weekEvts.filter(e=>e.memberId===filter)).filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate());
             const today=isToday(d);
             if(dayEvts.length===0&&!today)return null;
             // Group by member
@@ -2004,7 +2007,7 @@ function AddEventModal({clubs,userId,kids,profile,onClose,onSaved}){
       result=await db("recurring_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),frequency:"weekly",day_of_week:parseInt(dow),start_time:time+":00",duration_minutes:endTime?Math.max(30,Math.round((new Date("2000-01-01T"+endTime)-new Date("2000-01-01T"+time))/60000)):parseInt(dur),starts_from:new Date().toISOString().split("T")[0],excluded_dates:[],driver:driver||null}});
     }else{
       if(!date){setSv(false);return}
-      result=await db("manual_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),event_date:date+"T"+time+":00",driver:driver||null}});
+      result=await db("manual_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),event_date:date+"T"+time+":00",duration_minutes:endTime?Math.max(30,Math.round((new Date("2000-01-01T"+endTime)-new Date("2000-01-01T"+time))/60000)):parseInt(dur)||60,driver:driver||null}});
     }
     setSv(false);
     if(!result){alert("Failed to save event. Please try again.");return}
@@ -2461,6 +2464,7 @@ function EditHolidayModal({holiday,userId,onClose,onSaved}){
       </div>
       <button onClick={save} disabled={sv} className="btn bp">{sv?"Saving...":"Save dates"}</button>
       {holiday.is_user_override&&<button onClick={reset} className="btn bs" style={{fontSize:13}}>Reset to default dates</button>}
+      <button onClick={remove} style={{width:"100%",padding:10,borderRadius:12,border:"none",background:"none",cursor:"pointer",fontSize:12,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",marginTop:4}}>Remove from my calendar</button>
     </div>
   </div></div>;
 }
