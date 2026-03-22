@@ -564,7 +564,7 @@ function Auth({onAuth,mode:im}){
   );
 }
 
-function OnboardKids({userId,onDone}){
+function OnboardKids({userId,onDone,onLogout}){
   const[name,setName]=useState("");const[dob,setDob]=useState("");const[school,setSchool]=useState("");const[schoolId,setSchoolId]=useState(null);const[schoolQ,setSchoolQ]=useState("");const[schoolResults,setSchoolResults]=useState([]);const[cls,setCls]=useState("");const[kids,setKids]=useState([]);const[sv,setSv]=useState(false);
   const schoolTmr=useRef(null);
   function onSchoolType(v){
@@ -617,12 +617,13 @@ function OnboardKids({userId,onDone}){
         <button onClick={()=>{if(kids.length)db("profiles","PATCH",{body:{onboarding_step:"kids_done"},filters:["id=eq."+userId]});onDone()}} className={"btn "+(kids.length?"bp":"bs")} style={{marginTop:24}}>
           {kids.length?"Next — add clubs →":"Skip — just me"}
         </button>
+        {onLogout&&<button onClick={onLogout} style={{marginTop:16,background:"none",border:"none",fontSize:12,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>Log out</button>}
       </div>
     </div>
   );
 }
 
-function OnboardClubs({userId,kids,email,onDone}){
+function OnboardClubs({userId,kids,email,onDone,onLogout}){
   const[q,setQ]=useState("");const[res,setRes]=useState([]);const[added,setAdded]=useState([]);const[sv,setSv]=useState(false);
   const[assign,setAssign]=useState(null);const[searching,setSearching]=useState(false);const tmr=useRef(null);
 
@@ -3064,8 +3065,8 @@ function App(){
   if(screen==="landing")return <Landing onGo={()=>setScreen("auth_signup")} onLogin={()=>setScreen("auth_login")}/>;
   if(screen==="auth_signup")return <Auth onAuth={onAuth} mode="signup"/>;
   if(screen==="auth_login")return <Auth onAuth={onAuth} mode="login"/>;
-  if(screen==="onboard_kids")return <OnboardKids userId={user.id} onDone={afterKids}/>;
-  if(screen==="onboard_clubs")return <OnboardClubs userId={user.id} kids={kids} email={user?.email||profile?.email} onDone={()=>setScreen("hub")}/>;
+  if(screen==="onboard_kids")return <OnboardKids userId={user.id} onDone={afterKids} onLogout={logout}/>;
+  if(screen==="onboard_clubs")return <OnboardClubs userId={user.id} kids={kids} email={user?.email||profile?.email} onDone={()=>setScreen("hub")} onLogout={logout}/>;
   if(screen==="hub"&&profile?.email==="hello@oneclubview.com")return <AdminDashboard user={user} onBack={logout}/>;
   if(screen==="hub")return <Hub user={user} profile={profile} onRefresh={(s)=>{if(s==="clubs")setScreen("onboard_clubs")}} onLogout={logout}/>;
   return null;
