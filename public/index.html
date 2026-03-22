@@ -1317,8 +1317,9 @@ function Hub({user,profile,onRefresh,onLogout}){
       <div style={{display:"flex",gap:4,marginBottom:12,overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
         {wd.map(d=>{
           const today=isToday(d);
+          const sel=selectedDay&&selectedDay.getDate()===d.getDate()&&selectedDay.getMonth()===d.getMonth()&&selectedDay.getFullYear()===d.getFullYear();
           const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate());
-          return <div key={d.toISOString()} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,minWidth:44,padding:"6px 4px",borderRadius:12,background:today?"var(--g)":"transparent",cursor:"pointer"}} onClick={()=>{if(weekView==="calendar")setSelectedDay(d)}}>
+          return <div key={d.toISOString()} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,minWidth:44,padding:"6px 4px",borderRadius:12,background:today?"var(--g)":sel?"var(--gxl)":"transparent",cursor:"pointer",border:sel&&!today?"1.5px solid var(--g)":"1.5px solid transparent"}} onClick={()=>setSelectedDay(sel?null:d)}>
             <span style={{fontSize:10,fontWeight:700,color:today?"rgba(255,255,255,.7)":"var(--mt)",textTransform:"uppercase"}}>{d.toLocaleDateString("en-IE",{weekday:"short"}).slice(0,3)}</span>
             <span style={{fontSize:16,fontWeight:800,color:today?"#fff":"var(--tx)"}}>{d.getDate()}</span>
             {dayEvts.length>0&&<div style={{display:"flex",gap:2}}>{dayEvts.slice(0,3).map((e,i)=><div key={i} style={{width:5,height:5,borderRadius:"50%",background:today?"rgba(255,255,255,.6)":(e.colour||"var(--acc)")}}/>)}</div>}
@@ -1366,6 +1367,38 @@ function Hub({user,profile,onRefresh,onLogout}){
         </div>;
       })()}
 
+      {/* SELECTED DAY PANEL — shows in timeline mode when a day pill is tapped */}
+      {tab==="week"&&weekView==="timeline"&&selectedDay&&(()=>{
+        const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===selectedDay.getFullYear()&&e.date.getMonth()===selectedDay.getMonth()&&e.date.getDate()===selectedDay.getDate());
+        const isHol=(holidays||[]).some(h=>{const s=new Date(h.start_date),e=new Date(h.end_date);return selectedDay>=s&&selectedDay<=e});
+        const holName=isHol?(holidays||[]).find(h=>selectedDay>=new Date(h.start_date)&&selectedDay<=new Date(h.end_date))?.name:"";
+        return <div style={{marginBottom:14,background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"var(--shadow)",overflow:"hidden",animation:"slideUp .2s ease"}}>
+          <div style={{padding:"12px 16px",borderBottom:"1px solid var(--bd)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:14,fontWeight:700,color:"var(--g)"}}>{selectedDay.toLocaleDateString("en-IE",{weekday:"long",day:"numeric",month:"long"})}</div>
+              {isHol&&<div style={{fontSize:11,color:"#b8860b",fontWeight:600}}>{holName}</div>}
+            </div>
+            <button onClick={()=>setSelectedDay(null)} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"var(--mt)",padding:"4px"}}>✕</button>
+          </div>
+          <div style={{padding:"8px 12px",maxHeight:240,overflowY:"auto"}}>
+            {dayEvts.length===0?<div style={{padding:"16px 0",textAlign:"center",color:"var(--mt)",fontSize:13}}>{isHol?"School holiday — no activities":"No activities this day"}</div>
+            :dayEvts.map((e,i)=><div key={e.id||i} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6}}>
+              <div style={{width:4,background:e.colour||"#999",flexShrink:0}}/>
+              <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+                <div>
+                  <div style={{fontSize:13,fontWeight:700,color:"var(--tx)"}}>{e.member}</div>
+                  <div style={{fontSize:12,color:"var(--mt)"}}>{e.source_type==="camp"?"🏕️ ":""}{e.club||e.title||""}</div>
+                </div>
+                <div style={{textAlign:"right",flexShrink:0}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
+                  {e.driver&&<div style={{fontSize:10,fontWeight:600,color:"var(--acc)",marginTop:2}}>🚗 {e.driver}</div>}
+                </div>
+              </div>
+            </div>)}
+          </div>
+        </div>;
+      })()}
+
       {/* MONTH CALENDAR VIEW */}
       {tab==="week"&&weekView==="calendar"&&(()=>{
         const now=new Date();
@@ -1401,6 +1434,17 @@ function Hub({user,profile,onRefresh,onLogout}){
               const mTime=d.toTimeString().slice(0,5);
               const mEnd=me.duration_minutes&&mTime?((()=>{const t=parseInt(mTime.slice(0,2))*60+parseInt(mTime.slice(3,5))+(me.duration_minutes||60);return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()):"";
               evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:mTime,endTime:mEnd,club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
+            }
+          });
+          // Camp bookings — show on each day within camp date range
+          (campBookings||[]).forEach(b=>{
+            if(!b.camp_id)return;
+            const camp=(camps||[]).find(c=>c.id===b.camp_id);
+            if(!camp||!camp.start_date)return;
+            const cs=new Date(camp.start_date),ce=new Date(camp.end_date||camp.start_date);
+            if(cellDate>=cs&&cellDate<=ce&&cellDate.getDay()!==0&&cellDate.getDay()!==6){
+              const kid=b.dependant_id?kidMap.get(b.dependant_id):null;
+              evts.push({id:"camp-"+b.id+"-"+day,source_id:b.id,source_type:"camp",title:camp.title,date:cellDate,time:camp.daily_start_time?.slice(0,5)||"09:00",endTime:camp.daily_end_time?.slice(0,5)||"15:00",club:camp.title,colour:"#e85d4a",member:kid?.first_name||(profile?.first_name||"You"),memberId:b.dependant_id||"self"});
             }
           });
           monthEvtsMap[day]=evts.sort((a,b)=>(a.time||"").localeCompare(b.time||""));
@@ -1459,7 +1503,7 @@ function Hub({user,profile,onRefresh,onLogout}){
                   <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
                     <div>
                       <div style={{fontSize:13,fontWeight:700,color:"var(--tx)"}}>{e.member}</div>
-                      <div style={{fontSize:12,color:"var(--mt)"}}>{e.club||e.title||""}</div>
+                      <div style={{fontSize:12,color:"var(--mt)"}}>{e.source_type==="camp"?"🏕️ ":""}{e.club||e.title||""}</div>
                     </div>
                     <div style={{textAlign:"right",flexShrink:0}}>
                       <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
