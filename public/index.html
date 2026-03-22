@@ -633,32 +633,58 @@ function OnboardClubs({userId,kids,onDone}){
 
   // Trial subscription screen — shown after adding kids/clubs
   const[showTrial,setShowTrial]=useState(false);
+  const[isEarlyAdopter,setIsEarlyAdopter]=useState(false);const[earlyNum,setEarlyNum]=useState(null);
+  // Check early adopter status when trial screen shows
+  useEffect(()=>{
+    if(showTrial){
+      db("profiles","GET",{filters:["id=eq."+userId],select:"is_early_adopter,early_adopter_number,subscription_status"}).then(r=>{
+        if(r&&r[0]&&r[0].is_early_adopter){setIsEarlyAdopter(true);setEarlyNum(r[0].early_adopter_number)}
+      });
+    }
+  },[showTrial]);
   if(showTrial)return(
     <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
       <div style={{width:"100%",maxWidth:440,textAlign:"center"}}>
-        <div style={{fontSize:48,marginBottom:16}}>🎉</div>
-        <h2 style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800,color:"var(--g)",marginBottom:8}}>You're all set!</h2>
-        <p style={{fontSize:15,color:"var(--mt)",marginBottom:24,lineHeight:1.6}}>Your first 14 days are completely free.<br/>After that, it's just €7.99/month to keep your family organised.</p>
-        <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--bd)",padding:20,marginBottom:16,textAlign:"left"}}>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {["See your whole family's week in one place","Fee reminders across all clubs","Easter & summer camp finder","Clash detection & pickup planning","Works for both parents"].map((t,i)=>
-              <div key={i} style={{display:"flex",gap:10,alignItems:"center"}}>
-                <span style={{color:"var(--gl)",fontSize:16}}>✓</span>
-                <span style={{fontSize:13,color:"var(--tx)"}}>{t}</span>
+        {isEarlyAdopter?<>
+          <div style={{fontSize:48,marginBottom:16}}>🎁</div>
+          <h2 style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800,color:"var(--g)",marginBottom:8}}>You're early adopter #{earlyNum}!</h2>
+          <p style={{fontSize:15,color:"var(--mt)",marginBottom:24,lineHeight:1.6}}>As one of our first 10 users, you get <strong style={{color:"var(--g)"}}>OneClubView free — forever</strong>. No trial, no card needed, no catch.</p>
+          <div style={{background:"linear-gradient(135deg,#1a2a3a,#2d4a5f)",borderRadius:16,padding:20,marginBottom:20,color:"#fff",textAlign:"left"}}>
+            <div style={{fontSize:13,fontWeight:700,color:"var(--acc)",marginBottom:8}}>Your free-for-life account includes:</div>
+            {["Full family scheduling for both parents","Fee reminders across all clubs","Easter & summer camp finder","Clash detection & pickup planning","All future features as we build them"].map((t,i)=>
+              <div key={i} style={{display:"flex",gap:10,alignItems:"center",marginBottom:6}}>
+                <span style={{color:"var(--acc)",fontSize:14}}>✓</span>
+                <span style={{fontSize:13}}>{t}</span>
               </div>
             )}
           </div>
-        </div>
-        <button onClick={async()=>{
-          try{
-            const res=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"checkout",user_id:userId,email:profile?.email,tier:"standard",return_url:window.location.origin})});
-            const data=await res.json();
-            if(data.url)window.location.href=data.url;
-            else{finish()}
-          }catch(e){finish()}
-        }} style={{width:"100%",padding:14,borderRadius:14,border:"none",background:"var(--g)",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",marginBottom:10}}>Start free trial — add card</button>
-        <button onClick={finish} style={{width:"100%",padding:12,borderRadius:14,border:"none",background:"none",color:"var(--mt)",fontSize:13,cursor:"pointer",fontFamily:"var(--sn)"}}>Maybe later — skip for now</button>
-        <p style={{fontSize:11,color:"var(--mt)",marginTop:12}}>Cancel anytime. No charge during your 14-day trial.</p>
+          <p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>All we ask is that you tell us what you love, what's broken, and what you wish it did. Your feedback shapes the product for every parent who comes after you.</p>
+          <button onClick={finish} style={{width:"100%",padding:14,borderRadius:14,border:"none",background:"var(--g)",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Let's go →</button>
+        </>:<>
+          <div style={{fontSize:48,marginBottom:16}}>🎉</div>
+          <h2 style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800,color:"var(--g)",marginBottom:8}}>You're all set!</h2>
+          <p style={{fontSize:15,color:"var(--mt)",marginBottom:24,lineHeight:1.6}}>Your first 14 days are completely free.<br/>After that, it's just €7.99/month to keep your family organised.</p>
+          <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--bd)",padding:20,marginBottom:16,textAlign:"left"}}>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {["See your whole family's week in one place","Fee reminders across all clubs","Easter & summer camp finder","Clash detection & pickup planning","Works for both parents"].map((t,i)=>
+                <div key={i} style={{display:"flex",gap:10,alignItems:"center"}}>
+                  <span style={{color:"var(--gl)",fontSize:16}}>✓</span>
+                  <span style={{fontSize:13,color:"var(--tx)"}}>{t}</span>
+                </div>
+              )}
+            </div>
+          </div>
+          <button onClick={async()=>{
+            try{
+              const res=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"checkout",user_id:userId,email:profile?.email,tier:"standard",return_url:window.location.origin})});
+              const data=await res.json();
+              if(data.url)window.location.href=data.url;
+              else{finish()}
+            }catch(e){finish()}
+          }} style={{width:"100%",padding:14,borderRadius:14,border:"none",background:"var(--g)",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",marginBottom:10}}>Start free trial — add card</button>
+          <button onClick={finish} style={{width:"100%",padding:12,borderRadius:14,border:"none",background:"none",color:"var(--mt)",fontSize:13,cursor:"pointer",fontFamily:"var(--sn)"}}>Maybe later — skip for now</button>
+          <p style={{fontSize:11,color:"var(--mt)",marginTop:12}}>Cancel anytime. No charge during your 14-day trial.</p>
+        </>}
       </div>
     </div>
   );
