@@ -671,33 +671,45 @@ function OnboardClubs({userId,kids,email,onDone,onLogout}){
 
   // Trial subscription screen — shown after adding kids/clubs
   const[showTrial,setShowTrial]=useState(false);
-  const[isEarlyAdopter,setIsEarlyAdopter]=useState(false);const[earlyNum,setEarlyNum]=useState(null);
+  const[isEarlyAdopter,setIsEarlyAdopter]=useState(false);const[earlyNum,setEarlyNum]=useState(null);const[trialLoading,setTrialLoading]=useState(true);
   // Check early adopter status when trial screen shows
   useEffect(()=>{
     if(showTrial){
+      setTrialLoading(true);
       db("profiles","GET",{filters:["id=eq."+userId],select:"is_early_adopter,early_adopter_number,subscription_status"}).then(r=>{
         if(r&&r[0]&&r[0].is_early_adopter){setIsEarlyAdopter(true);setEarlyNum(r[0].early_adopter_number)}
-      });
+        setTrialLoading(false);
+      }).catch(()=>setTrialLoading(false));
     }
   },[showTrial]);
   if(showTrial)return(
     <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
       <div style={{width:"100%",maxWidth:440,textAlign:"center"}}>
-        {isEarlyAdopter?<>
-          <div style={{fontSize:48,marginBottom:16}}>🎁</div>
-          <h2 style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800,color:"var(--g)",marginBottom:8}}>You're early adopter #{earlyNum}!</h2>
-          <p style={{fontSize:15,color:"var(--mt)",marginBottom:24,lineHeight:1.6}}>As one of our first 10 users, you get <strong style={{color:"var(--g)"}}>OneClubView free — forever</strong>. No trial, no card needed, no catch.</p>
+        {trialLoading?<div>
+          <div style={{fontSize:48,marginBottom:16}}>✨</div>
+          <p style={{fontSize:15,color:"var(--mt)"}}>Setting up your account...</p>
+        </div>
+        :isEarlyAdopter?<>
+          <div style={{fontSize:64,marginBottom:8}}>🎁</div>
+          <div style={{background:"linear-gradient(135deg,#e85d4a,#c44030)",borderRadius:14,padding:"6px 20px",display:"inline-block",marginBottom:16}}>
+            <span style={{color:"#fff",fontSize:13,fontWeight:800,letterSpacing:1}}>EARLY ADOPTER #{earlyNum} of 10</span>
+          </div>
+          <h2 style={{fontFamily:"var(--sr)",fontSize:26,fontWeight:800,color:"var(--g)",marginBottom:8}}>Welcome to the founding crew!</h2>
+          <p style={{fontSize:15,color:"var(--mt)",marginBottom:20,lineHeight:1.6}}>You're one of the first 10 people to use OneClubView. That means your account is <strong style={{color:"var(--g)"}}>free — forever</strong>. No trial. No card. No catch. Ever.</p>
           <div style={{background:"linear-gradient(135deg,#1a2a3a,#2d4a5f)",borderRadius:16,padding:20,marginBottom:20,color:"#fff",textAlign:"left"}}>
-            <div style={{fontSize:13,fontWeight:700,color:"var(--acc)",marginBottom:8}}>Your free-for-life account includes:</div>
-            {["Full family scheduling for both parents","Fee reminders across all clubs","Easter & summer camp finder","Clash detection & pickup planning","All future features as we build them"].map((t,i)=>
-              <div key={i} style={{display:"flex",gap:10,alignItems:"center",marginBottom:6}}>
+            <div style={{fontSize:13,fontWeight:700,color:"var(--acc)",marginBottom:10}}>Your free-for-life account includes everything:</div>
+            {["Full family scheduling for both parents","Fee tracking and reminders across all clubs","Easter and summer camp finder near you","Schedule clash detection","All future features as we build them","Priority support — we'll actually listen"].map((t,i)=>
+              <div key={i} style={{display:"flex",gap:10,alignItems:"center",marginBottom:7}}>
                 <span style={{color:"var(--acc)",fontSize:14}}>✓</span>
                 <span style={{fontSize:13}}>{t}</span>
               </div>
             )}
           </div>
-          <p style={{fontSize:13,color:"var(--mt)",marginBottom:16}}>All we ask is that you tell us what you love, what's broken, and what you wish it did. Your feedback shapes the product for every parent who comes after you.</p>
-          <button onClick={finish} style={{width:"100%",padding:14,borderRadius:14,border:"none",background:"var(--g)",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Let's go →</button>
+          <div style={{background:"#f0fdf4",borderRadius:14,padding:16,marginBottom:20,textAlign:"left",border:"1px solid #bbf7d0"}}>
+            <div style={{fontSize:13,fontWeight:700,color:"var(--gl)",marginBottom:4}}>One thing we'd love from you</div>
+            <p style={{fontSize:13,color:"var(--tx)",margin:0,lineHeight:1.5}}>Tell us what works, what's broken, and what you wish it did. Your feedback shapes the product for every parent who comes after you. You can reach us anytime via the support button.</p>
+          </div>
+          <button onClick={finish} style={{width:"100%",padding:16,borderRadius:14,border:"none",background:"var(--g)",color:"#fff",fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Let's go — it's all yours →</button>
         </>:<>
           <div style={{fontSize:48,marginBottom:16}}>🎉</div>
           <h2 style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800,color:"var(--g)",marginBottom:8}}>You're all set!</h2>
