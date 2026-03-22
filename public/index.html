@@ -713,11 +713,12 @@ function OnboardClubs({userId,kids,email,onDone}){
           </div>
           <button onClick={async()=>{
             try{
+              await db("profiles","PATCH",{body:{onboarding_step:"done",onboarding_completed:true},filters:["id=eq."+userId]});
               const res=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"checkout",user_id:userId,email:email,tier:"standard",return_url:window.location.origin})});
               const data=await res.json();
               if(data.url)window.location.href=data.url;
-              else{finish()}
-            }catch(e){finish()}
+              else{onDone()}
+            }catch(e){onDone()}
           }} style={{width:"100%",padding:14,borderRadius:14,border:"none",background:"var(--g)",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",marginBottom:10}}>Start free trial — add card</button>
           <button onClick={finish} style={{width:"100%",padding:12,borderRadius:14,border:"none",background:"none",color:"var(--mt)",fontSize:13,cursor:"pointer",fontFamily:"var(--sn)"}}>Maybe later — skip for now</button>
           <p style={{fontSize:11,color:"var(--mt)",marginTop:12}}>Cancel anytime. No charge during your 14-day trial.</p>
