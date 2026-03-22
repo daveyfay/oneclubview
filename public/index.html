@@ -496,12 +496,9 @@ function Auth({onAuth,mode:im}){
           const betaCount=await db("profiles","GET",{filters:["is_beta=eq.true"]});
           const isBeta=(betaCount||[]).length<10;
           // Check if this email has a pending family invite — assign role + family_id
-          console.log("Signup: checking invite for",email.trim().toLowerCase(),"token:",_t?.slice(0,20)+"...");
           const invite=await db("family_invites","GET",{filters:["invited_email=eq."+email.trim().toLowerCase(),"accepted_at=is.null"],limit:1});
-          console.log("Signup: invite result:",JSON.stringify(invite));
           const inviteRole=invite&&invite[0]?invite[0].role||"admin":"admin";
           const familyId=invite&&invite[0]?invite[0].family_id:null;
-          console.log("Signup: role=",inviteRole,"familyId=",familyId);
           await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false,family_role:inviteRole,...(familyId?{family_id:familyId}:{})}});
           // Mark invite as accepted
           if(invite&&invite[0])await db("family_invites","PATCH",{filters:["id=eq."+invite[0].id],body:{accepted_at:new Date().toISOString(),accepted_user_id:u.id}});
@@ -556,8 +553,13 @@ function Auth({onAuth,mode:im}){
 }
 
 function OnboardKids({userId,onDone}){
-  const[name,setName]=useState("");const[dob,setDob]=useState("");const[kids,setKids]=useState([]);const[sv,setSv]=useState(false);
-  async function add(){if(!name.trim())return;setSv(true);const r=await db("dependants","POST",{body:{parent_user_id:userId,first_name:name.trim(),date_of_birth:dob||null}});if(r&&r[0])setKids([...kids,{id:r[0].id,name:name.trim(),dob}]);setName("");setDob("");setSv(false)}
+  const[name,setName]=useState("");const[dob,setDob]=useState("");const[school,setSchool]=useState("");const[cls,setCls]=useState("");const[kids,setKids]=useState([]);const[sv,setSv]=useState(false);
+  async function add(){
+    if(!name.trim())return;setSv(true);
+    const r=await db("dependants","POST",{body:{parent_user_id:userId,first_name:name.trim(),date_of_birth:dob||null,school_name:school.trim()||null,school_class:cls.trim()||null}});
+    if(r&&r[0])setKids([...kids,{id:r[0].id,name:name.trim(),dob,school:school.trim()}]);
+    setName("");setDob("");setSchool("");setCls("");setSv(false);
+  }
   return (
     <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
       <div style={{width:"100%",maxWidth:420,textAlign:"center"}}>
@@ -567,15 +569,16 @@ function OnboardKids({userId,onDone}){
         {kids.length>0&&<div style={{margin:"20px 0",display:"flex",flexDirection:"column",gap:8}}>
           {kids.map(k=><div key={k.id} style={{display:"flex",alignItems:"center",gap:10,background:"var(--gxl)",borderRadius:14,padding:"10px 16px",border:"1px solid #c8e6c9"}}>
             <span>👧</span><span style={{fontSize:14,fontWeight:600,color:"var(--g)"}}>{k.name}</span>
-            {k.dob&&<span style={{fontSize:12,color:"var(--gl)",marginLeft:"auto"}}>age {getAge(k.dob)}</span>}
+            {k.dob&&<span style={{fontSize:12,color:"var(--gl)"}}>age {getAge(k.dob)}</span>}
+            {k.school&&<span style={{fontSize:11,color:"var(--mt)",marginLeft:"auto"}}>🏫 {k.school}</span>}
           </div>)}
         </div>}
         <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:16,textAlign:"left"}}>
           <input value={name} onChange={e=>setName(e.target.value)} placeholder="Child’s first name" onKeyDown={e=>e.key==="Enter"&&add()}/>
-          <div style={{display:"flex",gap:8}}>
-            <input type="date" value={dob} onChange={e=>setDob(e.target.value)} style={{flex:1}}/>
-            <button onClick={add} disabled={sv||!name.trim()} className="btn bp" style={{width:"auto",padding:"0 24px",opacity:(!name.trim()||sv)?.4:1}}>Add</button>
-          </div>
+          <input type="date" value={dob} onChange={e=>setDob(e.target.value)}/>
+          <input value={school} onChange={e=>setSchool(e.target.value)} placeholder="School name (optional)"/>
+          <input value={cls} onChange={e=>setCls(e.target.value)} placeholder="Class (e.g. 2nd Class, Senior Infants)"/>
+          <button onClick={add} disabled={sv||!name.trim()} className="btn bp" style={{opacity:(!name.trim()||sv)?.4:1}}>Add child</button>
         </div>
         <button onClick={onDone} className={"btn "+(kids.length?"bp":"bs")} style={{marginTop:24}}>
           {kids.length?"Next — add clubs →":"Skip — just me"}
@@ -2123,15 +2126,10 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
         const fam=await db("families","POST",{body:{created_by:userId}});
         if(fam&&fam[0]){fid=fam[0].id;await db("profiles","PATCH",{body:{family_id:fid},filters:["id=eq."+userId]})}
       }
-      console.log("Invite flow — fid:",fid,"email:",adultEmail.trim(),"role:",inviteRole);
       if(fid&&adultEmail.trim()){
-        const invResult=await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:adultEmail.trim(),invited_name:name.trim(),role:inviteRole}});
-        console.log("Invite DB result:",invResult);
-        try{
-          const emailRes=await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({to_email:adultEmail.trim(),to_name:name.trim(),from_name:profile?.first_name||"Your partner",site_url:window.location.origin})});
-          console.log("Email response:",emailRes.status,await emailRes.text());
-        }catch(e){console.error("Email send failed:",e)}
-      } else { console.error("Invite skipped — fid:",fid,"email:",adultEmail.trim()); }
+        await db("family_invites","POST",{body:{family_id:fid,invited_by:userId,invited_email:adultEmail.trim(),invited_name:name.trim(),role:inviteRole}});
+        try{await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({to_email:adultEmail.trim(),to_name:name.trim(),from_name:profile?.first_name||"Your partner",site_url:window.location.origin})})}catch(e){}
+      }
       setSv(false);setDone(true);return;
     }
     // Check kid limit
