@@ -1039,8 +1039,9 @@ function Hub({user,profile,onRefresh,onLogout}){
         const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};
         setUserLoc(loc);
         db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}});
-        // Auto-scrape DISABLED — uses Claude API which costs money. Enable when ready.
-        // fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:loc.lat,longitude:loc.lng,user_id:user.id})}).then(r=>r.json()).then(async d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0||d.things_inserted>0)){await geocodeNewItems(loc.lat,loc.lng);load()}}).catch(()=>{});
+        // DB trigger on profiles.latitude will queue a scrape IF this is a new area.
+        // Process any pending queue items (1 max) — only fires AI if genuinely needed.
+        setTimeout(()=>{fetch(SB+"/functions/v1/scrape-queue-worker",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:"queue",max_calls:1})}).then(r=>r.json()).then(d=>{if(d.processed>0)load()}).catch(()=>{})},3000);
       },()=>{
         // Geolocation denied — use saved profile location
         db("profiles","GET",{filters:["id=eq."+user.id],select:"latitude,longitude"}).then(p=>{
@@ -1053,13 +1054,12 @@ function Hub({user,profile,onRefresh,onLogout}){
     }
   },[]);
 
-  // Auto-scrape for family locations DISABLED — uses Claude API which costs money. Enable when ready.
-  // useEffect(()=>{
-  //   if(familyLocs.length===0)return;
-  //   familyLocs.forEach(fl=>{
-  //     fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({latitude:Number(fl.latitude),longitude:Number(fl.longitude)})}).then(r=>r.json()).then(async d=>{if(d.status==="success"&&(d.camps_inserted>0||d.clubs_inserted>0||d.things_inserted>0)){await geocodeNewItems(Number(fl.latitude),Number(fl.longitude));load()}}).catch(()=>{});
-  //   });
-  // },[familyLocs.length]);
+  // When family locations load, process any pending scrape queue items.
+  // DB triggers on family_locations INSERT already queue scrapes for new areas.
+  useEffect(()=>{
+    if(familyLocs.length===0)return;
+    fetch(SB+"/functions/v1/scrape-queue-worker",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:"queue",max_calls:1})}).then(r=>r.json()).then(d=>{if(d.processed>0)setTimeout(load,2000)}).catch(()=>{});
+  },[familyLocs.length]);
 
   const members=useMemo(()=>{
     const m=[{id:"all",name:"Everyone",emoji:"👨‍👩‍👧‍👦",type:"all"}];
