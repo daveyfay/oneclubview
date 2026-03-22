@@ -2489,15 +2489,27 @@ function CampCard({camp,userLoc,allLocs=[],user,kids,filter,campBookings,CT,fmtD
 }
 
 function SupportModal({userId,userEmail,onClose}){
-  const[subject,setSubject]=useState("");const[message,setMessage]=useState("");const[sv,setSv]=useState(false);const[done,setDone]=useState(false);
+  const[subject,setSubject]=useState("");const[message,setMessage]=useState("");const[category,setCategory]=useState("general");const[sv,setSv]=useState(false);const[done,setDone]=useState(false);const[ticketNum,setTicketNum]=useState(null);
+  const categories=[
+    {v:"bug",l:"🐛 Bug / Something broken"},
+    {v:"schedule",l:"📅 Schedule issue"},
+    {v:"camps",l:"🏕️ Camps / Booking"},
+    {v:"clubs",l:"🏠 Club data incorrect"},
+    {v:"billing",l:"💳 Billing / Subscription"},
+    {v:"account",l:"👤 Account / Login"},
+    {v:"feature",l:"💡 Feature request"},
+    {v:"general",l:"💬 General question"},
+  ];
   async function send(){
     if(!subject.trim()||!message.trim())return;setSv(true);
-    await db("support_tickets","POST",{body:{user_id:userId,user_email:userEmail,subject:subject.trim(),message:message.trim()}});
+    const res=await db("support_tickets","POST",{body:{user_id:userId,user_email:userEmail,subject:subject.trim(),message:message.trim(),category}});
+    if(res&&res[0]?.ticket_number)setTicketNum(res[0].ticket_number);
     setSv(false);setDone(true);
   }
   if(done)return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox" style={{textAlign:"center",padding:32}}>
     <div style={{fontSize:48,marginBottom:12}}>✅</div>
-    <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Message sent!</h3>
+    <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Ticket submitted!</h3>
+    {ticketNum&&<div style={{background:"var(--gxl)",borderRadius:10,padding:"8px 16px",display:"inline-block",margin:"8px 0",fontSize:15,fontWeight:700,color:"var(--g)",fontFamily:"monospace"}}>OCV-{String(ticketNum).padStart(3,"0")}</div>}
     <p style={{fontSize:13,color:"var(--mt)",margin:"8px 0 16px"}}>We'll get back to you at {userEmail}</p>
     <button onClick={onClose} className="btn bp">Done</button>
   </div></div>;
@@ -2507,9 +2519,14 @@ function SupportModal({userId,userEmail,onClose}){
       <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button>
     </div>
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
-      <div><span className="lbl">Subject</span><input value={subject} onChange={e=>setSubject(e.target.value)} placeholder="What do you need help with?"/></div>
+      <div><span className="lbl">Category</span>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+          {categories.map(c=><button key={c.v} onClick={()=>setCategory(c.v)} style={{padding:"8px 10px",borderRadius:10,border:category===c.v?"2px solid var(--g)":"1px solid var(--bd)",background:category===c.v?"var(--gxl)":"#fff",fontSize:12,fontWeight:600,color:"var(--tx)",cursor:"pointer",fontFamily:"var(--sn)",textAlign:"left"}}>{c.l}</button>)}
+        </div>
+      </div>
+      <div><span className="lbl">Subject</span><input value={subject} onChange={e=>setSubject(e.target.value)} placeholder="Brief summary"/></div>
       <div><span className="lbl">Message</span><textarea value={message} onChange={e=>setMessage(e.target.value)} placeholder="Describe your issue..." rows={4} style={{width:"100%",padding:10,borderRadius:10,border:"1px solid var(--bd)",fontSize:13,fontFamily:"var(--sn)",resize:"vertical"}}/></div>
-      <button onClick={send} disabled={sv||!subject.trim()||!message.trim()} className="btn bp">{sv?"Sending...":"Send message"}</button>
+      <button onClick={send} disabled={sv||!subject.trim()||!message.trim()} className="btn bp">{sv?"Sending...":"Submit ticket"}</button>
     </div>
   </div></div>;
 }
@@ -2603,17 +2620,47 @@ function AdminDashboard({user,onBack}){
 
     if(drilldown==="tickets"){
       title="Support Tickets ("+tickets.length+")";
-      content=tickets.map(t=><div key={t.id} style={{background:"#fff",borderRadius:14,border:"1px solid var(--bd)",padding:14,marginBottom:8}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <span style={{fontSize:14,fontWeight:700}}>{t.subject}</span>
-          <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,
-            background:t.status==="open"?"#fef2f2":t.status==="resolved"?"var(--sage)":"var(--goldl)",
-            color:t.status==="open"?"#dc2626":t.status==="resolved"?"var(--gl)":"#8a6d00"
-          }}>{t.status}</span>
+      const catEmoji={bug:"🐛",schedule:"📅",camps:"🏕️",clubs:"🏠",billing:"💳",account:"👤",feature:"💡",general:"💬"};
+      const statusColor={open:{bg:"#fef2f2",c:"#dc2626"},in_progress:{bg:"var(--goldl)",c:"#8a6d00"},resolved:{bg:"var(--sage)",c:"var(--gl)"},closed:{bg:"#f3f3f3",c:"#888"}};
+      content=<div>
+        {/* Filter pills */}
+        <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap"}}>
+          {["all","open","in_progress","resolved"].map(s=><button key={s} onClick={()=>setDrilldown("tickets_"+s)} style={{padding:"5px 12px",borderRadius:8,border:"1px solid var(--bd)",background:(drilldown==="tickets_"+s||drilldown==="tickets"&&s==="all")?"var(--g)":"#fff",color:(drilldown==="tickets_"+s||drilldown==="tickets"&&s==="all")?"#fff":"var(--tx)",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>{s==="all"?"All":s==="in_progress"?"In Progress":s.charAt(0).toUpperCase()+s.slice(1)} ({s==="all"?tickets.length:tickets.filter(t=>t.status===s).length})</button>)}
         </div>
-        <div style={{fontSize:12,color:"var(--mt)",marginTop:4}}>{t.user_email} · {new Date(t.created_at).toLocaleDateString("en-IE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
-        <div style={{fontSize:13,color:"var(--tx)",marginTop:8,lineHeight:1.5,background:"#f8f7f4",padding:12,borderRadius:10}}>{t.message}</div>
-      </div>);
+        {tickets.filter(t=>drilldown==="tickets"||drilldown==="tickets_all"||t.status===drilldown.replace("tickets_","")).map(t=>{
+          const sc=statusColor[t.status]||statusColor.open;
+          return <div key={t.id} style={{background:"#fff",borderRadius:14,border:"1px solid var(--bd)",padding:16,marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                  <span style={{fontSize:12,fontWeight:800,color:"var(--g)",fontFamily:"monospace"}}>OCV-{String(t.ticket_number||0).padStart(3,"0")}</span>
+                  <span style={{fontSize:12}}>{catEmoji[t.category]||"💬"}</span>
+                  <span style={{fontSize:11,color:"var(--mt)"}}>{t.category||"general"}</span>
+                </div>
+                <div style={{fontSize:14,fontWeight:700,color:"var(--tx)"}}>{t.subject}</div>
+                <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>{t.user_email} · {new Date(t.created_at).toLocaleDateString("en-IE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
+              </div>
+              <select value={t.status} onChange={async(e)=>{await db("support_tickets","PATCH",{body:{status:e.target.value,updated_at:new Date().toISOString()},filters:["id=eq."+t.id]});const updated=await db("support_tickets","GET",{order:"created_at.desc"});setTickets(updated||[])}} style={{padding:"4px 8px",borderRadius:8,border:"1px solid var(--bd)",fontSize:11,fontWeight:700,background:sc.bg,color:sc.c,fontFamily:"var(--sn)"}}>
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+            {/* Message */}
+            <div style={{fontSize:13,color:"var(--tx)",marginTop:10,lineHeight:1.5,background:"#f8f7f4",padding:12,borderRadius:10}}>{t.message}</div>
+            {/* Reply area */}
+            <div style={{marginTop:10}}>
+              <div id={"replies-"+t.id}></div>
+              <div style={{display:"flex",gap:6,marginTop:6}}>
+                <input id={"reply-"+t.id} placeholder="Type a reply..." style={{flex:1,padding:"8px 12px",borderRadius:10,border:"1px solid var(--bd)",fontSize:12,fontFamily:"var(--sn)"}}/>
+                <button onClick={async()=>{const input=document.getElementById("reply-"+t.id);const msg=input?.value?.trim();if(!msg)return;await db("support_replies","POST",{body:{ticket_id:t.id,user_id:user.id,is_staff:true,message:msg}});input.value="";await db("support_tickets","PATCH",{body:{status:"in_progress",updated_at:new Date().toISOString()},filters:["id=eq."+t.id]});const updated=await db("support_tickets","GET",{order:"created_at.desc"});setTickets(updated||[]);alert("Reply sent!")}} style={{padding:"8px 16px",borderRadius:10,border:"none",background:"var(--g)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Reply</button>
+              </div>
+            </div>
+          </div>;
+        })}
+        {tickets.length===0&&<div style={{textAlign:"center",padding:24,color:"var(--mt)"}}>No support tickets yet</div>}
+      </div>;
     }
 
     if(drilldown==="revenue"){
