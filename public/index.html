@@ -565,12 +565,22 @@ function Auth({onAuth,mode:im}){
 }
 
 function OnboardKids({userId,onDone}){
-  const[name,setName]=useState("");const[dob,setDob]=useState("");const[school,setSchool]=useState("");const[cls,setCls]=useState("");const[kids,setKids]=useState([]);const[sv,setSv]=useState(false);
+  const[name,setName]=useState("");const[dob,setDob]=useState("");const[school,setSchool]=useState("");const[schoolId,setSchoolId]=useState(null);const[schoolQ,setSchoolQ]=useState("");const[schoolResults,setSchoolResults]=useState([]);const[cls,setCls]=useState("");const[kids,setKids]=useState([]);const[sv,setSv]=useState(false);
+  const schoolTmr=useRef(null);
+  function onSchoolType(v){
+    setSchoolQ(v);setSchool(v);setSchoolId(null);clearTimeout(schoolTmr.current);
+    if(v.length<2){setSchoolResults([]);return}
+    schoolTmr.current=setTimeout(async()=>{
+      const r=await db("schools","GET",{filters:["or=(name.ilike.*"+v+"*,address.ilike.*"+v+"*)","school_type=eq.primary"],limit:8,order:"name.asc"});
+      setSchoolResults(r||[]);
+    },300);
+  }
+  function pickSchool(s){setSchoolQ(s.name);setSchool(s.name);setSchoolId(s.id);setSchoolResults([])}
   async function add(){
     if(!name.trim())return;setSv(true);
-    const r=await db("dependants","POST",{body:{parent_user_id:userId,first_name:name.trim(),date_of_birth:dob||null,school_name:school.trim()||null,school_class:cls.trim()||null}});
+    const r=await db("dependants","POST",{body:{parent_user_id:userId,first_name:name.trim(),date_of_birth:dob||null,school_name:school.trim()||null,school_id:schoolId||null,school_class:cls||null}});
     if(r&&r[0])setKids([...kids,{id:r[0].id,name:name.trim(),dob,school:school.trim()}]);
-    setName("");setDob("");setSchool("");setCls("");setSv(false);
+    setName("");setDob("");setSchool("");setSchoolQ("");setSchoolId(null);setCls("");setSv(false);
   }
   return (
     <div className="fi" style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"var(--warm)"}}>
@@ -588,8 +598,20 @@ function OnboardKids({userId,onDone}){
         <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:16,textAlign:"left"}}>
           <input value={name} onChange={e=>setName(e.target.value)} placeholder="Child’s first name" onKeyDown={e=>e.key==="Enter"&&add()}/>
           <input type="date" value={dob} onChange={e=>setDob(e.target.value)}/>
-          <input value={school} onChange={e=>setSchool(e.target.value)} placeholder="School name (optional)"/>
-          <input value={cls} onChange={e=>setCls(e.target.value)} placeholder="Class (e.g. 2nd Class, Senior Infants)"/>
+          <div style={{position:"relative"}}>
+            <input value={schoolQ} onChange={e=>onSchoolType(e.target.value)} placeholder="School name (optional)"/>
+            {schoolId&&<span style={{position:"absolute",right:12,top:13,fontSize:12,color:"#16a34a"}}>✓</span>}
+            {schoolResults.length>0&&<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid var(--bd)",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,.1)",zIndex:20,overflow:"hidden",marginTop:4,maxHeight:200,overflowY:"auto"}}>
+              {schoolResults.map(s=><button key={s.id} onClick={()=>pickSchool(s)} style={{width:"100%",padding:"10px 14px",border:"none",borderBottom:"1px solid #f5f3ef",background:"none",cursor:"pointer",textAlign:"left",fontFamily:"var(--sn)"}}>
+                <div style={{fontSize:13,fontWeight:600,color:"var(--tx)"}}>{s.name}</div>
+                {s.address&&<div style={{fontSize:11,color:"var(--mt)"}}>{s.address}</div>}
+              </button>)}
+            </div>}
+          </div>
+          <select value={cls} onChange={e=>setCls(e.target.value)} style={{color:cls?"var(--tx)":"var(--mt)"}}>
+            <option value="">Class (optional)</option>
+            {["Junior Infants","Senior Infants","1st Class","2nd Class","3rd Class","4th Class","5th Class","6th Class"].map(c=><option key={c} value={c}>{c}</option>)}
+          </select>
           <button onClick={add} disabled={sv||!name.trim()} className="btn bp" style={{opacity:(!name.trim()||sv)?.4:1}}>Add child</button>
         </div>
         <button onClick={()=>{if(kids.length)db("profiles","PATCH",{body:{onboarding_step:"kids_done"},filters:["id=eq."+userId]});onDone()}} className={"btn "+(kids.length?"bp":"bs")} style={{marginTop:24}}>
