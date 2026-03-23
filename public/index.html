@@ -126,6 +126,8 @@ const{useState,useEffect,useMemo,useRef}=React;
 const SB="https://uqihwazheypvmrcrqklg.supabase.co";
 // Usage tracking (Pendo-style via GA4 events)
 function track(event,params={}){try{if(typeof gtag==="function")gtag("event",event,params)}catch(e){}}
+// Sanitise user input for PostgREST filters — strip operators and special chars
+function san(v){return v.replace(/[,().*=<>!&|;'"\\]/g,"").trim().slice(0,100)}
 const SK="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxaWh3YXpoZXlwdm1yY3Jxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4Nzg1MjQsImV4cCI6MjA4ODQ1NDUyNH0.n5I1lkCu7Tf1sBbIceWUdsRQtIrH7-WGc3itZAfrBKI";
 let _t=null;let _rt=null;let _refreshing=null;
 const hd=()=>({apikey:SK,"Content-Type":"application/json",Authorization:"Bearer "+(_t||SK)});
@@ -576,7 +578,7 @@ function OnboardKids({userId,onDone,onLogout}){
     setSchoolQ(v);setSchool(v);setSchoolId(null);clearTimeout(schoolTmr.current);
     if(v.length<2){setSchoolResults([]);return}
     schoolTmr.current=setTimeout(async()=>{
-      const r=await db("schools","GET",{filters:["or=(name.ilike.*"+v+"*,address.ilike.*"+v+"*)","school_type=eq.primary"],limit:8,order:"name.asc"});
+      const r=await db("schools","GET",{filters:["or=(name.ilike.*"+san(v)+"*,address.ilike.*"+san(v)+"*)","school_type=eq.primary"],limit:8,order:"name.asc"});
       setSchoolResults(r||[]);
     },300);
   }
@@ -637,7 +639,7 @@ function OnboardClubs({userId,kids,email,onDone,onLogout}){
     if(v.length<2){setRes([]);return}
     tmr.current=setTimeout(async()=>{
       setSearching(true);
-      const r=await db("clubs","GET",{select:"id,name,address,location,rating",filters:["name=ilike.*"+v+"*"],limit:8,order:"rating.desc.nullslast"});
+      const r=await db("clubs","GET",{select:"id,name,address,location,rating",filters:["name=ilike.*"+san(v)+"*"],limit:8,order:"rating.desc.nullslast"});
       setRes(r||[]);setSearching(false);
     },300);
   }
@@ -795,7 +797,7 @@ function DiscoverResults({query,onAdd,userLoc}){
   useEffect(()=>{
     setLoading(true);
     const isCategory=["swimming","gaa","soccer","rugby","gymnastics","dance","martial_arts","tennis","athletics","hockey","music","coding","sailing","scouts","basketball","cricket","horse_riding","multi_activity"].includes(query);
-    const filters=isCategory?["category=eq."+query]:["or=(name.ilike.*"+query+"*,location.ilike.*"+query+"*,category.ilike.*"+query+"*)"];
+    const filters=isCategory?["category=eq."+query]:["or=(name.ilike.*"+san(query)+"*,location.ilike.*"+san(query)+"*,category.ilike.*"+san(query)+"*)"];
     db("clubs","GET",{select:"id,name,location,website_url,category,latitude,longitude",filters,limit:50,order:"name.asc"}).then(r=>{setResults(r||[]);setLoading(false)});
   },[query]);
   const catEmoji={swimming:"🏊",gaa:"🏐",soccer:"⚽",rugby:"🏉",gymnastics:"🤸",dance:"💃",martial_arts:"🥋",tennis:"🎾",athletics:"🏃",hockey:"🏑",music:"🎵",coding:"💻",sailing:"⛵",scouts:"🏕️",basketball:"🏀",cricket:"🏏",horse_riding:"🐎",multi_activity:"🎯"};
@@ -2194,7 +2196,7 @@ function SchoolPicker({school,setSchool,schoolId,setSchoolId,cls,setCls,userLat,
     if(v.length<2){setResults([]);return}
     tmr.current=setTimeout(async()=>{
       setSearching(true);
-      const r=await db("schools","GET",{filters:["or=(name.ilike.*"+v+"*,address.ilike.*"+v+"*)"],limit:15,order:"name.asc"});
+      const r=await db("schools","GET",{filters:["or=(name.ilike.*"+san(v)+"*,address.ilike.*"+san(v)+"*)"],limit:15,order:"name.asc"});
       // Sort by distance if user has location
       let sorted=r||[];
       if(userLat&&userLng&&sorted.length>1){
