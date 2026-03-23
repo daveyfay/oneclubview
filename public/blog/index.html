@@ -52,48 +52,50 @@ footer p{color:rgba(255,255,255,.3);font-size:11px;margin-top:8px}
   <p>Practical advice for Irish parents juggling kids' clubs, camps, and everything in between</p>
 </div>
 
-<div class="posts">
-
-  <a href="/blog/managing-kids-activities-ireland" class="card">
-    <span class="tag" style="background:#fef2f2;color:#dc2626">NEW</span>
-    <h2>How to Stop Drowning in Your Kids' Activity Schedules</h2>
-    <p>Swimming on Monday, GAA on Tuesday, piano on Wednesday, homework somewhere in between. Here's how Irish parents are finally getting the extracurricular chaos under control.</p>
-    <span class="meta">22 Mar 2026 &middot; 6 min read</span>
-  </a>
-
-  <a href="/blog/easter-camps-dublin-2026" class="card">
-    <span class="tag" style="background:#fef3e2;color:#b8860b">EASTER 2026</span>
-    <h2>Easter Camps Dublin 2026 — Find the Right Camp for Your Kids</h2>
-    <p>Compare Easter camps matched to your kids' ages. STARCAMP, Let's Go, TechKidz, Junior Einsteins and more — with prices, dates, and booking links.</p>
-    <span class="meta">10 Mar 2026 &middot; 5 min read</span>
-  </a>
-
-  <a href="/blog/manage-kids-clubs" class="card">
-    <span class="tag" style="background:#f0fdf4;color:#166534">CLUBS</span>
-    <h2>How to Manage Your Kids' Clubs Without Losing Your Mind</h2>
-    <p>Five WhatsApp groups, three different fee schedules, two kids, one parent trying to keep it all together. A survival guide for the extracurricular chaos.</p>
-    <span class="meta">8 Mar 2026 &middot; 5 min read</span>
-  </a>
-
-  <a href="/blog/family-calendar-app" class="card">
-    <span class="tag" style="background:#eff6ff;color:#1d4ed8">APP REVIEW</span>
-    <h2>Best Family Calendar App for Irish Families in 2026</h2>
-    <p>We reviewed the top family calendar options — from Google Calendar to Cozi to shared apps — and what actually works when you have multiple kids in multiple clubs.</p>
-    <span class="meta">5 Mar 2026 &middot; 7 min read</span>
-  </a>
-
-  <div class="cta-box">
-    <h3>Tired of the chaos?</h3>
-    <p>All your kids' clubs, camps, fees, and schedules in one place. Both parents see the same thing.</p>
-    <a href="/">Try OneClubView free</a>
-  </div>
-
+<div class="posts" id="posts">
+  <div style="text-align:center;padding:40px;color:#999">Loading posts...</div>
 </div>
 
 <footer>
   <a href="/">OneClubView</a>
   <p>&copy; 2026 OneClubView. All rights reserved.</p>
 </footer>
+
+<script>
+(async function(){
+  const tagColors = {
+    camps:['#fef3e2','#b8860b'], easter:['#fef3e2','#b8860b'], summer:['#fef3e2','#b8860b'],
+    product:['#eff6ff','#1d4ed8'], calendar:['#eff6ff','#1d4ed8'],
+    tips:['#f0fdf4','#166534'], clubs:['#f0fdf4','#166534'], organisation:['#f0fdf4','#166534'],
+    ireland:['#fef2f2','#dc2626'], dublin:['#fef2f2','#dc2626'], scheduling:['#fef2f2','#dc2626'],
+    default:['#f5f3ef','#666']
+  };
+  try {
+    const res = await fetch('https://uqihwazheypvmrcrqklg.supabase.co/functions/v1/blog');
+    const posts = await res.json();
+    if (!posts || !posts.length) { document.getElementById('posts').innerHTML = '<p style="text-align:center;padding:40px;color:#999">No posts yet.</p>'; return; }
+
+    let html = '';
+    posts.forEach((p, i) => {
+      const tag = (p.tags && p.tags[0]) || 'default';
+      const colors = tagColors[tag] || tagColors.default;
+      const label = i === 0 ? 'NEW' : tag.toUpperCase();
+      const date = p.published_at ? new Date(p.published_at).toLocaleDateString('en-IE', {day:'numeric',month:'short',year:'numeric'}) : '';
+      html += '<a href="/blog/' + p.slug + '" class="card">' +
+        '<span class="tag" style="background:' + colors[0] + ';color:' + colors[1] + '">' + label + '</span>' +
+        '<h2>' + p.title + '</h2>' +
+        '<p>' + (p.meta_description || '') + '</p>' +
+        '<span class="meta">' + date + ' &middot; ' + (p.read_minutes || 5) + ' min read</span>' +
+        '</a>';
+    });
+
+    html += '<div class="cta-box"><h3>Tired of the chaos?</h3><p>All your kids\' clubs, camps, fees, and schedules in one place. Both parents see the same thing.</p><a href="/">Try OneClubView free</a></div>';
+    document.getElementById('posts').innerHTML = html;
+  } catch(e) {
+    document.getElementById('posts').innerHTML = '<p style="text-align:center;padding:40px;color:#999">Could not load posts.</p>';
+  }
+})();
+</script>
 
 </body>
 </html>
