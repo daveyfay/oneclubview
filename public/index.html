@@ -684,7 +684,7 @@ function OnboardClubs({userId,kids,email,onDone,onLogout}){
     if(showTrial){
       setTrialLoading(true);
       db("profiles","GET",{filters:["id=eq."+userId],select:"is_early_adopter,early_adopter_number,subscription_status"}).then(r=>{
-        if(r&&r[0]&&r[0].is_early_adopter){setIsEarlyAdopter(true);setEarlyNum(r[0].early_adopter_number)}
+        if(r&&r[0]&&(r[0].is_early_adopter||r[0].subscription_status==="active")){setIsEarlyAdopter(true);setEarlyNum(r[0].early_adopter_number)}
         setTrialLoading(false);
       }).catch(()=>setTrialLoading(false));
     }
@@ -3331,7 +3331,13 @@ function App(){
         pr={...pr,onboarding_completed:true,subscription_status:"active"};
       }
       setUser(u);setProfile(pr);
-      if(pr&&pr.onboarding_completed)setScreen("hub");
+      // Skip onboarding if already completed, or if early adopter/active subscriber
+      if(pr&&(pr.onboarding_completed||pr.subscription_status==="active"||pr.is_early_adopter)){
+        if(!pr.onboarding_completed){
+          await db("profiles","PATCH",{filters:["id=eq."+u.id],body:{onboarding_completed:true,onboarding_step:"done"}});
+        }
+        setScreen("hub");
+      }
       else setScreen("onboard_kids");
     }).catch(()=>{localStorage.removeItem("ocv_token");setScreen("landing")})}
     else setScreen("landing");
@@ -3354,7 +3360,12 @@ function App(){
       }
     }
     setProfile(pr);
-    if(pr&&pr.onboarding_completed)setScreen("hub");
+    if(pr&&(pr.onboarding_completed||pr.subscription_status==="active"||pr.is_early_adopter)){
+      if(!pr.onboarding_completed){
+        await db("profiles","PATCH",{filters:["id=eq."+u.id],body:{onboarding_completed:true,onboarding_step:"done"}});
+      }
+      setScreen("hub");
+    }
     else setScreen("onboard_kids");
   }
 
