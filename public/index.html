@@ -513,8 +513,9 @@ function Auth({onAuth,mode:im}){
         if(signupData.access_token){track("sign_up",{method:"email"});_t=signupData.access_token;localStorage.setItem("ocv_token",_t);if(signupData.refresh_token){_rt=signupData.refresh_token;localStorage.setItem("ocv_rt",_rt)}}
         const u=signupData.user;
         if(!u||!u.id)throw new Error("Signup failed — please try again");
-        const betaCount=await db("profiles","GET",{filters:["is_beta=eq.true"]});
-        const isBeta=(betaCount||[]).length<10;
+        // Check if early adopter slots available via RPC (avoids RLS issues)
+        let isBeta=false;
+        try{const rpc=await fetch(SB+"/rest/v1/rpc/early_adopter_slots_available",{method:"POST",headers:hd()});const rpcData=await rpc.json();isBeta=rpcData===true}catch(e){isBeta=false}
         // Check if this email has a pending family invite — assign role + family_id
         const invite=await db("family_invites","GET",{filters:["invited_email=eq."+email.trim().toLowerCase(),"accepted_at=is.null"],limit:1});
         const inviteRole=invite&&invite[0]?invite[0].role||"admin":"admin";
