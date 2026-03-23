@@ -1773,7 +1773,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         {/* Holiday coverage summary */}
         {kids.length>0&&(()=>{
           const now=new Date();
-          const futureHols=(holidays||[]).filter(h=>new Date(h.end_date)>=now).slice(0,3);
+          const futureHols=(holidays||[]).filter(h=>new Date(h.end_date)>=now).slice(0,1);
           if(futureHols.length===0)return null;
           return <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:14,marginBottom:14,boxShadow:"var(--shadow)"}}>
             <div style={{fontSize:13,fontWeight:700,color:"var(--g)",marginBottom:8}}>Holiday coverage</div>
@@ -1809,7 +1809,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           userHolidays.filter(uh=>!uh.base_holiday_id&&uh.holiday_type!=="hidden").forEach(uh=>{
             mergedHols.push({...uh,is_user_override:true});
           });
-          const futureHols=mergedHols.filter(h=>new Date(h.end_date+"T23:59:59")>=now).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date));
+          const futureHols=mergedHols.filter(h=>new Date(h.end_date+"T23:59:59")>=now).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date)).slice(0,2);
           const kidName=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter)?.first_name:null;
           const kidAge=filter!=="all"&&filter!=="self"?getAge(kids.find(k=>k.id===filter)?.date_of_birth):null;
 
