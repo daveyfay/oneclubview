@@ -1546,7 +1546,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           else if(days<=3)alerts.push({type:"warn",icon:"💳",text:p.description+" — €"+parseFloat(p.amount).toFixed(0)+" due in "+days+" day"+(days!==1?"s":""),action:"money"});
         });}
 
-        // Uncovered holiday weeks (kids with no camp booked) — ONLY the next upcoming break
+        // Uncovered holiday weeks (kids with no camp booked) — ONLY the next upcoming break, ONLY nearby camps
         if(camps&&camps.length>0&&kids.length>0){
           const nextHol=(holidays||[]).find(h=>new Date(h.end_date)>=now);
           if(nextHol){
@@ -1557,7 +1557,14 @@ function Hub({user,profile,onRefresh,onLogout}){
                 if(ca.age_min&&age<ca.age_min)return false;
                 if(ca.age_max&&age>ca.age_max)return false;
                 const cs=new Date(ca.start_date+"T00:00:00");
-                return cs>=holStart&&cs<=holEnd;
+                if(cs<holStart||cs>holEnd)return false;
+                // Location filter — must be near a family location
+                if(allLocs.length>0&&ca.latitude){
+                  const cLat=Number(ca.latitude),cLng=Number(ca.longitude);
+                  const nearAny=allLocs.some(loc=>calcKm(loc.lat,loc.lng,cLat,cLng)<=loc.radius);
+                  if(!nearAny)return false;
+                }
+                return true;
               });
               const booked=(campBookings||[]).filter(b=>{
                 if(b.dependant_id!==kid.id)return false;
