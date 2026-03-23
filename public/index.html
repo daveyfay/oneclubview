@@ -1546,20 +1546,31 @@ function Hub({user,profile,onRefresh,onLogout}){
           else if(days<=3)alerts.push({type:"warn",icon:"💳",text:p.description+" — €"+parseFloat(p.amount).toFixed(0)+" due in "+days+" day"+(days!==1?"s":""),action:"money"});
         });}
 
-        // Uncovered holiday weeks (kids with no camp booked)
+        // Uncovered holiday weeks (kids with no camp booked) — ONLY the next upcoming break
         if(camps&&camps.length>0&&kids.length>0){
-          // Check each future holiday
-          const futureHols=(holidays||[]).filter(h=>new Date(h.end_date)>=now);
-          futureHols.slice(0,2).forEach(h=>{
+          const nextHol=(holidays||[]).find(h=>new Date(h.end_date)>=now);
+          if(nextHol){
             kids.forEach(kid=>{
               const age=getAge(kid.date_of_birth);
-              const suitableCamps=(camps||[]).filter(ca=>(!ca.age_min||age>=ca.age_min)&&(!ca.age_max||age<=ca.age_max));
-              const booked=(campBookings||[]).filter(b=>b.dependant_id===kid.id);
+              const holStart=new Date(nextHol.start_date+"T00:00:00"),holEnd=new Date(nextHol.end_date+"T23:59:59");
+              const suitableCamps=(camps||[]).filter(ca=>{
+                if(ca.age_min&&age<ca.age_min)return false;
+                if(ca.age_max&&age>ca.age_max)return false;
+                const cs=new Date(ca.start_date+"T00:00:00");
+                return cs>=holStart&&cs<=holEnd;
+              });
+              const booked=(campBookings||[]).filter(b=>{
+                if(b.dependant_id!==kid.id)return false;
+                const camp=(camps||[]).find(c=>c.id===b.camp_id);
+                if(!camp)return false;
+                const cs=new Date(camp.start_date+"T00:00:00");
+                return cs>=holStart&&cs<=holEnd;
+              });
               if(suitableCamps.length>0&&booked.length===0){
-                alerts.push({type:"info",icon:"🏕️",text:kid.first_name+" has no camp booked for "+h.name+". "+suitableCamps.length+" camp"+(suitableCamps.length>1?"s":"")+" suit"+(suitableCamps.length===1?"s":"")+" their age.",action:"camps"});
+                alerts.push({type:"info",icon:"🏕️",text:kid.first_name+" has no camp booked for "+nextHol.name+". "+suitableCamps.length+" camp"+(suitableCamps.length>1?"s":"")+" suit"+(suitableCamps.length===1?"s":"")+" their age.",action:"camps"});
               }
             });
-          });
+          }
         }
 
         // Clash today
