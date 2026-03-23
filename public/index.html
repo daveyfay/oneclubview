@@ -520,7 +520,7 @@ function Auth({onAuth,mode:im}){
         const invite=await db("family_invites","GET",{filters:["invited_email=eq."+email.trim().toLowerCase(),"accepted_at=is.null"],limit:1});
         const inviteRole=invite&&invite[0]?invite[0].role||"admin":"admin";
         const familyId=invite&&invite[0]?invite[0].family_id:null;
-        await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false,family_role:inviteRole,...(familyId?{family_id:familyId}:{})}});
+        await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false,family_role:inviteRole,family_id:familyId||u.id}});
         // Mark invite as accepted
         if(invite&&invite[0])await db("family_invites","PATCH",{filters:["id=eq."+invite[0].id],body:{accepted_at:new Date().toISOString(),accepted_user_id:u.id}});
         onAuth(u);
