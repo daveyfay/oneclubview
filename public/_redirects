@@ -9,3 +9,6 @@
 /admin               /  410
 /graphql             /  410
 /api/graphql         /  410
+
+# Blog — serve dynamic posts (existing static HTML files take priority over rewrites)
+/blog/:slug          /blog/post.html    200

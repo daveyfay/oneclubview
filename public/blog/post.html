@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GC3DLDCM38"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-GC3DLDCM38');</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title id="page-title">Blog — OneClubView</title>
+<meta name="description" id="meta-desc" content="">
+<meta name="keywords" id="meta-keys" content="">
+<link rel="canonical" id="canonical" href="">
+<meta property="og:title" id="og-title" content="">
+<meta property="og:description" id="og-desc" content="">
+<meta property="og:url" id="og-url" content="">
+<meta property="og:type" content="article">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--g:#1a2a3a;--acc:#e85d4a;--warm:#f8f6f3;--sn:'Plus Jakarta Sans',sans-serif;--sr:'Fraunces',Georgia,serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sn);color:#333;background:var(--warm);line-height:1.7}
+.nav{background:#fff;border-bottom:1px solid #e4e2de;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.nav a{font-family:var(--sr);font-size:18px;font-weight:800;color:var(--g);text-decoration:none}
+.nav .cta{padding:8px 20px;border-radius:10px;background:var(--g);color:#fff;text-decoration:none;font-size:13px;font-weight:700}
+.hero{background:linear-gradient(135deg,#1a2a3a,#2d4a5f);padding:48px 24px 40px;color:#fff;text-align:center}
+.hero .emoji{font-size:48px;margin-bottom:12px}
+.hero h1{font-family:var(--sr);font-size:clamp(24px,5vw,36px);font-weight:800;margin-bottom:10px;max-width:640px;margin-left:auto;margin-right:auto;line-height:1.2}
+.hero .meta{font-size:13px;color:rgba(255,255,255,.45)}
+.hero .tags{display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.hero .tags span{padding:4px 12px;border-radius:8px;font-size:11px;font-weight:700;background:rgba(255,255,255,.1);color:rgba(255,255,255,.6)}
+.content{max-width:680px;margin:0 auto;padding:40px 24px 60px}
+.content h2{font-family:var(--sr);font-size:22px;font-weight:800;color:var(--g);margin:32px 0 12px}
+.content h3{font-family:var(--sr);font-size:18px;font-weight:700;color:var(--g);margin:24px 0 8px}
+.content p{font-size:15px;line-height:1.8;margin-bottom:16px;color:#444}
+.content ul,.content ol{margin:0 0 16px 24px;font-size:15px;line-height:1.8;color:#444}
+.content li{margin-bottom:6px}
+.content a{color:var(--acc);font-weight:600}
+.content strong{color:var(--g)}
+.content blockquote{border-left:3px solid var(--acc);padding:12px 20px;margin:20px 0;background:#fff;border-radius:0 12px 12px 0;font-style:italic;color:#666}
+.content .tip{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:16px 20px;margin:20px 0;font-size:14px;color:#166534}
+.content img{max-width:100%;border-radius:12px;margin:16px 0}
+.cta-box{background:linear-gradient(135deg,#1a2a3a,#2d4a5f);border-radius:20px;padding:32px;text-align:center;color:#fff;margin:40px 0}
+.cta-box h3{font-family:var(--sr);font-size:22px;margin-bottom:8px}
+.cta-box p{color:rgba(255,255,255,.55);margin-bottom:16px;font-size:14px}
+.cta-box a{display:inline-block;padding:14px 28px;background:var(--acc);color:#fff;border-radius:14px;font-weight:700;text-decoration:none;font-size:15px}
+.back{display:inline-block;margin-bottom:24px;font-size:13px;color:#999;text-decoration:none;font-weight:600}
+.back:hover{color:var(--acc)}
+.loading{text-align:center;padding:80px 24px;color:#999;font-size:15px}
+footer{background:var(--g);padding:24px;text-align:center}
+footer a{font-family:var(--sr);color:#fff;text-decoration:none;font-size:16px;font-weight:700}
+footer p{color:rgba(255,255,255,.3);font-size:11px;margin-top:8px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/">OneClubView</a>
+  <a href="/" class="cta">Try free</a>
+</nav>
+
+<div id="hero" class="hero" style="display:none">
+  <div class="emoji" id="hero-emoji"></div>
+  <h1 id="hero-title"></h1>
+  <div class="meta" id="hero-meta"></div>
+  <div class="tags" id="hero-tags"></div>
+</div>
+
+<div class="content" id="content">
+  <div class="loading" id="loading">Loading...</div>
+</div>
+
+<footer>
+  <a href="/">OneClubView</a>
+  <p>&copy; 2026 OneClubView. All rights reserved.</p>
+</footer>
+
+<script>
+(async function(){
+  const slug = new URLSearchParams(window.location.search).get('slug') || window.location.pathname.split('/blog/')[1]?.replace(/\/$/, '');
+  if (!slug) { window.location.href = '/blog/'; return; }
+
+  try {
+    const res = await fetch('https://uqihwazheypvmrcrqklg.supabase.co/functions/v1/blog?slug=' + encodeURIComponent(slug));
+    if (!res.ok) throw new Error('Not found');
+    const post = await res.json();
+    if (post.error) throw new Error(post.error);
+
+    // Set meta
+    document.getElementById('page-title').textContent = post.title + ' | OneClubView Blog';
+    document.getElementById('meta-desc').setAttribute('content', post.meta_description || '');
+    document.getElementById('meta-keys').setAttribute('content', post.meta_keywords || '');
+    document.getElementById('canonical').setAttribute('href', 'https://oneclubview.com/blog/' + post.slug);
+    document.getElementById('og-title').setAttribute('content', post.title);
+    document.getElementById('og-desc').setAttribute('content', post.meta_description || '');
+    document.getElementById('og-url').setAttribute('content', 'https://oneclubview.com/blog/' + post.slug);
+
+    // Hero
+    document.getElementById('hero-emoji').textContent = post.hero_emoji || '📝';
+    document.getElementById('hero-title').textContent = post.title;
+    const pubDate = post.published_at ? new Date(post.published_at).toLocaleDateString('en-IE', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    document.getElementById('hero-meta').textContent = (post.author || 'OneClubView') + ' · ' + pubDate + ' · ' + (post.read_minutes || 5) + ' min read';
+    const tagsEl = document.getElementById('hero-tags');
+    (post.tags || []).forEach(t => {
+      const s = document.createElement('span');
+      s.textContent = t;
+      tagsEl.appendChild(s);
+    });
+    document.getElementById('hero').style.display = 'block';
+
+    // Content
+    const contentEl = document.getElementById('content');
+    contentEl.innerHTML = '<a href="/blog/" class="back">← Back to all posts</a>' + post.content +
+      '<div class="cta-box"><h3>Tired of the chaos?</h3><p>All your kids\' clubs, camps, fees, and schedules in one place. Both parents see the same thing.</p><a href="/">Try OneClubView free</a></div>';
+
+  } catch (e) {
+    document.getElementById('content').innerHTML = '<div class="loading"><p>Post not found.</p><a href="/blog/" style="color:var(--acc);font-weight:700">← Back to blog</a></div>';
+  }
+})();
+</script>
+
+</body>
+</html>
