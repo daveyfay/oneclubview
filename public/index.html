@@ -3292,6 +3292,30 @@ function App(){
   const[screen,setScreen]=useState("loading");const[user,setUser]=useState(null);const[profile,setProfile]=useState(null);const[kids,setKids]=useState([]);
 
   useEffect(()=>{
+    // Handle password recovery redirect from email link
+    const hash=window.location.hash;
+    if(hash&&hash.includes("type=recovery")){
+      const params=new URLSearchParams(hash.replace("#",""));
+      const accessToken=params.get("access_token");
+      if(accessToken){
+        _t=accessToken;
+        localStorage.setItem("ocv_token",_t);
+        const rt=params.get("refresh_token");
+        if(rt){_rt=rt;localStorage.setItem("ocv_rt",_rt)}
+        window.history.replaceState({},"",window.location.pathname);
+        setTimeout(()=>{
+          const np=prompt("Enter your new password (min 8 characters):");
+          if(np&&np.length>=8){
+            fetch(SB+"/auth/v1/user",{method:"PUT",headers:{"apikey":SK,"Authorization":"Bearer "+_t,"Content-Type":"application/json"},body:JSON.stringify({password:np})}).then(r=>{
+              if(r.ok){alert("Password changed! You're now logged in.");window.location.reload()}
+              else alert("Error changing password. Please try again.")
+            }).catch(()=>alert("Error. Please try again."));
+          }else if(np){alert("Password must be at least 8 characters.")}
+          else{window.location.reload()}
+        },300);
+        return;
+      }
+    }
     const t=localStorage.getItem("ocv_token");const rt=localStorage.getItem("ocv_rt");
     const urlParams=new URLSearchParams(window.location.search);
     const justSubscribed=urlParams.get("subscribed")==="true";
