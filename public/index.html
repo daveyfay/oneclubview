@@ -673,6 +673,7 @@ function OnboardClubs({userId,kids,email,onDone,onLogout}){
   }
 
   async function finish(){
+    track("onboard_complete");
     await db("profiles","PATCH",{body:{onboarding_step:"done",onboarding_completed:true},filters:["id=eq."+userId]});
     onDone();
   }
@@ -685,7 +686,7 @@ function OnboardClubs({userId,kids,email,onDone,onLogout}){
     if(showTrial){
       setTrialLoading(true);
       db("profiles","GET",{filters:["id=eq."+userId],select:"is_early_adopter,early_adopter_number,subscription_status"}).then(r=>{
-        if(r&&r[0]&&(r[0].is_early_adopter||r[0].subscription_status==="active")){setIsEarlyAdopter(true);setEarlyNum(r[0].early_adopter_number)}
+        if(r&&r[0]&&(r[0].is_early_adopter||r[0].subscription_status==="active")){setIsEarlyAdopter(true);setEarlyNum(r[0].early_adopter_number);track("early_adopter_shown")}
         setTrialLoading(false);
       }).catch(()=>setTrialLoading(false));
     }
@@ -734,6 +735,7 @@ function OnboardClubs({userId,kids,email,onDone,onLogout}){
           </div>
           <button onClick={async()=>{
             try{
+              track("stripe_checkout_clicked");
               await db("profiles","PATCH",{body:{onboarding_step:"done",onboarding_completed:true},filters:["id=eq."+userId]});
               const res=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"checkout",user_id:userId,email:email,tier:"standard",return_url:window.location.origin})});
               const data=await res.json();
@@ -741,7 +743,7 @@ function OnboardClubs({userId,kids,email,onDone,onLogout}){
               else{onDone()}
             }catch(e){onDone()}
           }} style={{width:"100%",padding:14,borderRadius:14,border:"none",background:"var(--g)",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",marginBottom:10}}>Start free trial — add card</button>
-          <button onClick={finish} style={{width:"100%",padding:12,borderRadius:14,border:"none",background:"none",color:"var(--mt)",fontSize:13,cursor:"pointer",fontFamily:"var(--sn)"}}>Maybe later — skip for now</button>
+          <button onClick={()=>{track("trial_skipped");finish()}} style={{width:"100%",padding:12,borderRadius:14,border:"none",background:"none",color:"var(--mt)",fontSize:13,cursor:"pointer",fontFamily:"var(--sn)"}}>Maybe later — skip for now</button>
           <p style={{fontSize:11,color:"var(--mt)",marginTop:12}}>Cancel anytime. No charge during your 14-day trial.</p>
         </>}
       </div>
@@ -787,7 +789,7 @@ function OnboardClubs({userId,kids,email,onDone,onLogout}){
             </div>
           </div>
         </div>}
-        <button onClick={()=>setShowTrial(true)} className={"btn "+(added.length?"bp":"bs")} style={{marginTop:24}}>{added.length?"Continue →":"Skip"}</button>
+        <button onClick={()=>{setShowTrial(true);track("trial_screen_shown")}} className={"btn "+(added.length?"bp":"bs")} style={{marginTop:24}}>{added.length?"Continue →":"Skip"}</button>
       </div>
     </div>
   );
@@ -2894,7 +2896,7 @@ function SupportModal({userId,userEmail,onClose}){
     if(!subject.trim()||!message.trim())return;setSv(true);
     const res=await db("support_tickets","POST",{body:{user_id:userId,user_email:userEmail,subject:subject.trim(),message:message.trim(),category}});
     if(res&&res[0]?.ticket_number)setTicketNum(res[0].ticket_number);
-    track("support_ticket",{category});setSv(false);setDone(true);
+    track("support_ticket",{category:category});setSv(false);setDone(true);
   }
   if(done)return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox" style={{textAlign:"center",padding:32}}>
     <div style={{fontSize:48,marginBottom:12}}>✅</div>
@@ -3333,7 +3335,7 @@ function App(){
       }
       setUser(u);setProfile(pr);
       if(pr&&pr.onboarding_completed)setScreen("hub");
-      else setScreen("onboard_kids");
+      else setScreen("onboard_kids");track("onboard_kids_shown");
     }).catch(()=>{localStorage.removeItem("ocv_token");setScreen("landing")})}
     else setScreen("landing");
   },[]);
@@ -3356,19 +3358,19 @@ function App(){
     }
     setProfile(pr);
     if(pr&&pr.onboarding_completed)setScreen("hub");
-    else setScreen("onboard_kids");
+    else setScreen("onboard_kids");track("onboard_kids_shown");
   }
 
   async function afterKids(){
     const k=await db("dependants","GET",{filters:["parent_user_id=eq."+user.id]});
     setKids(k||[]);
-    setScreen("onboard_clubs");
+    setScreen("onboard_clubs");track("onboard_clubs_shown");
   }
 
   function logout(){localStorage.removeItem("ocv_token");localStorage.removeItem("ocv_rt");_t=null;_rt=null;setUser(null);setProfile(null);setScreen("landing")}
 
   if(screen==="loading")return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--warm)"}}><Logo/></div>;
-  if(screen==="landing")return <Landing onGo={()=>setScreen("auth_signup")} onLogin={()=>setScreen("auth_login")}/>;
+  if(screen==="landing")return <Landing onGo={()=>{track("cta_signup_clicked");setScreen("auth_signup")}} onLogin={()=>{track("cta_login_clicked");setScreen("auth_login")}}/>;
   if(screen==="auth_signup")return <Auth onAuth={onAuth} mode="signup"/>;
   if(screen==="auth_login")return <Auth onAuth={onAuth} mode="login"/>;
   if(screen==="onboard_kids")return <OnboardKids userId={user.id} onDone={afterKids} onLogout={logout}/>;
