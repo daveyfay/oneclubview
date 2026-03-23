@@ -1,0 +1,11 @@
+# Block WordPress scanner bots
+/wp-admin/*          /  410
+/wp-login.php        /  410
+/wp-includes/*       /  410
+/xmlrpc.php          /  410
+/wordpress/*         /  410
+/wp-content/*        /  410
+/.env                /  410
+/admin               /  410
+/graphql             /  410
+/api/graphql         /  410
