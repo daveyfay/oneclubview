@@ -128,6 +128,16 @@ const SB="https://uqihwazheypvmrcrqklg.supabase.co";
 function track(event,params={}){try{if(typeof gtag==="function")gtag("event",event,params)}catch(e){}}
 // Sanitise user input for PostgREST filters — strip operators and special chars
 function san(v){return v.replace(/[,().*=<>!&|;'"\\]/g,"").trim().slice(0,100)}
+// Country-aware config
+const COUNTRY_CONFIG={
+  IE:{classes:["Junior Infants","Senior Infants","1st Class","2nd Class","3rd Class","4th Class","5th Class","6th Class"],currency:"€",currencyCode:"EUR",schoolLabel:"School",campLabel:"Camp"},
+  GB:{classes:["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6"],currency:"£",currencyCode:"GBP",schoolLabel:"School",campLabel:"Holiday club"},
+  US:{classes:["Pre-K","Kindergarten","1st Grade","2nd Grade","3rd Grade","4th Grade","5th Grade","6th Grade"],currency:"$",currencyCode:"USD",schoolLabel:"School",campLabel:"Camp"},
+  AU:{classes:["Prep","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6"],currency:"$",currencyCode:"AUD",schoolLabel:"School",campLabel:"Holiday program"},
+};
+function detectCountry(){try{const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||"";if(tz.startsWith("America"))return"US";if(tz.startsWith("Australia"))return"AU";if(tz.includes("London")||tz.includes("Belfast"))return"GB";return"IE"}catch(e){return"IE"}}
+const USER_COUNTRY=detectCountry();
+const CC=COUNTRY_CONFIG[USER_COUNTRY]||COUNTRY_CONFIG.IE;
 const SK="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxaWh3YXpoZXlwdm1yY3Jxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4Nzg1MjQsImV4cCI6MjA4ODQ1NDUyNH0.n5I1lkCu7Tf1sBbIceWUdsRQtIrH7-WGc3itZAfrBKI";
 let _t=null;let _rt=null;let _refreshing=null;
 const hd=()=>({apikey:SK,"Content-Type":"application/json",Authorization:"Bearer "+(_t||SK)});
@@ -378,13 +388,25 @@ function Landing({onGo,onLogin}){
       <div style={{maxWidth:520,margin:"0 auto"}}>
         <h2 style={{fontFamily:"var(--sr)",fontSize:"clamp(24px,4vw,32px)",fontWeight:800,color:"var(--g)",marginBottom:8}}>Sound familiar?</h2>
         <p style={{fontSize:14,color:"var(--mt)",marginBottom:24}}>The mental load of managing activities is real.</p>
-        {[
+        {(USER_COUNTRY==="US"?[
+          {e:"msg",t:"4 group texts for 4 activities",d:"and you still miss things"},
+          {e:"pay",t:"Did I pay for soccer?",d:"nobody in the house knows"},
+          {e:"clash",t:"Baseball clashes with piano",d:"found out at 5:45pm in the car"},
+          {e:"camp",t:"Summer camps are full",d:"because you heard about them too late"},
+          {e:"shrug",t:'"What\'s on today?"',d:"your spouse asks — you check 4 places to answer"}
+        ]:USER_COUNTRY==="AU"?[
+          {e:"msg",t:"4 group chats for 4 activities",d:"and you still miss things"},
+          {e:"pay",t:"Did I pay for swimming?",d:"nobody in the house knows"},
+          {e:"clash",t:"Cricket clashes with gymnastics",d:"found out at 5:45pm in the car"},
+          {e:"camp",t:"School holiday programs are full",d:"because you heard about them too late"},
+          {e:"shrug",t:'"What\'s on today?"',d:"your partner asks — you check 4 places to answer"}
+        ]:[
           {e:"msg",t:"3 WhatsApp groups for 3 clubs",d:"and you still miss things"},
           {e:"pay",t:"Did I pay for swimming?",d:"nobody in the house knows"},
           {e:"clash",t:"GAA clashes with gymnastics",d:"found out at 5:45pm in the car"},
           {e:"camp",t:"Easter camps are full",d:"because you heard about them too late"},
           {e:"shrug",t:'"What\'s on today?"',d:"partner asks — you check 4 places to answer"}
-        ].map((p,i)=><div key={i} className={"r"+(i+1>4?"4":i+1)} style={{display:"flex",gap:14,padding:"14px 0",borderBottom:i<4?"1px solid var(--bd)":"none"}}>
+        ]).map((p,i)=><div key={i} className={"r"+(i+1>4?"4":i+1)} style={{display:"flex",gap:14,padding:"14px 0",borderBottom:i<4?"1px solid var(--bd)":"none"}}>
           {(()=>{const ic={msg:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="13" y2="12"/></svg>,pay:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>,clash:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,camp:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 22h20L12 2z"/><path d="M12 2v20"/></svg>,shrug:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 15h8"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>};return <span style={{flexShrink:0,marginTop:2}}>{ic[p.e]||<span style={{fontSize:22}}>{p.e}</span>}</span>})()}
           <div><span style={{fontSize:14,fontWeight:700,color:"var(--tx)"}}>{p.t}</span> <span style={{fontSize:14,color:"var(--mt)"}}>— {p.d}</span></div>
         </div>)}
@@ -618,7 +640,7 @@ function OnboardKids({userId,onDone,onLogout}){
           </div>
           <select value={cls} onChange={e=>setCls(e.target.value)} style={{color:cls?"var(--tx)":"var(--mt)"}}>
             <option value="">Class (optional)</option>
-            {["Junior Infants","Senior Infants","1st Class","2nd Class","3rd Class","4th Class","5th Class","6th Class"].map(c=><option key={c} value={c}>{c}</option>)}
+            {CC.classes.map(c=><option key={c} value={c}>{c}</option>)}
           </select>
           <button onClick={add} disabled={sv||!name.trim()} className="btn bp" style={{opacity:(!name.trim()||sv)?.4:1}}>Add child</button>
         </div>
@@ -2217,7 +2239,7 @@ function SchoolPicker({school,setSchool,schoolId,setSchoolId,cls,setCls,userLat,
     setQ(s.name);setSchool(s.name);setSchoolId(s.id);setResults([]);
   }
 
-  const classes=["Junior Infants","Senior Infants","1st Class","2nd Class","3rd Class","4th Class","5th Class","6th Class"];
+  const classes=CC.classes;
 
   return <div style={{background:"#f8f7f4",borderRadius:14,padding:14,border:"1px solid var(--bd)"}}>
     <span className="lbl" style={{marginBottom:8}}>School (helps match classmates at camps)</span>
