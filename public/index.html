@@ -937,11 +937,27 @@ function ThingsToDoSection({allLocs,kids,userLoc,setUserLoc,userId}){
           </div>
         </div>
         <div style={{display:"flex",gap:6,marginTop:10}}>
-          {t.event_date&&!addedIds.has(t.id)&&<button onClick={async()=>{
-            await db("manual_events","POST",{body:{user_id:userId,title:t.title,event_date:t.event_date+"T"+(t.event_time||"12:00")+":00",duration_minutes:120,notes:t.description||""}});
+          {!addedIds.has(t.id)?<button onClick={async()=>{
+            const dateStr=t.event_date||null;
+            const timeStr=t.event_time||null;
+            let finalDate=dateStr;
+            let finalTime=timeStr||"10:00";
+            if(!finalDate){
+              const picked=prompt("When are you planning to go? (e.g. 2026-04-15 or just hit OK for this Saturday)");
+              if(picked===null)return;
+              if(picked.match(/^\d{4}-\d{2}-\d{2}$/)){finalDate=picked}
+              else{
+                // Default to this Saturday
+                const now=new Date();const sat=new Date(now);sat.setDate(sat.getDate()+(6-sat.getDay()||7));
+                finalDate=sat.toISOString().split("T")[0];
+              }
+              const timePicked=prompt("What time? (e.g. 10:00, 14:30)","10:00");
+              if(timePicked&&timePicked.match(/^\d{1,2}:\d{2}$/))finalTime=timePicked;
+            }
+            await db("manual_events","POST",{body:{user_id:userId,title:t.title,event_date:finalDate+"T"+finalTime+":00",duration_minutes:120,notes:(t.location_name||"")+" — "+(t.description||"")}});
             setAddedIds(new Set([...addedIds,t.id]));
-          }} style={{flex:1,textAlign:"center",padding:10,borderRadius:10,border:"1.5px solid var(--g)",background:"none",color:"var(--g)",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>📅 Add to diary</button>}
-          {addedIds.has(t.id)&&<span style={{flex:1,textAlign:"center",padding:10,borderRadius:10,background:"var(--sage)",color:"var(--gl)",fontSize:12,fontWeight:700}}>✓ Added to diary</span>}
+          }} style={{flex:1,textAlign:"center",padding:10,borderRadius:10,border:"1.5px solid var(--g)",background:"none",color:"var(--g)",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>📅 Add to schedule</button>
+          :<span style={{flex:1,textAlign:"center",padding:10,borderRadius:10,background:"var(--sage)",color:"var(--gl)",fontSize:12,fontWeight:700}}>✓ Added to schedule</span>}
           {t.website_url&&<a href={t.website_url} target="_blank" rel="noopener" style={{flex:1,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:12,fontWeight:700,textDecoration:"none"}}>Visit website →</a>}
         </div>
       </div>;
