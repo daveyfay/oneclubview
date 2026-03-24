@@ -857,10 +857,13 @@ function DiscoverResults({query,onAdd,userLoc}){
 function ThingsToDoSection({allLocs,kids}){
   const[things,setThings]=useState([]);const[loadingT,setLoadingT]=useState(true);const[tdFilter,setTdFilter]=useState("all");
   useEffect(()=>{
-    if(allLocs.length===0){setLoadingT(false);return}
     setLoadingT(true);
     db("things_to_do","GET",{select:"*",filters:["status=eq.active"],order:"title.asc",limit:50}).then(r=>{
       const all=r||[];
+      if(allLocs.length===0){
+        // No locations — show all, sorted alphabetically
+        setThings(all.filter(t=>t.latitude));setLoadingT(false);return;
+      }
       const local=all.filter(t=>{
         if(!t.latitude)return false;
         const tLat=Number(t.latitude),tLng=Number(t.longitude);
