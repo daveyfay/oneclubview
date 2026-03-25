@@ -344,7 +344,7 @@ function EventDetailModal({event,open,onClose,onDelete,onDriverChange,onAttendee
         <div style={{fontSize:11,fontWeight:700,color:"var(--mt)",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Who's driving?</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {driverOptions.map(a=><button key={a} onClick={()=>{if(onDriverChange)onDriverChange(event,a)}}
-            style={{padding:"8px 16px",borderRadius:12,border:event.driver===a?"2px solid var(--g)":"1.5px solid var(--bd)",background:event.driver===a?"var(--gxl)":"#fff",fontSize:13,fontWeight:event.driver===a?700:500,color:event.driver===a?"var(--g)":"var(--tx)",cursor:"pointer",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:6}}>🚗 {a}</button>)}
+            style={{padding:"8px 16px",borderRadius:12,border:event.driver===a?"2px solid var(--g)":"1.5px solid var(--bd)",background:event.driver===a?"var(--gxl)":"#fff",fontSize:13,fontWeight:event.driver===a?700:500,color:event.driver===a?"var(--g)":"var(--tx)",cursor:"pointer",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:6}}><span style={{display:"flex"}}>{ICN.car}</span> {a}</button>)}
         </div>
       </div>}
 
@@ -1602,7 +1602,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           </div>
         </div>
         <div style={{maxWidth:520,margin:"0 auto",display:"flex"}}>
-          {tabs.map(t=><button key={t.id} onClick={()=>{setTab(t.id);track("tab_view",{tab:t.id})}} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,padding:"10px 0",fontSize:12,fontWeight:600,border:"none",borderBottom:tab===t.id?"2.5px solid var(--g)":"2.5px solid transparent",cursor:"pointer",background:"none",color:tab===t.id?"var(--g)":"var(--mt)",fontFamily:"var(--sn)",transition:"color .15s"}}>{t.i} {t.l}</button>)}
+          {tabs.map(t=><button key={t.id} onClick={()=>{setTab(t.id);track("tab_view",{tab:t.id})}} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px 0",fontSize:11,fontWeight:600,border:"none",borderBottom:tab===t.id?"2.5px solid var(--g)":"2.5px solid transparent",cursor:"pointer",background:"none",color:tab===t.id?"var(--g)":"var(--mt)",fontFamily:"var(--sn)",transition:"color .15s"}}><span style={{display:"flex"}}>{t.i}</span><span>{t.l}</span></button>)}
         </div>
       </div>
 
@@ -1900,7 +1900,7 @@ function Hub({user,profile,onRefresh,onLogout}){
 
         // No driver assigned for today's events
         todayEvts.filter(e=>!e.driver).forEach(e=>{
-          alerts.push({type:"info",icon:"🚗",text:"No driver set for "+e.member+"'s "+e.title+" at "+e.time,action:"week"});
+          alerts.push({type:"info",icon:"",text:"No driver set for "+e.member+"'s "+e.title+" at "+e.time,action:"week"});
         });
 
         // Events with no end time
@@ -2497,7 +2497,7 @@ function AddEventModal({clubs,userId,kids,profile,onClose,onSaved}){
       </div>}
       <div><span className="lbl">Who's driving? (optional)</span>
         <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>
-          {[profile?.first_name||"Me",...kids.map(k=>k.first_name)].map(d=><button key={d} type="button" onClick={()=>setDriver(driver===d?"":d)} style={{padding:"6px 12px",borderRadius:10,border:driver===d?"2px solid var(--g)":"1.5px solid var(--bd)",background:driver===d?"var(--gxl)":"var(--card)",fontSize:12,fontWeight:600,color:driver===d?"var(--gl)":"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>🚗 {d}</button>)}
+          {[profile?.first_name||"Me",...kids.map(k=>k.first_name)].map(d=><button key={d} type="button" onClick={()=>setDriver(driver===d?"":d)} style={{padding:"6px 12px",borderRadius:10,border:driver===d?"2px solid var(--g)":"1.5px solid var(--bd)",background:driver===d?"var(--gxl)":"var(--card)",fontSize:12,fontWeight:600,color:driver===d?"var(--gl)":"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}><span style={{display:"flex"}}>{ICN.car}</span> {d}</button>)}
         </div>
       </div>
       <button onClick={save} disabled={sv||!title.trim()||!cid} className="btn bp">{sv?"Saving...":(clubs.length===0?"Add a club first":"Save event")}</button>
