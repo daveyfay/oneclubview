@@ -2443,7 +2443,6 @@ function Hub({user,profile,onRefresh,onLogout}){
           </div>
         </div>
       </div>}
-      }
       {showPaste&&<PasteScheduleModal userId={user.id} clubs={clubs} kids={kids} profile={profile} onClose={()=>setShowPaste(false)} onSaved={()=>{setShowPaste(false);load()}}/>}
       {showAddKid&&<AddKidModal userId={user.id} editKid={typeof showAddKid==="object"?showAddKid:null} profile={profile} onClose={()=>setShowAddKid(false)} onSaved={()=>{track("add_kid");setShowAddKid(false);load()}}/>}
       {editClub&&<EditClubModal club={editClub} kids={kids} profile={profile} userId={user.id} onClose={()=>setEditClub(null)} onSaved={()=>{setEditClub(null);load()}} onDelete={()=>{setEditClub(null);load()}}/>}
