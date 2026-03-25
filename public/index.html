@@ -703,6 +703,7 @@ function Landing({onGo,onLogin}){
 }
 
 function Auth({onAuth,mode:im}){
+  const[showReset,setShowReset]=useState(false);
   const[mode,setMode]=useState(im||"signup");
   const[email,setEmail]=useState("");
   const[name,setName]=useState("");
