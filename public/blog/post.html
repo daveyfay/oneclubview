@@ -117,6 +117,14 @@ footer p{color:rgba(255,255,255,.3);font-size:11px;margin-top:8px}
     });
     document.head.appendChild(jsonLd);
 
+          // FAQ structured data (JSON-LD)
+        if (post.faq_schema) {
+                const faqScript = document.createElement('script');
+                faqScript.type = 'application/ld+json';
+                faqScript.textContent = JSON.stringify(post.faq_schema);
+                document.head.appendChild(faqScript);
+        }
+
     // Hero
     document.getElementById('hero-emoji').textContent = post.hero_emoji || '📝';
     document.getElementById('hero-title').textContent = post.title;
