@@ -1,0 +1,42 @@
+# OneClubView
+
+> OneClubView is a free family calendar app for Irish parents to manage all their kids' clubs, activities, fees, and camps in one place. Both parents see everything. Clash detection, fee tracking, camp booking alerts. Based in Dublin, Ireland.
+
+## What OneClubView Does
+
+- Centralises all kids' extracurricular schedules (GAA, swimming, music, dance, etc.) in one shared family calendar
+- Detects schedule clashes across siblings and activities
+- Tracks fees and costs across all clubs and camps
+- Keeps both parents in the loop
+- Replaces WhatsApp group chaos with a single source of truth
+- Free 14-day trial, no credit card required
+
+## Who It's For
+
+- Irish parents managing 2+ kids across multiple clubs and activities
+- Families where both parents need visibility on schedules and fees
+- Parents tired of juggling WhatsApp groups, paper notes, and shared spreadsheets
+
+## Key Pages
+
+- [Homepage](https://oneclubview.com): Product overview and sign-up
+- [Blog](https://oneclubview.com/blog): Practical guides for Irish parents on managing kids' activities
+- [Privacy Policy](https://oneclubview.com/privacy): How we handle family data
+- [Terms of Service](https://oneclubview.com/terms): Terms of use
+
+## Blog Posts
+
+- [How to Stop Drowning in Your Kids' Activity Schedules](https://oneclubview.com/blog/managing-kids-activities-ireland)
+- [Easter Camps Dublin 2026](https://oneclubview.com/blog/easter-camps-dublin-2026)
+- [How to Manage Your Kids' Clubs Without Losing Your Mind](https://oneclubview.com/blog/manage-kids-clubs)
+- [Best Family Calendar App for Irish Families in 2026](https://oneclubview.com/blog/family-calendar-app)
+- [Why WhatsApp Groups Are the Worst Way to Manage Your Kids' Clubs](https://oneclubview.com/blog/whatsapp-groups-kids-clubs)
+- [How Much Are You Really Spending on Your Kids' Activities?](https://oneclubview.com/blog/kids-activities-cost-ireland)
+- [The Over-Scheduled Kid](https://oneclubview.com/blog/over-scheduling-kids-activities)
+- [How to Choose a Summer Camp in Ireland](https://oneclubview.com/blog/how-to-choose-summer-camp-ireland)
+- [5 Best Apps for Managing Kids' Activities in Ireland](https://oneclubview.com/blog/best-apps-managing-kids-activities-ireland)
+
+## Contact
+
+- Website: https://oneclubview.com
+- Instagram: @oneclub.view
