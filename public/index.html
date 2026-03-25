@@ -768,7 +768,12 @@ function Auth({onAuth,mode:im}){
         const invite=await db("family_invites","GET",{filters:["invited_email=eq."+email.trim().toLowerCase(),"accepted_at=is.null"],limit:1});
         const inviteRole=invite&&invite[0]?invite[0].role||"admin":"admin";
         const familyId=invite&&invite[0]?invite[0].family_id:null;
-        await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false,family_role:inviteRole,family_id:familyId||u.id}});
+        // Create family for new users (if not joining via invite)
+        let assignFamilyId=familyId;
+        if(!assignFamilyId){
+          try{const rpc=await fetch(SB+"/rest/v1/rpc/create_family_for_signup",{method:"POST",headers:hd(),body:JSON.stringify({family_name:name.trim()+"'s Family"})});const fid=await rpc.json();if(fid)assignFamilyId=fid}catch(e){}
+        }
+        await db("profiles","POST",{body:{id:u.id,first_name:name.trim(),email:email.trim(),trial_started_at:new Date().toISOString(),subscription_status:isBeta?"active":"trial",is_beta:isBeta||false,family_role:inviteRole,family_id:assignFamilyId||null}});
         // Mark invite as accepted
         if(invite&&invite[0])await db("family_invites","PATCH",{filters:["id=eq."+invite[0].id],body:{accepted_at:new Date().toISOString(),accepted_user_id:u.id}});
         onAuth(u);
@@ -2244,17 +2249,7 @@ function Hub({user,profile,onRefresh,onLogout}){
 
         {/* Add new location */}
         <div style={{marginTop:16}}>
-          <button onClick={()=>{
-            setShowAddLocModal(true);return;
-            const label="";const addr="";
-            // Use Nominatim to geocode
-            fetch("https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(addr+", Ireland")+"&format=json&limit=1",{headers:{"User-Agent":"OneClubView/1.0"}}).then(r=>r.json()).then(async d=>{
-              if(d&&d[0]){
-                await db("family_locations","POST",{body:{user_id:user.id,label:label,latitude:Number(d[0].lat),longitude:Number(d[0].lon),address:d[0].display_name?.split(",").slice(0,3).join(","),radius_km:15,auto_source:"manual",active:true}});
-                load();
-              } else { showToast("Could not find that location. Try a more specific address.","err"); }
-            }).catch(()=>showToast("Location search failed.","err"));
-          }} style={{width:"100%",padding:12,borderRadius:12,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)"}}>+ Add a location</button>
+          <button onClick={()=>setShowAddLocModal(true)} style={{width:"100%",padding:12,borderRadius:12,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)"}}>+ Add a location</button>
         </div>
 
         <p style={{fontSize:11,color:"var(--mt)",marginTop:12,textAlign:"center"}}>Add home, work, grandparents — see camps and clubs near all of them</p>
