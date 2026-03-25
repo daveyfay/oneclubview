@@ -73,23 +73,23 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <style>
-:root{--g:#1a2a3a;--gl:#2d4a5f;--gxl:#e8f0f5;--acc:#e85d4a;--accl:#fff0ee;--sage:#e8f0e8;--warm:#f8f6f3;--card:#fff;--tx:#1a1a1a;--mt:#7c8590;--bd:#e4e2de;--sr:'Fraunces',Georgia,serif;--sn:'Plus Jakarta Sans',-apple-system,sans-serif;--shadow:0 2px 8px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-lg:0 8px 30px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.04);--shadow-xl:0 20px 50px rgba(0,0,0,.12)}
-*{margin:0;padding:0;box-sizing:border-box}body{padding-bottom:env(safe-area-inset-bottom);font-family:var(--sn);background:var(--warm);color:var(--tx);-webkit-font-smoothing:antialiased;overflow-x:hidden;overscroll-behavior-y:contain}
+:root{--g:#1a2a3a;--gl:#2d4a5f;--gxl:#e8f0f5;--acc:#e85d4a;--accl:#fff0ee;--sage:#e8f0e8;--warm:#f8f6f3;--card:#fff;--tx:#1a1a1a;--mt:#7c8590;--bd:#e4e2de;--sr:'Fraunces',Georgia,serif;--sn:'Plus Jakarta Sans',-apple-system,sans-serif;--shadow:0 2px 8px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-lg:0 8px 30px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.04);--shadow-xl:0 20px 50px rgba(0,0,0,.12);--radius:16px;--card-padding:18px;--card-gap:12px}
+*{margin:0;padding:0;box-sizing:border-box}body{padding-bottom:env(safe-area-inset-bottom);font-family:var(--sn);background:var(--warm);color:var(--tx);-webkit-font-smoothing:antialiased;overflow-x:hidden;overscroll-behavior-y:contain;font-size:14px;line-height:1.6}
 .hsb::-webkit-scrollbar{display:none}.hsb{scrollbar-width:none}
 input,select{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--bd);font-size:14px;outline:none;background:#fff;font-family:var(--sn);transition:border .2s}
 input:focus,select:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(26,42,58,.08)}
 select{-webkit-appearance:none;appearance:none}
 .mbg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,15,20,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:100;display:flex;align-items:flex-end;justify-content:center}
-.mbox{background:var(--card);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-xl)}
+.mbox{background:var(--card);border-radius:24px 24px 0 0;padding:28px 24px 24px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-xl)}
 @keyframes ri{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .r{animation:ri .5s ease both}.r2{animation:ri .5s ease .1s both}.r3{animation:ri .5s ease .2s both}.r4{animation:ri .5s ease .3s both}
 @keyframes fi{from{opacity:0}to{opacity:1}}.fi{animation:fi .3s ease both}
 @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .lbl{font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;display:block}
-.btn{width:100%;padding:14px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sn);transition:transform .15s,box-shadow .15s}.btn:disabled{opacity:.5}.btn:active{transform:scale(.98)}
+.btn{width:100%;padding:16px;border-radius:var(--radius);min-height:48px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sn);transition:transform .15s,box-shadow .15s}.btn:disabled{opacity:.5}.btn:active{transform:scale(.98)}
 .bp{background:var(--g);color:#fff;box-shadow:0 4px 12px rgba(26,42,58,.2)}.bp:hover{box-shadow:0 6px 20px rgba(26,42,58,.25)}
 .bs{background:#f0eeeb;color:var(--mt)}
-.pill{padding:6px 14px;border-radius:100px;font-size:12px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;font-family:var(--sn);transition:all .15s}
+.pill{padding:8px 16px;border-radius:100px;font-size:13px;min-height:36px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;font-family:var(--sn);transition:all .15s}
 .pon{background:var(--g);color:#fff;box-shadow:0 2px 8px rgba(26,42,58,.15)}.poff{background:#f0eeeb;color:var(--mt)}
 .htab{transition:all .15s}
 @supports(padding-top: env(safe-area-inset-top)){
@@ -100,6 +100,25 @@ select{-webkit-appearance:none;appearance:none}
   #root{padding-top:env(safe-area-inset-top)}
   #root::before{content:"";display:block;position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:var(--warm);z-index:9999}
 }
+
+/* Toast notification */
+.toast{position:fixed;top:env(safe-area-inset-top,20px);left:50%;transform:translateX(-50%) translateY(-100px);z-index:9999;padding:14px 24px;border-radius:14px;font-size:14px;font-weight:600;font-family:var(--sn);box-shadow:var(--shadow-lg);transition:transform .3s cubic-bezier(.4,0,.2,1);pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(20px)}
+.toast-ok{background:#1a2a3a;color:#fff}.toast-err{background:#dc2626;color:#fff}.toast-info{background:#fff;color:var(--tx);border:1px solid var(--bd)}
+/* Overlay modal */
+@keyframes modalIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+.modal-overlay{animation:overlayIn .2s ease both}
+.modal-sheet{animation:modalIn .25s cubic-bezier(.4,0,.2,1) both}
+/* Date picker */
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.dp-cell{width:100%;aspect-ratio:1;border-radius:50%;border:none;background:none;font-size:14px;font-family:var(--sn);cursor:pointer;font-weight:500;color:var(--tx);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.dp-cell:hover{background:var(--gxl)}.dp-cell.sel{background:var(--g);color:#fff;font-weight:700}
+.dp-cell.today{border:2px solid var(--acc);font-weight:700}.dp-cell.other{color:var(--bd)}
+.dp-head{font-size:12px;font-weight:700;color:var(--mt);padding:4px 0}
+/* Quick pick buttons */
+.qp{padding:10px 16px;border-radius:12px;border:1.5px solid var(--bd);background:#fff;font-size:13px;font-weight:600;font-family:var(--sn);cursor:pointer;color:var(--tx);transition:all .15s;white-space:nowrap}
+.qp:hover,.qp:active{border-color:var(--g);color:var(--g);background:var(--gxl)}
 </style>
 </head>
 <body>
@@ -128,6 +147,131 @@ const SB="https://uqihwazheypvmrcrqklg.supabase.co";
 function track(event,params={}){try{if(typeof gtag==="function")gtag("event",event,params)}catch(e){}}
 // Sanitise user input for PostgREST filters — strip operators and special chars
 function san(v){return v.replace(/[,().*=<>!&|;'"\\]/g,"").trim().slice(0,100)}
+
+// ── Toast notification system ──
+let _toastTimer=null;
+function showToast(msg,type="ok"){
+  let t=document.getElementById("ocv-toast");
+  if(!t){t=document.createElement("div");t.id="ocv-toast";document.body.appendChild(t)}
+  t.className="toast toast-"+type;t.textContent=msg;
+  clearTimeout(_toastTimer);
+  requestAnimationFrame(()=>{t.classList.add("show");_toastTimer=setTimeout(()=>t.classList.remove("show"),3000)});
+}
+
+// ── Modal components ──
+function OcvModal({open,onClose,title,children,width}){
+  if(!open)return null;
+  return <div className="modal-overlay" onClick={onClose} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.45)",backdropFilter:"blur(4px)",WebkitBackdropFilter:"blur(4px)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+    <div className="modal-sheet" onClick={e=>e.stopPropagation()} style={{background:"var(--card)",borderRadius:"24px 24px 0 0",padding:"28px 24px 24px",width:"100%",maxWidth:width||480,maxHeight:"85vh",overflowY:"auto",boxShadow:"var(--shadow-xl)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+        <h3 style={{fontFamily:"var(--sr)",fontSize:20,fontWeight:800,color:"var(--g)"}}>{title}</h3>
+        <button onClick={onClose} style={{width:32,height:32,borderRadius:10,border:"none",background:"var(--warm)",cursor:"pointer",fontSize:16,color:"var(--mt)",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+      </div>
+      {children}
+    </div>
+  </div>;
+}
+
+function OcvConfirm({open,onClose,onConfirm,title,message,confirmText,confirmColor}){
+  return <OcvModal open={open} onClose={onClose} title={title||"Confirm"}>
+    <p style={{fontSize:15,color:"var(--tx)",lineHeight:1.6,marginBottom:24}}>{message}</p>
+    <div style={{display:"flex",gap:10}}>
+      <button onClick={onClose} className="btn bs" style={{flex:1}}>Cancel</button>
+      <button onClick={()=>{onConfirm();onClose()}} className="btn" style={{flex:1,background:confirmColor||"var(--g)",color:"#fff"}}>{confirmText||"Confirm"}</button>
+    </div>
+  </OcvModal>;
+}
+
+function OcvInput({open,onClose,onSubmit,title,placeholder,defaultValue,inputType}){
+  const[val,setVal]=useState(defaultValue||"");
+  useEffect(()=>{if(open)setVal(defaultValue||"")},[open]);
+  return <OcvModal open={open} onClose={onClose} title={title||"Enter value"}>
+    <input autoFocus type={inputType||"text"} value={val} onChange={e=>setVal(e.target.value)} placeholder={placeholder||""} onKeyDown={e=>{if(e.key==="Enter"&&val.trim()){onSubmit(val.trim());onClose()}}} style={{marginBottom:16}}/>
+    <button onClick={()=>{if(val.trim()){onSubmit(val.trim());onClose()}}} className="btn bp" disabled={!val.trim()}>Continue</button>
+  </OcvModal>;
+}
+
+// ── Date Picker component ──
+function DateTimePicker({open,onClose,onSelect,title}){
+  const[month,setMonth]=useState(new Date().getMonth());
+  const[year,setYear]=useState(new Date().getFullYear());
+  const[selDate,setSelDate]=useState(null);
+  const[selTime,setSelTime]=useState("10:00");
+  const today=new Date();
+  const todayStr=today.toISOString().split("T")[0];
+
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const firstDay=(new Date(year,month,1).getDay()+6)%7; // Mon=0
+  const monthName=new Date(year,month).toLocaleDateString("en-IE",{month:"long",year:"numeric"});
+
+  // Quick pick helpers
+  function nextDay(dayOfWeek){const d=new Date();d.setDate(d.getDate()+((dayOfWeek-d.getDay()+7)%7||7));return d.toISOString().split("T")[0]}
+  const thisSat=nextDay(6);
+  const nextSat=(()=>{const d=new Date(thisSat);d.setDate(d.getDate()+7);return d.toISOString().split("T")[0]})();
+  const tmrw=(()=>{const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().split("T")[0]})();
+
+  function prevMonth(){if(month===0){setMonth(11);setYear(year-1)}else setMonth(month-1)}
+  function nextMo(){if(month===11){setMonth(0);setYear(year+1)}else setMonth(month+1)}
+
+  const cells=[];
+  for(let i=0;i<firstDay;i++)cells.push(null);
+  for(let d=1;d<=daysInMonth;d++)cells.push(d);
+
+  const times=[];
+  for(let h=7;h<=21;h++){times.push(String(h).padStart(2,"0")+":00");times.push(String(h).padStart(2,"0")+":30")}
+
+  function pickQuick(dateStr){setSelDate(dateStr);const d=new Date(dateStr);setMonth(d.getMonth());setYear(d.getFullYear())}
+
+  return <OcvModal open={open} onClose={onClose} title={title||"Pick a date & time"}>
+    {/* Quick picks */}
+    <div style={{display:"flex",gap:8,marginBottom:20,overflowX:"auto",paddingBottom:4}}>
+      <button onClick={()=>pickQuick(tmrw)} className="qp">Tomorrow</button>
+      <button onClick={()=>pickQuick(thisSat)} className="qp">This Sat</button>
+      <button onClick={()=>pickQuick(nextSat)} className="qp">Next Sat</button>
+    </div>
+
+    {/* Month nav */}
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+      <button onClick={prevMonth} style={{width:36,height:36,borderRadius:10,border:"1px solid var(--bd)",background:"#fff",cursor:"pointer",fontSize:16,color:"var(--tx)"}}>‹</button>
+      <span style={{fontFamily:"var(--sr)",fontSize:16,fontWeight:700,color:"var(--g)"}}>{monthName}</span>
+      <button onClick={nextMo} style={{width:36,height:36,borderRadius:10,border:"1px solid var(--bd)",background:"#fff",cursor:"pointer",fontSize:16,color:"var(--tx)"}}>›</button>
+    </div>
+
+    {/* Day headers */}
+    <div className="dp-grid" style={{marginBottom:4}}>
+      {["M","T","W","T","F","S","S"].map((d,i)=><div key={i} className="dp-head">{d}</div>)}
+    </div>
+
+    {/* Day cells */}
+    <div className="dp-grid" style={{marginBottom:20}}>
+      {cells.map((d,i)=>{
+        if(!d)return <div key={i}/>;
+        const dateStr=year+"-"+String(month+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+        const isToday=dateStr===todayStr;
+        const isSel=dateStr===selDate;
+        const isPast=dateStr<todayStr;
+        return <button key={i} onClick={()=>!isPast&&setSelDate(dateStr)} disabled={isPast}
+          className={"dp-cell"+(isSel?" sel":"")+(isToday?" today":"")}
+          style={{opacity:isPast?.3:1}}>{d}</button>;
+      })}
+    </div>
+
+    {/* Time selector */}
+    <div style={{marginBottom:20}}>
+      <label style={{fontSize:13,fontWeight:700,color:"var(--g)",marginBottom:8,display:"block"}}>Time</label>
+      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+        {["09:00","10:00","11:00","12:00","14:00","15:00","16:00","17:00"].map(t=>
+          <button key={t} onClick={()=>setSelTime(t)} className="qp" style={{flex:"0 0 auto",borderColor:selTime===t?"var(--g)":"var(--bd)",color:selTime===t?"var(--g)":"var(--tx)",background:selTime===t?"var(--gxl)":"#fff",fontWeight:selTime===t?700:500}}>{t}</button>
+        )}
+      </div>
+    </div>
+
+    {/* Confirm */}
+    <button onClick={()=>{if(selDate){onSelect(selDate,selTime);onClose()}}} className="btn bp" disabled={!selDate}>
+      {selDate?"Add to schedule — "+new Date(selDate+"T00:00:00").toLocaleDateString("en-IE",{weekday:"short",day:"numeric",month:"short"})+" at "+selTime:"Pick a date above"}
+    </button>
+  </OcvModal>;
+}
 // Country-aware config
 const COUNTRY_CONFIG={
   IE:{classes:["Junior Infants","Senior Infants","1st Class","2nd Class","3rd Class","4th Class","5th Class","6th Class"],currency:"€",currencyCode:"EUR",schoolLabel:"School",campLabel:"Camp"},
@@ -583,7 +727,7 @@ function Auth({onAuth,mode:im}){
               {pw2.length>0&&pwMatch&&<p style={{fontSize:11,color:"#16a34a",marginTop:4}}>Passwords match ✓</p>}
             </div>}
             <button onClick={go} disabled={ld||(mode==="signup"?!canSignup:!canLogin)} className="btn bp">{ld?"...":mode==="signup"?"Start free trial":"Log in"}</button>
-            {mode==="login"&&<p style={{textAlign:"center",marginTop:8}}><button onClick={async()=>{const em=prompt("Enter your email address:");if(em){try{const r=await fetch(SB+"/auth/v1/recover",{method:"POST",headers:{"apikey":SK,"Content-Type":"application/json"},body:JSON.stringify({email:em})});if(r.ok)alert("Password reset link sent! Check your inbox.");else alert("Could not send reset email. Check the address and try again.")}catch(e){alert("Error: "+e.message)}}}} style={{background:"none",border:"none",color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)",fontSize:12,textDecoration:"underline"}}>Forgot password?</button></p>}
+            {mode==="login"&&<p style={{textAlign:"center",marginTop:8}}><button onClick={async()=>{const em=prompt("Enter your email address:");if(em){try{const r=await fetch(SB+"/auth/v1/recover",{method:"POST",headers:{"apikey":SK,"Content-Type":"application/json"},body:JSON.stringify({email:em})});if(r.ok)showToast("Password reset link sent! Check your inbox.");else showToast("Could not send reset email. Try again.","err")}catch(e){showToast("Error: "+e.message,"err")}}}} style={{background:"none",border:"none",color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)",fontSize:12,textDecoration:"underline"}}>Forgot password?</button></p>}
             {mode==="signup"&&<p style={{fontSize:12,color:"var(--mt)",textAlign:"center"}}>14 days free, then from €7.99/month</p>}
             {mode==="signup"&&<p style={{fontSize:11,color:"var(--mt)",textAlign:"center",lineHeight:1.5}}>By signing up you agree to our <a href="/terms" style={{color:"var(--acc)"}}>Terms of Service</a> and <a href="/privacy" style={{color:"var(--acc)"}}>Privacy Policy</a>.</p>}
             {mode==="signup"&&<p style={{fontSize:11,color:"var(--mt)",textAlign:"center"}}>Password must be 8+ characters with a mix of uppercase, numbers, or symbols</p>}
@@ -856,6 +1000,7 @@ function DiscoverResults({query,onAdd,userLoc}){
 
 function ThingsToDoSection({allLocs,kids,userLoc,setUserLoc,userId}){
   const[things,setThings]=useState([]);const[loadingT,setLoadingT]=useState(true);const[tdFilter,setTdFilter]=useState("all");const[ageFilter,setAgeFilter]=useState(false);const[addedIds,setAddedIds]=useState(new Set());
+  const[dpOpen,setDpOpen]=useState(false);const[dpItem,setDpItem]=useState(null);
 
   // Request live GPS when component mounts
   useEffect(()=>{
@@ -936,33 +1081,25 @@ function ThingsToDoSection({allLocs,kids,userLoc,setUserLoc,userId}){
             </div>
           </div>
         </div>
-        <div style={{display:"flex",gap:6,marginTop:10}}>
+        <div style={{display:"flex",gap:8,marginTop:12}}>
           {!addedIds.has(t.id)?<button onClick={async()=>{
-            const dateStr=t.event_date||null;
-            const timeStr=t.event_time||null;
-            let finalDate=dateStr;
-            let finalTime=timeStr||"10:00";
-            if(!finalDate){
-              const picked=prompt("When are you planning to go? (e.g. 2026-04-15 or just hit OK for this Saturday)");
-              if(picked===null)return;
-              if(picked.match(/^\d{4}-\d{2}-\d{2}$/)){finalDate=picked}
-              else{
-                // Default to this Saturday
-                const now=new Date();const sat=new Date(now);sat.setDate(sat.getDate()+(6-sat.getDay()||7));
-                finalDate=sat.toISOString().split("T")[0];
-              }
-              const timePicked=prompt("What time? (e.g. 10:00, 14:30)","10:00");
-              if(timePicked&&timePicked.match(/^\d{1,2}:\d{2}$/))finalTime=timePicked;
-            }
-            await db("manual_events","POST",{body:{user_id:userId,title:t.title,event_date:finalDate+"T"+finalTime+":00",duration_minutes:120,notes:(t.location_name||"")+" — "+(t.description||"")}});
-            setAddedIds(new Set([...addedIds,t.id]));
-          }} style={{flex:1,textAlign:"center",padding:10,borderRadius:10,border:"1.5px solid var(--g)",background:"none",color:"var(--g)",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>📅 Add to schedule</button>
-          :<span style={{flex:1,textAlign:"center",padding:10,borderRadius:10,background:"var(--sage)",color:"var(--gl)",fontSize:12,fontWeight:700}}>✓ Added to schedule</span>}
-          {t.website_url&&<a href={t.website_url} target="_blank" rel="noopener" style={{flex:1,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:12,fontWeight:700,textDecoration:"none"}}>Visit website →</a>}
+            if(t.event_date){
+              await db("manual_events","POST",{body:{user_id:userId,title:t.title,event_date:t.event_date+"T"+(t.event_time||"10:00")+":00",duration_minutes:120,notes:(t.location_name||"")+" — "+(t.description||"")}});
+              setAddedIds(new Set([...addedIds,t.id]));showToast("Added to your schedule!");
+            }else{setDpItem(t);setDpOpen(true)}
+          }} style={{flex:1,textAlign:"center",padding:12,borderRadius:14,border:"1.5px solid var(--g)",background:"none",color:"var(--g)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",minHeight:44}}>📅 Add to schedule</button>
+          :<span style={{flex:1,textAlign:"center",padding:12,borderRadius:14,background:"var(--sage)",color:"var(--gl)",fontSize:13,fontWeight:700,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>✓ Added</span>}
+          {t.website_url&&<a href={t.website_url} target="_blank" rel="noopener" style={{flex:1,textAlign:"center",padding:12,borderRadius:14,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none",minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>Website →</a>}
         </div>
       </div>;
     })}
     {filtered.length===0&&<p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>No activities match this filter</p>}
+    <DateTimePicker open={dpOpen} onClose={()=>{setDpOpen(false);setDpItem(null)}} title={dpItem?"When are you going to "+dpItem.title+"?":"Pick a date"} onSelect={async(date,time)=>{
+      if(dpItem){
+        await db("manual_events","POST",{body:{user_id:userId,title:dpItem.title,event_date:date+"T"+time+":00",duration_minutes:120,notes:(dpItem.location_name||"")+" — "+(dpItem.description||"")}});
+        setAddedIds(new Set([...addedIds,dpItem.id]));showToast("Added to your schedule!");
+      }
+    }}/>
   </div>;
 }
 
@@ -1265,7 +1402,7 @@ function Hub({user,profile,onRefresh,onLogout}){
     if(filtEvts.length===0)text+="Nothing scheduled this week! 🎉\n";
     text+="—\nSent from OneClubView · oneclubview.com";
     track("share_week");if(navigator.share){navigator.share({title:"Our week",text}).catch(()=>{})}
-    else{navigator.clipboard?.writeText(text);alert("Week summary copied to clipboard.")}
+    else{navigator.clipboard?.writeText(text);showToast("Week summary copied!")}
   }
 
   async function startCheckout(tier){
@@ -1275,7 +1412,7 @@ function Hub({user,profile,onRefresh,onLogout}){
     });
     const data=await res.json();
     if(data.url)window.location.href=data.url;
-    else alert("Could not start checkout. Please try again.");
+    else showToast("Could not start checkout. Please try again.","err");
   }
 
   async function openPortal(){
@@ -2023,8 +2160,8 @@ function Hub({user,profile,onRefresh,onLogout}){
               if(d&&d[0]){
                 await db("family_locations","POST",{body:{user_id:user.id,label:label,latitude:Number(d[0].lat),longitude:Number(d[0].lon),address:d[0].display_name?.split(",").slice(0,3).join(","),radius_km:15,auto_source:"manual",active:true}});
                 load();
-              } else { alert("Could not find that location. Try a more specific address."); }
-            }).catch(()=>alert("Location search failed."));
+              } else { showToast("Could not find that location. Try a more specific address.","err"); }
+            }).catch(()=>showToast("Location search failed.","err"));
           }} style={{width:"100%",padding:12,borderRadius:12,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)"}}>+ Add a location</button>
         </div>
 
@@ -2056,14 +2193,14 @@ function Hub({user,profile,onRefresh,onLogout}){
           <div style={{fontSize:12,color:"var(--mt)"}}>{user?.email}</div>
         </div>
         <button onClick={()=>{setShowProfile(false);setShowSupport(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💬 Contact Support</button>
-        <button onClick={()=>{setShowProfile(false);const np=prompt("Enter new password (min 8 characters):");if(np&&np.length>=8){fetch(SB+"/auth/v1/user",{method:"PUT",headers:hd(),body:JSON.stringify({password:np})}).then(r=>{if(r.ok)alert("Password changed successfully!");else alert("Error changing password. Try again.")}).catch(()=>alert("Error."))}else if(np){alert("Password must be at least 8 characters.")}}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🔑 Change Password</button>
+        <button onClick={()=>{setShowProfile(false);const np=prompt("Enter new password (min 8 characters):");if(np&&np.length>=8){fetch(SB+"/auth/v1/user",{method:"PUT",headers:hd(),body:JSON.stringify({password:np})}).then(r=>{if(r.ok)showToast("Password changed!");else showToast("Error changing password.","err")}).catch(()=>showToast("Something went wrong.","err"))}else if(np){showToast("Password must be at least 8 characters.","err")}}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🔑 Change Password</button>
         {profile?.subscription_status==="active"&&<button onClick={()=>{setShowProfile(false);openPortal()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💳 Manage Subscription</button>}
         {profile?.is_beta?<div style={{padding:"10px 14px",fontSize:12,fontWeight:700,color:"#16a34a",display:"flex",alignItems:"center",gap:8}}>🎁 Beta member — free forever</div>
         :profile?.subscription_status!=="active"&&<button onClick={()=>{setShowProfile(false);startCheckout("standard")}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>⭐ Subscribe — €7.99/mo</button>}
         <button onClick={()=>{setShowProfile(false);setShowFamily(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>👨‍👩‍👧‍👦 Family Members</button>
         <a href="/privacy" style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>🔒 Privacy & Data</a>
         <div style={{borderTop:"1px solid var(--bd)",marginTop:4,paddingTop:4}}>
-          <button onClick={async()=>{if(confirm("Request account deletion? We will email you confirmation and delete all your data within 30 days. You can also email hello@oneclubview.com.")){try{await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:"hello@oneclubview.com",subject:"Account deletion request: "+user.email,html:"<p>User "+user.email+" (id: "+user.id+") has requested account deletion. Please process within 30 days per GDPR.</p>"})});await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:user.email,subject:"Account deletion request received",html:"<p>We've received your request to delete your OneClubView account. All your data will be removed within 30 days. If this was not you, please contact hello@oneclubview.com immediately.</p>"})});alert("Deletion request submitted. You'll receive a confirmation email and your data will be removed within 30 days.");onLogout()}catch(e){alert("Error submitting request. Please email hello@oneclubview.com directly.")}}}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🗑️ Delete Account</button>
+          <button onClick={async()=>{if(confirm("Request account deletion? We will email you confirmation and delete all your data within 30 days. You can also email hello@oneclubview.com.")){try{await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:"hello@oneclubview.com",subject:"Account deletion request: "+user.email,html:"<p>User "+user.email+" (id: "+user.id+") has requested account deletion. Please process within 30 days per GDPR.</p>"})});await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:user.email,subject:"Account deletion request received",html:"<p>We've received your request to delete your OneClubView account. All your data will be removed within 30 days. If this was not you, please contact hello@oneclubview.com immediately.</p>"})});showToast("Deletion request submitted. Check your email.");onLogout()}catch(e){showToast("Error. Please email hello@oneclubview.com","err")}}}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🗑️ Delete Account</button>
           <button onClick={()=>{setShowProfile(false);onLogout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🚪 Log out</button>
         </div>
       </div>}
@@ -2198,7 +2335,7 @@ function AddEventModal({clubs,userId,kids,profile,onClose,onSaved}){
       result=await db("manual_events","POST",{body:{user_id:userId,club_id:cid,dependant_id:dep,title:title.trim(),event_date:date+"T"+time+":00",duration_minutes:endTime?Math.max(30,Math.round((new Date("2000-01-01T"+endTime)-new Date("2000-01-01T"+time))/60000)):parseInt(dur)||60,driver:driver||null}});
     }
     setSv(false);
-    if(!result){alert("Failed to save event. Please try again.");return}
+    if(!result){showToast("Failed to save. Please try again.","err");return}
     onSaved();
   }
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
@@ -2237,7 +2374,7 @@ function AddEventModal({clubs,userId,kids,profile,onClose,onSaved}){
 function AddPaymentModal({clubs,userId,kids,profile,onClose,onSaved}){
   const[cid,setCid]=useState(clubs[0]?.club_id||"");const[mid,setMid]=useState("self");
   const[desc,setDesc]=useState("");const[amt,setAmt]=useState("");const[due,setDue]=useState("");const[sv,setSv]=useState(false);
-  async function save(){if(!desc.trim()||!amt||!due)return;setSv(true);const r=await db("payment_reminders","POST",{body:{user_id:userId,club_id:cid,dependant_id:mid==="self"?null:mid,description:desc.trim(),amount:parseFloat(amt),due_date:due}});setSv(false);if(!r){alert("Failed to save. Please try again.");return}onSaved()}
+  async function save(){if(!desc.trim()||!amt||!due)return;setSv(true);const r=await db("payment_reminders","POST",{body:{user_id:userId,club_id:cid,dependant_id:mid==="self"?null:mid,description:desc.trim(),amount:parseFloat(amt),due_date:due}});setSv(false);if(!r){showToast("Failed to save. Please try again.","err");return}onSaved()}
   return <div className="mbg" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mbox">
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}><h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Add Payment Reminder</h3><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button></div>
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
@@ -2326,7 +2463,7 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
         const limRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"check_limits",user_id:userId})});
         const lim=await limRes.json();
         if(lim.adults>=lim.max_adults){
-          if(lim.tier==="family_plus"||lim.is_beta){setSv(false);alert("Maximum adults reached for your current plan.");return}
+          if(lim.tier==="family_plus"||lim.is_beta){setSv(false);showToast("Maximum adults for your plan.","info");return}
           if(confirm("Adding a 3rd adult requires the Family+ plan (€14.99/mo instead of €7.99/mo). This gives you up to 4 adults and 6 kids. Upgrade now?")){
             const upRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"upgrade",user_id:userId})});
             const upData=await upRes.json();
@@ -2355,7 +2492,7 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
       const limRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"check_limits",user_id:userId})});
       const lim=await limRes.json();
       if(lim.kids>=lim.max_kids){
-        if(lim.tier==="family_plus"||lim.is_beta){setSv(false);alert("Maximum kids reached for your plan ("+lim.max_kids+").");return}
+        if(lim.tier==="family_plus"||lim.is_beta){setSv(false);showToast("Maximum kids for your plan.","info");return}
         if(confirm("Adding a 4th child requires the Family+ plan (€14.99/mo). This gives you up to 6 kids and 4 adults. Upgrade now?")){
           const upRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"upgrade",user_id:userId})});
           const upData=await upRes.json();
@@ -3106,7 +3243,7 @@ function AdminDashboard({user,onBack}){
               <div id={"replies-"+t.id}></div>
               <div style={{display:"flex",gap:6,marginTop:6}}>
                 <input id={"reply-"+t.id} placeholder="Type a reply..." style={{flex:1,padding:"8px 12px",borderRadius:10,border:"1px solid var(--bd)",fontSize:12,fontFamily:"var(--sn)"}}/>
-                <button onClick={async()=>{const input=document.getElementById("reply-"+t.id);const msg=input?.value?.trim();if(!msg)return;await db("support_replies","POST",{body:{ticket_id:t.id,user_id:user.id,is_staff:true,message:msg}});input.value="";await db("support_tickets","PATCH",{body:{status:"in_progress",updated_at:new Date().toISOString()},filters:["id=eq."+t.id]});const updated=await db("support_tickets","GET",{order:"created_at.desc"});setTickets(updated||[]);alert("Reply sent!")}} style={{padding:"8px 16px",borderRadius:10,border:"none",background:"var(--g)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Reply</button>
+                <button onClick={async()=>{const input=document.getElementById("reply-"+t.id);const msg=input?.value?.trim();if(!msg)return;await db("support_replies","POST",{body:{ticket_id:t.id,user_id:user.id,is_staff:true,message:msg}});input.value="";await db("support_tickets","PATCH",{body:{status:"in_progress",updated_at:new Date().toISOString()},filters:["id=eq."+t.id]});const updated=await db("support_tickets","GET",{order:"created_at.desc"});setTickets(updated||[]);showToast("Reply sent!")}} style={{padding:"8px 16px",borderRadius:10,border:"none",background:"var(--g)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Reply</button>
               </div>
             </div>
           </div>;
@@ -3372,10 +3509,10 @@ function App(){
           const np=prompt("Enter your new password (min 8 characters):");
           if(np&&np.length>=8){
             fetch(SB+"/auth/v1/user",{method:"PUT",headers:{"apikey":SK,"Authorization":"Bearer "+_t,"Content-Type":"application/json"},body:JSON.stringify({password:np})}).then(r=>{
-              if(r.ok){alert("Password changed! You're now logged in.");window.location.reload()}
-              else alert("Error changing password. Please try again.")
-            }).catch(()=>alert("Error. Please try again."));
-          }else if(np){alert("Password must be at least 8 characters.")}
+              if(r.ok){showToast("Password changed!");window.location.reload()}
+              else showToast("Error changing password.","err")
+            }).catch(()=>showToast("Something went wrong.","err"));
+          }else if(np){showToast("Password must be at least 8 characters.","err")}
           else{window.location.reload()}
         },300);
         return;
