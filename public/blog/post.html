@@ -98,6 +98,25 @@ footer p{color:rgba(255,255,255,.3);font-size:11px;margin-top:8px}
     document.getElementById('og-desc').setAttribute('content', post.meta_description || '');
     document.getElementById('og-url').setAttribute('content', 'https://oneclubview.com/blog/' + post.slug);
 
+    // Article structured data (JSON-LD)
+    const jsonLd = document.createElement('script');
+    jsonLd.type = 'application/ld+json';
+    jsonLd.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": post.title,
+      "description": post.meta_description || '',
+      "author": {"@type": "Organization", "name": post.author || "OneClubView", "url": "https://oneclubview.com"},
+      "publisher": {"@type": "Organization", "name": "OneClubView", "url": "https://oneclubview.com", "logo": {"@type": "ImageObject", "url": "https://oneclubview.com/og-image.png"}},
+      "datePublished": post.published_at || '',
+      "dateModified": post.updated_at || post.published_at || '',
+      "mainEntityOfPage": {"@type": "WebPage", "@id": "https://oneclubview.com/blog/" + post.slug},
+      "image": "https://oneclubview.com/og-image.png",
+      "articleSection": (post.tags || [])[0] || "Parenting",
+      "keywords": post.meta_keywords || ''
+    });
+    document.head.appendChild(jsonLd);
+
     // Hero
     document.getElementById('hero-emoji').textContent = post.hero_emoji || '📝';
     document.getElementById('hero-title').textContent = post.title;
