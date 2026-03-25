@@ -794,7 +794,8 @@ function Auth({onAuth,mode:im}){
               {pw2.length>0&&pwMatch&&<p style={{fontSize:11,color:"#16a34a",marginTop:4}}>Passwords match ✓</p>}
             </div>}
             <button onClick={go} disabled={ld||(mode==="signup"?!canSignup:!canLogin)} className="btn bp">{ld?"...":mode==="signup"?"Start free trial":"Log in"}</button>
-            {mode==="login"&&<p style={{textAlign:"center",marginTop:8}}><button onClick={async()=>{const em=prompt("Enter your email address:");if(em){try{const r=await fetch(SB+"/auth/v1/recover",{method:"POST",headers:{"apikey":SK,"Content-Type":"application/json"},body:JSON.stringify({email:em})});if(r.ok)showToast("Password reset link sent! Check your inbox.");else showToast("Could not send reset email. Try again.","err")}catch(e){showToast("Error: "+e.message,"err")}}}} style={{background:"none",border:"none",color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)",fontSize:12,textDecoration:"underline"}}>Forgot password?</button></p>}
+            {mode==="login"&&<><p style={{textAlign:"center",marginTop:8}}><button onClick={()=>setShowReset(true)} style={{background:"none",border:"none",color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)",fontSize:12,textDecoration:"underline"}}>Forgot password?</button></p>
+            <OcvInput open={showReset} onClose={()=>setShowReset(false)} title="Reset password" placeholder="Enter your email address" onSubmit={async(em)=>{try{const r=await fetch(SB+"/auth/v1/recover",{method:"POST",headers:{"apikey":SK,"Content-Type":"application/json"},body:JSON.stringify({email:em})});if(r.ok)showToast("Password reset link sent! Check your inbox.");else showToast("Could not send reset email. Try again.","err")}catch(e){showToast("Error: "+e.message,"err")}}}/></>}
             {mode==="signup"&&<p style={{fontSize:12,color:"var(--mt)",textAlign:"center"}}>14 days free, then from €7.99/month</p>}
             {mode==="signup"&&<p style={{fontSize:11,color:"var(--mt)",textAlign:"center",lineHeight:1.5}}>By signing up you agree to our <a href="/terms" style={{color:"var(--acc)"}}>Terms of Service</a> and <a href="/privacy" style={{color:"var(--acc)"}}>Privacy Policy</a>.</p>}
             {mode==="signup"&&<p style={{fontSize:11,color:"var(--mt)",textAlign:"center"}}>Password must be 8+ characters with a mix of uppercase, numbers, or symbols</p>}
@@ -1256,6 +1257,8 @@ function Hub({user,profile,onRefresh,onLogout}){
   const[familyLocs,setFamilyLocs]=useState([]);const[showLocations,setShowLocations]=useState(false);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
   const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("timeline");const[selectedDay,setSelectedDay]=useState(null);const[calMonth,setCalMonth]=useState(new Date().getMonth());const[calYear,setCalYear]=useState(new Date().getFullYear());const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);const[showAddActivity,setShowAddActivity]=useState(false);const[tapEvent,setTapEvent]=useState(null);
+  const[showChangePw,setShowChangePw]=useState(false);const[showDeleteAcct,setShowDeleteAcct]=useState(false);
+  const[showSaveLocModal,setShowSaveLocModal]=useState(false);const[showAddLocModal,setShowAddLocModal]=useState(false);
 
   async function load(){
     // Get family member IDs for shared data
@@ -2221,16 +2224,14 @@ function Hub({user,profile,onRefresh,onLogout}){
             <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>📍 Current location</div>
             <div style={{fontSize:11,color:"var(--mt)"}}>Detected via GPS</div>
           </div>
-          <button onClick={async()=>{const label=prompt("Name this location:","Home")||"Home";await db("family_locations","POST",{body:{user_id:user.id,label:"🏠 "+label,latitude:userLoc.lat,longitude:userLoc.lng,radius_km:15,auto_source:"gps",active:true}});load()}} style={{padding:"4px 10px",borderRadius:8,border:"1.5px solid var(--g)",background:"none",fontSize:11,color:"var(--g)",cursor:"pointer",fontWeight:600,fontFamily:"var(--sn)"}}>+ Save</button>
+          <button onClick={()=>setShowSaveLocModal(true)} style={{padding:"4px 10px",borderRadius:8,border:"1.5px solid var(--g)",background:"none",fontSize:11,color:"var(--g)",cursor:"pointer",fontWeight:600,fontFamily:"var(--sn)"}}>+ Save</button>
         </div>}
 
         {/* Add new location */}
         <div style={{marginTop:16}}>
           <button onClick={()=>{
-            const label=prompt("Location name (e.g. Work, Grandparents, Holiday home):");
-            if(!label)return;
-            const addr=prompt("Town or address:");
-            if(!addr)return;
+            setShowAddLocModal(true);return;
+            const label="";const addr="";
             // Use Nominatim to geocode
             fetch("https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(addr+", Ireland")+"&format=json&limit=1",{headers:{"User-Agent":"OneClubView/1.0"}}).then(r=>r.json()).then(async d=>{
               if(d&&d[0]){
@@ -2269,14 +2270,14 @@ function Hub({user,profile,onRefresh,onLogout}){
           <div style={{fontSize:12,color:"var(--mt)"}}>{user?.email}</div>
         </div>
         <button onClick={()=>{setShowProfile(false);setShowSupport(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💬 Contact Support</button>
-        <button onClick={()=>{setShowProfile(false);const np=prompt("Enter new password (min 8 characters):");if(np&&np.length>=8){fetch(SB+"/auth/v1/user",{method:"PUT",headers:hd(),body:JSON.stringify({password:np})}).then(r=>{if(r.ok)showToast("Password changed!");else showToast("Error changing password.","err")}).catch(()=>showToast("Something went wrong.","err"))}else if(np){showToast("Password must be at least 8 characters.","err")}}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🔑 Change Password</button>
+        <button onClick={()=>setShowChangePw(true)} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🔑 Change Password</button>
         {profile?.subscription_status==="active"&&<button onClick={()=>{setShowProfile(false);openPortal()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💳 Manage Subscription</button>}
         {profile?.is_beta?<div style={{padding:"10px 14px",fontSize:12,fontWeight:700,color:"#16a34a",display:"flex",alignItems:"center",gap:8}}>🎁 Beta member — free forever</div>
         :profile?.subscription_status!=="active"&&<button onClick={()=>{setShowProfile(false);startCheckout("standard")}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>⭐ Subscribe — €7.99/mo</button>}
         <button onClick={()=>{setShowProfile(false);setShowFamily(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>👨‍👩‍👧‍👦 Family Members</button>
         <a href="/privacy" style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>🔒 Privacy & Data</a>
         <div style={{borderTop:"1px solid var(--bd)",marginTop:4,paddingTop:4}}>
-          <button onClick={async()=>{if(confirm("Request account deletion? We will email you confirmation and delete all your data within 30 days. You can also email hello@oneclubview.com.")){try{await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:"hello@oneclubview.com",subject:"Account deletion request: "+user.email,html:"<p>User "+user.email+" (id: "+user.id+") has requested account deletion. Please process within 30 days per GDPR.</p>"})});await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:user.email,subject:"Account deletion request received",html:"<p>We've received your request to delete your OneClubView account. All your data will be removed within 30 days. If this was not you, please contact hello@oneclubview.com immediately.</p>"})});showToast("Deletion request submitted. Check your email.");onLogout()}catch(e){showToast("Error. Please email hello@oneclubview.com","err")}}}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🗑️ Delete Account</button>
+          <button onClick={()=>setShowDeleteAcct(true)} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🗑️ Delete Account</button>
           <button onClick={()=>{setShowProfile(false);onLogout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🚪 Log out</button>
         </div>
       </div>}
@@ -2365,6 +2366,56 @@ function Hub({user,profile,onRefresh,onLogout}){
             showToast("Skipped for this week");setTapEvent(null);load();
           }
         }}/>
+
+      {/* Change Password Modal */}
+      <OcvInput open={showChangePw} onClose={()=>setShowChangePw(false)} title="Change password" placeholder="New password (min 8 characters)" inputType="password" onSubmit={async(np)=>{
+        if(np.length<8){showToast("Password must be at least 8 characters.","err");return}
+        try{const r=await fetch(SB+"/auth/v1/user",{method:"PUT",headers:hd(),body:JSON.stringify({password:np})});if(r.ok)showToast("Password changed!");else showToast("Error changing password.","err")}catch(e){showToast("Something went wrong.","err")}
+      }}/>
+
+      {/* Delete Account Confirm */}
+      <OcvConfirm open={showDeleteAcct} onClose={()=>setShowDeleteAcct(false)} title="Delete account?" message={"We'll email you confirmation and delete all your data within 30 days. You can also email hello@oneclubview.com."} confirmText="Delete my account" confirmColor="#dc2626" onConfirm={async()=>{
+        try{
+          await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:"hello@oneclubview.com",subject:"Account deletion request: "+user.email,html:"<p>User "+user.email+" (id: "+user.id+") has requested account deletion.</p>"})});
+          await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:user.email,subject:"Account deletion request received",html:"<p>We've received your request to delete your OneClubView account. All your data will be removed within 30 days.</p>"})});
+          showToast("Deletion request submitted. Check your email.");onLogout()
+        }catch(e){showToast("Error. Please email hello@oneclubview.com","err")}
+      }}/>
+
+      {/* Save GPS Location Modal */}
+      <OcvInput open={showSaveLocModal} onClose={()=>setShowSaveLocModal(false)} title="Name this location" placeholder="e.g. Home, Work, Grandparents" defaultValue="Home" onSubmit={async(label)=>{
+        await db("family_locations","POST",{body:{user_id:user.id,label:"🏠 "+label,latitude:userLoc.lat,longitude:userLoc.lng,radius_km:15,auto_source:"gps",active:true}});
+        setShowSaveLocModal(false);showToast("Location saved!");load();
+      }}/>
+
+      {/* Add Location Modal — two-step: name then address */}
+      {showAddLocModal&&<OcvModal open={showAddLocModal} onClose={()=>setShowAddLocModal(false)} title="Add a location">
+        <form onSubmit={async e=>{
+          e.preventDefault();
+          const label=e.target.locName.value.trim();
+          const addr=e.target.locAddr.value.trim();
+          if(!label||!addr)return;
+          try{
+            const r=await fetch("https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(addr+", Ireland")+"&format=json&limit=1",{headers:{"User-Agent":"OneClubView/1.0"}});
+            const d=await r.json();
+            if(d&&d[0]){
+              await db("family_locations","POST",{body:{user_id:user.id,label:label,latitude:Number(d[0].lat),longitude:Number(d[0].lon),address:d[0].display_name?.split(",").slice(0,3).join(","),radius_km:15,auto_source:"manual",active:true}});
+              setShowAddLocModal(false);showToast("Location added!");load();
+            }else{showToast("Could not find that location.","err")}
+          }catch(e){showToast("Location search failed.","err")}
+        }} style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div>
+            <label style={{fontSize:13,fontWeight:600,color:"var(--g)",marginBottom:4,display:"block"}}>Name</label>
+            <input name="locName" placeholder="e.g. Work, Grandparents, Holiday home" autoFocus/>
+          </div>
+          <div>
+            <label style={{fontSize:13,fontWeight:600,color:"var(--g)",marginBottom:4,display:"block"}}>Town or address</label>
+            <input name="locAddr" placeholder="e.g. Stillorgan, Co. Dublin"/>
+          </div>
+          <button type="submit" className="btn bp">Add location</button>
+        </form>
+      </OcvModal>}
+
       {showFamily&&<div className="mbg fi" onClick={()=>setShowFamily(false)}>
         <div className="mbox" onClick={e=>e.stopPropagation()} style={{maxHeight:"80vh"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
