@@ -273,12 +273,20 @@ function DateTimePicker({open,onClose,onSelect,title}){
   </OcvModal>;
 }
 // Event detail modal — tap an event to view/edit/delete
-function EventDetailModal({event,open,onClose,onDelete,onDriverChange,adults}){
+function EventDetailModal({event,open,onClose,onDelete,onDriverChange,onAttendeesChange,adults,familyAll}){
+  const[going,setGoing]=useState([]);
+  useEffect(()=>{if(open&&event){setGoing(event.attendees||[])}},[open,event]);
   if(!open||!event)return null;
   const isManual=event.source_type==="manual";
   const isRecurring=event.source_type==="recurring";
   const isCamp=event.source_type==="camp";
   const driverOptions=adults||[];
+  const allFamily=familyAll||[];
+  function toggleGoing(name){
+    const next=going.includes(name)?going.filter(n=>n!==name):[...going,name];
+    setGoing(next);
+    if(onAttendeesChange)onAttendeesChange(event,next);
+  }
   return <div onClick={onClose} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.45)",backdropFilter:"blur(4px)",WebkitBackdropFilter:"blur(4px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} className="modal-overlay">
     <div onClick={e=>e.stopPropagation()} className="modal-sheet" style={{background:"var(--card)",borderRadius:20,padding:24,width:"100%",maxWidth:400,boxShadow:"var(--shadow-xl)"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
@@ -292,7 +300,7 @@ function EventDetailModal({event,open,onClose,onDelete,onDriverChange,adults}){
           <span style={{fontSize:14,fontWeight:700,color:"var(--tx)"}}>{event.time||"—"}{event.endTime?"–"+event.endTime:""}</span>
         </div>
         {(event.club||event.title)&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderTop:"1px solid var(--bd)"}}>
-          <span style={{fontSize:14,color:"var(--mt)"}}>Club</span>
+          <span style={{fontSize:14,color:"var(--mt)"}}>{isManual?"Event":"Club"}</span>
           <span style={{fontSize:14,fontWeight:700,color:"var(--tx)"}}>{event.club||event.title}</span>
         </div>}
         {event.location&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderTop:"1px solid var(--bd)"}}>
@@ -300,6 +308,17 @@ function EventDetailModal({event,open,onClose,onDelete,onDriverChange,adults}){
           <span style={{fontSize:14,fontWeight:600,color:"var(--tx)",textAlign:"right",maxWidth:"60%"}}>{event.location}</span>
         </div>}
       </div>
+
+      {/* Who's going — for manual events, show all family members */}
+      {isManual&&allFamily.length>0&&<div style={{marginBottom:20}}>
+        <div style={{fontSize:11,fontWeight:700,color:"var(--mt)",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Who's going?</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {allFamily.map(name=><button key={name} onClick={()=>toggleGoing(name)}
+            style={{padding:"8px 16px",borderRadius:12,border:going.includes(name)?"2px solid var(--g)":"1.5px solid var(--bd)",background:going.includes(name)?"var(--gxl)":"#fff",fontSize:13,fontWeight:going.includes(name)?700:500,color:going.includes(name)?"var(--g)":"var(--tx)",cursor:"pointer",fontFamily:"var(--sn)"}}>{name}</button>)}
+          <button onClick={()=>{const next=[...allFamily];setGoing(next);if(onAttendeesChange)onAttendeesChange(event,next)}}
+            style={{padding:"8px 16px",borderRadius:12,border:going.length===allFamily.length?"2px solid var(--g)":"1.5px solid var(--bd)",background:going.length===allFamily.length?"var(--gxl)":"#fff",fontSize:13,fontWeight:going.length===allFamily.length?700:500,color:going.length===allFamily.length?"var(--g)":"var(--tx)",cursor:"pointer",fontFamily:"var(--sn)"}}>Everyone</button>
+        </div>
+      </div>}
 
       {/* Driver picker — adults only */}
       {isRecurring&&driverOptions.length>0&&<div style={{marginBottom:20}}>
@@ -1047,8 +1066,11 @@ function DiscoverResults({query,onAdd,userLoc}){
 
 
 function ThingsToDoSection({allLocs,kids,userLoc,setUserLoc,userId}){
-  const[things,setThings]=useState([]);const[loadingT,setLoadingT]=useState(true);const[tdFilter,setTdFilter]=useState("all");const[ageFilter,setAgeFilter]=useState(false);const[addedIds,setAddedIds]=useState(new Set());
+  const[things,setThings]=useState([]);const[loadingT,setLoadingT]=useState(true);const[tdFilter,setTdFilter]=useState("all");const[ageFilter,setAgeFilter]=useState(false);
   const[dpOpen,setDpOpen]=useState(false);const[dpItem,setDpItem]=useState(null);
+  // Persist added items across page loads
+  const[addedIds,setAddedIds]=useState(()=>{try{return new Set(JSON.parse(localStorage.getItem("ocv_added_things")||"[]"))}catch(e){return new Set()}});
+  function markAdded(id){const next=new Set([...addedIds,id]);setAddedIds(next);try{localStorage.setItem("ocv_added_things",JSON.stringify([...next]))}catch(e){}}
 
   // Request live GPS when component mounts
   useEffect(()=>{
@@ -1133,7 +1155,7 @@ function ThingsToDoSection({allLocs,kids,userLoc,setUserLoc,userId}){
           {!addedIds.has(t.id)?<button onClick={async()=>{
             if(t.event_date){
               await db("manual_events","POST",{body:{user_id:userId,title:t.title,event_date:t.event_date+"T"+(t.event_time||"10:00")+":00",location:t.location_name||"",description:t.description||""}});
-              setAddedIds(new Set([...addedIds,t.id]));showToast("Added to your schedule!");
+              markAdded(t.id);showToast("Added to your schedule!");
             }else{setDpItem(t);setDpOpen(true)}
           }} style={{flex:1,textAlign:"center",padding:12,borderRadius:14,border:"1.5px solid var(--g)",background:"none",color:"var(--g)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",minHeight:44}}>📅 Add to schedule</button>
           :<span style={{flex:1,textAlign:"center",padding:12,borderRadius:14,background:"var(--sage)",color:"var(--gl)",fontSize:13,fontWeight:700,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>✓ Added</span>}
@@ -1145,7 +1167,7 @@ function ThingsToDoSection({allLocs,kids,userLoc,setUserLoc,userId}){
     <DateTimePicker open={dpOpen} onClose={()=>{setDpOpen(false);setDpItem(null)}} title={dpItem?"When are you going to "+dpItem.title+"?":"Pick a date"} onSelect={async(date,time)=>{
       if(dpItem){
         await db("manual_events","POST",{body:{user_id:userId,title:dpItem.title,event_date:date+"T"+time+":00",location:dpItem.location_name||"",description:dpItem.description||""}});
-        setAddedIds(new Set([...addedIds,dpItem.id]));showToast("Added to your schedule!");
+        markAdded(dpItem.id);showToast("Added to your schedule!");
       }
     }}/>
   </div>;
@@ -2319,10 +2341,16 @@ function Hub({user,profile,onRefresh,onLogout}){
       {showAddActivity&&<AddActivityModal userId={user.id} userLoc={userLoc} profile={profile} kids={kids} onClose={()=>setShowAddActivity(false)} onSaved={()=>{track("add_activity");setShowAddActivity(false);load()}}/>}
       <EventDetailModal event={tapEvent} open={!!tapEvent} onClose={()=>setTapEvent(null)}
         adults={[profile?.first_name||"Me",...familyMembers.filter(m=>!kids.find(k=>k.first_name===m.first_name)).map(m=>m.first_name)].filter(Boolean)}
+        familyAll={[profile?.first_name||"Me",...kids.map(k=>k.first_name),...familyMembers.filter(m=>m.id!==user.id).map(m=>m.first_name)].filter(Boolean)}
         onDriverChange={async(ev,driver)=>{
           if(ev.source_type==="recurring"){
             await db("recurring_events","PATCH",{filters:["id=eq."+ev.source_id],body:{driver}});
             showToast(driver+" is driving");setTapEvent({...ev,driver});load();
+          }
+        }}
+        onAttendeesChange={async(ev,attendees)=>{
+          if(ev.source_type==="manual"&&ev.source_id){
+            await db("manual_events","PATCH",{filters:["id=eq."+ev.source_id],body:{description:attendees.length>0?"Going: "+attendees.join(", "):""}});
           }
         }}
         onDelete={async(ev)=>{
