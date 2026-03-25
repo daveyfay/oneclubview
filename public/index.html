@@ -1982,7 +1982,7 @@ function Hub({user,profile,onRefresh,onLogout}){
               {lanes.length===0?<div style={{padding:"8px 0 4px 48px",fontSize:13,color:"var(--mt)"}}>Free day ✨</div>
               :<div style={{display:"flex",flexDirection:"column",gap:6,paddingLeft:48}}>
                 {lanes.map((lane,li)=>lane.events.map((e,ei)=>
-                  <div key={e.id||li+"-"+ei} onClick={()=>setEditEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:e.skipped?"#f9f9f9":"var(--card)",border:"1px solid var(--bd)",boxShadow:e.skipped?"none":"var(--shadow)",cursor:"pointer",opacity:e.skipped?.5:1}}>
+                  <div key={e.id||li+"-"+ei} onClick={()=>setTapEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:e.skipped?"#f9f9f9":"var(--card)",border:"1px solid var(--bd)",boxShadow:e.skipped?"none":"var(--shadow)",cursor:"pointer",opacity:e.skipped?.5:1}}>
                     <div style={{width:5,background:e.skipped?"var(--bd)":(e.colour||COLS[li%COLS.length]),flexShrink:0}}/>
                     <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
                       <div>
@@ -2301,42 +2301,6 @@ function Hub({user,profile,onRefresh,onLogout}){
       {showAddPay&&<AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddPay(false)} onSaved={()=>{setShowAddPay(false);load()}}/>}
       
       {/* EDIT EVENT SHEET */}
-      {editEvent&&<>
-        <div onClick={()=>setEditEvent(null)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.3)",zIndex:60}}/>
-        <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:61,background:"#fff",borderRadius:"20px 20px 0 0",padding:"8px 20px 24px",boxShadow:"0 -8px 30px rgba(0,0,0,.1)",maxWidth:520,margin:"0 auto"}}>
-          <div style={{width:36,height:4,borderRadius:2,background:"var(--bd)",margin:"0 auto 16px"}}/>
-          <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",marginBottom:14}}>{editEvent.member} — {editEvent.club||editEvent.title}</h3>
-          <div style={{display:"flex",flexDirection:"column",gap:0}}>
-            <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid var(--bd)"}}>
-              <span style={{fontSize:12,color:"var(--mt)",fontWeight:600}}>Time</span>
-              <span style={{fontSize:13,fontWeight:600}}>{editEvent.time}{editEvent.endTime?"–"+editEvent.endTime:""}</span>
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid var(--bd)"}}>
-              <span style={{fontSize:12,color:"var(--mt)",fontWeight:600}}>Club</span>
-              <span style={{fontSize:13,fontWeight:600}}>{editEvent.club||"—"}</span>
-            </div>
-          </div>
-          <div style={{padding:"12px 0 6px"}}>
-            <span style={{fontSize:11,fontWeight:700,color:"var(--mt)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8,display:"block"}}>Who's driving?</span>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-              {[profile?.first_name||"Me",...familyMembers.filter(fm=>fm.id!==user.id).map(fm=>fm.first_name||fm.email),...kids.map(k=>k.first_name)].filter(Boolean).map(d=><button key={d} onClick={()=>{
-                const newDriver=editEvent.driver===d?null:d;
-                const table=editEvent.source_type==="recurring"?"recurring_events":"manual_events";
-                const sid=editEvent.source_id||editEvent.id;
-                db(table,"PATCH",{body:{driver:newDriver},filters:["id=eq."+sid]}).then(()=>{
-                  setEditEvent({...editEvent,driver:newDriver});load();
-                });
-              }} style={{padding:"6px 12px",borderRadius:8,border:editEvent.driver===d?"1.5px solid var(--g)":"1.5px solid var(--bd)",background:editEvent.driver===d?"var(--gxl)":"var(--card)",fontSize:11,fontWeight:600,color:editEvent.driver===d?"var(--g)":"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>🚗 {d}</button>)}
-            </div>
-          </div>
-          <div style={{display:"flex",gap:8,marginTop:14}}>
-            <button onClick={()=>setEditEvent(null)} className="btn bp" style={{flex:1}}>Done</button>
-            {editEvent.source_type==="recurring"&&!editEvent.skipped&&<button onClick={async()=>{const evDate=editEvent.date instanceof Date?editEvent.date.toISOString().split("T")[0]:editEvent.date;const re=await db("recurring_events","GET",{filters:["id=eq."+editEvent.source_id]});if(re&&re[0]){const excluded=[...(re[0].excluded_dates||[]),evDate];await db("recurring_events","PATCH",{filters:["id=eq."+editEvent.source_id],body:{excluded_dates:excluded}});setEditEvent(null);load()}}} style={{padding:"12px 16px",borderRadius:14,border:"none",background:"#fef2f2",color:"#dc2626",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"var(--sn)"}}>Skip this week</button>}
-            {editEvent.source_type==="recurring"&&editEvent.skipped&&<button onClick={async()=>{const evDate=editEvent.date instanceof Date?editEvent.date.toISOString().split("T")[0]:editEvent.date;const re=await db("recurring_events","GET",{filters:["id=eq."+editEvent.source_id]});if(re&&re[0]){const excluded=(re[0].excluded_dates||[]).filter(d=>d!==evDate);await db("recurring_events","PATCH",{filters:["id=eq."+editEvent.source_id],body:{excluded_dates:excluded}});setEditEvent(null);load()}}} style={{padding:"12px 16px",borderRadius:14,border:"none",background:"var(--gxl)",color:"var(--g)",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"var(--sn)"}}>Undo skip</button>}
-          </div>
-        </div>
-      </>}
-
       {/* FAB */}
       {showFab&&<div onClick={()=>setShowFab(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:70}}/>}
       {showFab&&<div style={{position:"fixed",bottom:76,right:20,zIndex:71,display:"flex",flexDirection:"column",gap:8,alignItems:"flex-end"}}>
