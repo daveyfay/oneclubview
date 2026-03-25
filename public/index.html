@@ -1084,7 +1084,7 @@ function ThingsToDoSection({allLocs,kids,userLoc,setUserLoc,userId}){
         <div style={{display:"flex",gap:8,marginTop:12}}>
           {!addedIds.has(t.id)?<button onClick={async()=>{
             if(t.event_date){
-              await db("manual_events","POST",{body:{user_id:userId,title:t.title,event_date:t.event_date+"T"+(t.event_time||"10:00")+":00",duration_minutes:120,notes:(t.location_name||"")+" — "+(t.description||"")}});
+              await db("manual_events","POST",{body:{user_id:userId,title:t.title,event_date:t.event_date+"T"+(t.event_time||"10:00")+":00",location:t.location_name||"",description:t.description||""}});
               setAddedIds(new Set([...addedIds,t.id]));showToast("Added to your schedule!");
             }else{setDpItem(t);setDpOpen(true)}
           }} style={{flex:1,textAlign:"center",padding:12,borderRadius:14,border:"1.5px solid var(--g)",background:"none",color:"var(--g)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",minHeight:44}}>📅 Add to schedule</button>
@@ -1096,7 +1096,7 @@ function ThingsToDoSection({allLocs,kids,userLoc,setUserLoc,userId}){
     {filtered.length===0&&<p style={{textAlign:"center",padding:20,color:"var(--mt)"}}>No activities match this filter</p>}
     <DateTimePicker open={dpOpen} onClose={()=>{setDpOpen(false);setDpItem(null)}} title={dpItem?"When are you going to "+dpItem.title+"?":"Pick a date"} onSelect={async(date,time)=>{
       if(dpItem){
-        await db("manual_events","POST",{body:{user_id:userId,title:dpItem.title,event_date:date+"T"+time+":00",duration_minutes:120,notes:(dpItem.location_name||"")+" — "+(dpItem.description||"")}});
+        await db("manual_events","POST",{body:{user_id:userId,title:dpItem.title,event_date:date+"T"+time+":00",location:dpItem.location_name||"",description:dpItem.description||""}});
         setAddedIds(new Set([...addedIds,dpItem.id]));showToast("Added to your schedule!");
       }
     }}/>
