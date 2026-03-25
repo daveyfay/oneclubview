@@ -2340,8 +2340,8 @@ function Hub({user,profile,onRefresh,onLogout}){
       {showSupport&&<SupportModal userId={user.id} userEmail={user.email} onClose={()=>setShowSupport(false)}/>}
       {showAddActivity&&<AddActivityModal userId={user.id} userLoc={userLoc} profile={profile} kids={kids} onClose={()=>setShowAddActivity(false)} onSaved={()=>{track("add_activity");setShowAddActivity(false);load()}}/>}
       <EventDetailModal event={tapEvent} open={!!tapEvent} onClose={()=>setTapEvent(null)}
-        adults={[profile?.first_name||"Me",...familyMembers.filter(m=>!kids.find(k=>k.first_name===m.first_name)).map(m=>m.first_name)].filter(Boolean)}
-        familyAll={[profile?.first_name||"Me",...kids.map(k=>k.first_name),...familyMembers.filter(m=>m.id!==user.id).map(m=>m.first_name)].filter(Boolean)}
+        adults={[...new Set([profile?.first_name||"Me",...familyMembers.filter(m=>m.id!==user.id&&!kids.find(k=>k.first_name===m.first_name)).map(m=>m.first_name)].filter(Boolean))]}
+        familyAll={[...new Set([profile?.first_name||"Me",...kids.map(k=>k.first_name),...familyMembers.filter(m=>m.id!==user.id).map(m=>m.first_name)].filter(Boolean))]}
         onDriverChange={async(ev,driver)=>{
           if(ev.source_type==="recurring"){
             await db("recurring_events","PATCH",{filters:["id=eq."+ev.source_id],body:{driver}});
