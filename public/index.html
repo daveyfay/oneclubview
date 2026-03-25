@@ -272,6 +272,48 @@ function DateTimePicker({open,onClose,onSelect,title}){
     </button>
   </OcvModal>;
 }
+// Event detail modal — tap an event to view/edit/delete
+function EventDetailModal({event,open,onClose,onDelete,onUpdate}){
+  if(!open||!event)return null;
+  const isManual=event.source_type==="manual";
+  const isRecurring=event.source_type==="recurring";
+  const isCamp=event.source_type==="camp";
+  return <OcvModal open={open} onClose={onClose} title={event.club||event.title||"Event"}>
+    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
+      <div style={{width:6,height:48,borderRadius:3,background:event.colour||"var(--g)",flexShrink:0}}/>
+      <div>
+        <div style={{fontSize:16,fontWeight:700,color:"var(--tx)"}}>{event.member||"You"}</div>
+        <div style={{fontSize:14,color:"var(--mt)"}}>{event.club||event.title||""}</div>
+      </div>
+    </div>
+    <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:24}}>
+      <div style={{display:"flex",gap:10,alignItems:"center"}}>
+        <span style={{fontSize:18}}>📅</span>
+        <span style={{fontSize:14,color:"var(--tx)"}}>{event.date?event.date.toLocaleDateString("en-IE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}):""}</span>
+      </div>
+      {event.time&&<div style={{display:"flex",gap:10,alignItems:"center"}}>
+        <span style={{fontSize:18}}>🕐</span>
+        <span style={{fontSize:14,color:"var(--tx)"}}>{event.time}{event.endTime?" – "+event.endTime:""}</span>
+      </div>}
+      {event.driver&&<div style={{display:"flex",gap:10,alignItems:"center"}}>
+        <span style={{fontSize:18}}>🚗</span>
+        <span style={{fontSize:14,color:"var(--tx)"}}>{event.driver}</span>
+      </div>}
+      {event.location&&<div style={{display:"flex",gap:10,alignItems:"center"}}>
+        <span style={{fontSize:18}}>📍</span>
+        <span style={{fontSize:14,color:"var(--tx)"}}>{event.location}</span>
+      </div>}
+      {event.description&&<div style={{fontSize:13,color:"var(--mt)",lineHeight:1.5,padding:"8px 0"}}>{event.description}</div>}
+      {isCamp&&<div style={{fontSize:12,color:"var(--mt)",fontStyle:"italic"}}>This is a camp booking</div>}
+      {isRecurring&&<div style={{fontSize:12,color:"var(--mt)",fontStyle:"italic"}}>This is a recurring weekly activity</div>}
+    </div>
+    <div style={{display:"flex",flexDirection:"column",gap:8}}>
+      {isManual&&<button onClick={()=>{onDelete(event);onClose()}} style={{width:"100%",padding:14,borderRadius:14,border:"1.5px solid #dc2626",background:"none",color:"#dc2626",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",minHeight:48}}>Remove from schedule</button>}
+      {isRecurring&&<button onClick={()=>{onDelete(event);onClose()}} style={{width:"100%",padding:14,borderRadius:14,border:"1.5px solid #dc2626",background:"none",color:"#dc2626",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",minHeight:48}}>Skip this week</button>}
+      <button onClick={onClose} style={{width:"100%",padding:14,borderRadius:14,border:"none",background:"var(--warm)",color:"var(--mt)",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"var(--sn)",minHeight:48}}>Close</button>
+    </div>
+  </OcvModal>;
+}
 // Country-aware config
 const COUNTRY_CONFIG={
   IE:{classes:["Junior Infants","Senior Infants","1st Class","2nd Class","3rd Class","4th Class","5th Class","6th Class"],currency:"€",currencyCode:"EUR",schoolLabel:"School",campLabel:"Camp"},
@@ -1185,7 +1227,7 @@ function Hub({user,profile,onRefresh,onLogout}){
   const[schoolLocs,setSchoolLocs]=useState([]);
   const[familyLocs,setFamilyLocs]=useState([]);const[showLocations,setShowLocations]=useState(false);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
-  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("timeline");const[selectedDay,setSelectedDay]=useState(null);const[calMonth,setCalMonth]=useState(new Date().getMonth());const[calYear,setCalYear]=useState(new Date().getFullYear());const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);const[showAddActivity,setShowAddActivity]=useState(false);
+  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("timeline");const[selectedDay,setSelectedDay]=useState(null);const[calMonth,setCalMonth]=useState(new Date().getMonth());const[calYear,setCalYear]=useState(new Date().getFullYear());const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);const[showAddActivity,setShowAddActivity]=useState(false);const[tapEvent,setTapEvent]=useState(null);
 
   async function load(){
     // Get family member IDs for shared data
@@ -1599,16 +1641,19 @@ function Hub({user,profile,onRefresh,onLogout}){
           </div>
           <div style={{padding:"8px 12px",maxHeight:240,overflowY:"auto"}}>
             {dayEvts.length===0?<div style={{padding:"16px 0",textAlign:"center",color:"var(--mt)",fontSize:13}}>{isHol?"School holiday — no activities":"No activities this day"}</div>
-            :dayEvts.map((e,i)=><div key={e.id||i} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6}}>
+            :dayEvts.map((e,i)=><div key={e.id||i} onClick={()=>setTapEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6,cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.98)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
               <div style={{width:4,background:e.colour||"#999",flexShrink:0}}/>
               <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
                 <div>
                   <div style={{fontSize:13,fontWeight:700,color:"var(--tx)"}}>{e.member}</div>
                   <div style={{fontSize:12,color:"var(--mt)"}}>{e.source_type==="camp"?"🏕️ ":""}{e.club||e.title||""}</div>
                 </div>
-                <div style={{textAlign:"right",flexShrink:0}}>
-                  <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
-                  {e.driver&&<div style={{fontSize:10,fontWeight:600,color:"var(--acc)",marginTop:2}}>🚗 {e.driver}</div>}
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <div style={{textAlign:"right",flexShrink:0}}>
+                    <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
+                    {e.driver&&<div style={{fontSize:10,fontWeight:600,color:"var(--acc)",marginTop:2}}>🚗 {e.driver}</div>}
+                  </div>
+                  <span style={{fontSize:14,color:"var(--bd)"}}>›</span>
                 </div>
               </div>
             </div>)}
@@ -1715,16 +1760,19 @@ function Hub({user,profile,onRefresh,onLogout}){
               </div>
               <div style={{padding:"8px 12px",maxHeight:240,overflowY:"auto"}}>
                 {dayE.length===0?<div style={{padding:"16px 0",textAlign:"center",color:"var(--mt)",fontSize:13}}>No activities this day</div>
-                :dayE.map((e,i)=><div key={e.id||i} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6}}>
+                :dayE.map((e,i)=><div key={e.id||i} onClick={()=>setTapEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6,cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.98)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
                   <div style={{width:4,background:e.colour||"#999",flexShrink:0}}/>
                   <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
                     <div>
                       <div style={{fontSize:13,fontWeight:700,color:"var(--tx)"}}>{e.member}</div>
                       <div style={{fontSize:12,color:"var(--mt)"}}>{e.source_type==="camp"?"🏕️ ":""}{e.club||e.title||""}</div>
                     </div>
-                    <div style={{textAlign:"right",flexShrink:0}}>
-                      <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
-                      {e.driver&&<div style={{fontSize:10,fontWeight:600,color:"var(--acc)",marginTop:2}}>🚗 {e.driver}</div>}
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <div style={{textAlign:"right",flexShrink:0}}>
+                        <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
+                        {e.driver&&<div style={{fontSize:10,fontWeight:600,color:"var(--acc)",marginTop:2}}>🚗 {e.driver}</div>}
+                      </div>
+                      <span style={{fontSize:14,color:"var(--bd)"}}>›</span>
                     </div>
                   </div>
                 </div>)}
@@ -2263,6 +2311,19 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       {showSupport&&<SupportModal userId={user.id} userEmail={user.email} onClose={()=>setShowSupport(false)}/>}
       {showAddActivity&&<AddActivityModal userId={user.id} userLoc={userLoc} profile={profile} kids={kids} onClose={()=>setShowAddActivity(false)} onSaved={()=>{track("add_activity");setShowAddActivity(false);load()}}/>}
+      <EventDetailModal event={tapEvent} open={!!tapEvent} onClose={()=>setTapEvent(null)} onDelete={async(ev)=>{
+        if(ev.source_type==="manual"){
+          await db("manual_events","DELETE",{filters:["id=eq."+ev.source_id]});
+          showToast("Removed from schedule");load();
+        }else if(ev.source_type==="recurring"){
+          // Skip this week by adding date to excluded_dates
+          const dateStr=ev.date.toISOString().split("T")[0];
+          const rec=recs.find(r=>r.id===ev.source_id);
+          const excluded=[...(rec?.excluded_dates||[]),dateStr];
+          await db("recurring_events","PATCH",{filters:["id=eq."+ev.source_id],body:{excluded_dates:excluded}});
+          showToast("Skipped for this week");load();
+        }
+      }}/>
       {showFamily&&<div className="mbg fi" onClick={()=>setShowFamily(false)}>
         <div className="mbox" onClick={e=>e.stopPropagation()} style={{maxHeight:"80vh"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
