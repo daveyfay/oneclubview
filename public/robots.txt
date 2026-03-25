@@ -1,5 +1,40 @@
+# OneClubView — robots.txt
+# Updated 25 Mar 2026 to explicitly allow AI search crawlers
+
 User-agent: *
 Allow: /
 Disallow: /api/
+
+# --- AI Search & Training Crawlers ---
+# Explicitly allow all major AI bots for maximum AI search visibility
+
+# OpenAI (ChatGPT Search)
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic (Claude)
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+# Google AI (Gemini / AI Overviews)
+User-agent: Google-Extended
+Allow: /
+
+# Apple AI (Siri / Apple Intelligence)
+User-agent: Applebot-Extended
+Allow: /
 
 Sitemap: https://oneclubview.com/sitemap.xml
