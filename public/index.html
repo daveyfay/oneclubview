@@ -1619,9 +1619,9 @@ function Hub({user,profile,onRefresh,onLogout}){
 
       {/* WEEK/MONTH HEADER — Flo-inspired */}
       <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:4}}>
-        <h2 style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>This week</h2>
+        <h2 style={{fontFamily:"var(--sr)",fontSize:20,fontWeight:800,color:"var(--g)"}}>This week</h2>
         <div style={{display:"flex",gap:4}}>
-          <button onClick={()=>{track("calendar_toggle",{view:weekView==="calendar"?"timeline":"calendar"});setWeekView(weekView==="calendar"?"timeline":"calendar")}} style={{fontSize:13,fontWeight:600,color:weekView==="calendar"?"var(--acc)":"var(--mt)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)",padding:"4px 0"}}>{weekView==="calendar"?"Week view":"Calendar"}</button>
+          <button onClick={()=>{track("calendar_toggle",{view:weekView==="calendar"?"timeline":"calendar"});setWeekView(weekView==="calendar"?"timeline":"calendar")}} style={{fontSize:11,fontWeight:600,color:weekView==="calendar"?"var(--acc)":"var(--mt)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)"}}>{weekView==="calendar"?"Week view":"Calendar"}</button>
         </div>
       </div>
 
@@ -1631,10 +1631,10 @@ function Hub({user,profile,onRefresh,onLogout}){
           const today=isToday(d);
           const sel=selectedDay&&selectedDay.getDate()===d.getDate()&&selectedDay.getMonth()===d.getMonth()&&selectedDay.getFullYear()===d.getFullYear();
           const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate());
-          return <div key={d.toISOString()} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,minWidth:48,padding:"8px 6px",borderRadius:14,background:today?"var(--g)":sel?"var(--gxl)":"transparent",cursor:"pointer",border:sel&&!today?"1.5px solid var(--g)":"1.5px solid transparent",transition:"all .15s"}} onClick={()=>setSelectedDay(sel?null:d)}>
-            <span style={{fontSize:11,fontWeight:700,color:today?"rgba(255,255,255,.7)":"var(--mt)",textTransform:"uppercase",letterSpacing:.5}}>{d.toLocaleDateString("en-IE",{weekday:"short"}).slice(0,3)}</span>
-            <span style={{fontSize:18,fontWeight:800,color:today?"#fff":"var(--tx)"}}>{d.getDate()}</span>
-            {dayEvts.length>0&&<div style={{display:"flex",gap:3}}>{dayEvts.slice(0,3).map((e,i)=><div key={i} style={{width:6,height:6,borderRadius:"50%",background:today?"rgba(255,255,255,.6)":(e.colour||"var(--acc)")}}/>)}</div>}
+          return <div key={d.toISOString()} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,minWidth:44,padding:"6px 4px",borderRadius:12,background:today?"var(--g)":sel?"var(--gxl)":"transparent",cursor:"pointer",border:sel&&!today?"1.5px solid var(--g)":"1.5px solid transparent"}} onClick={()=>setSelectedDay(sel?null:d)}>
+            <span style={{fontSize:10,fontWeight:700,color:today?"rgba(255,255,255,.7)":"var(--mt)",textTransform:"uppercase"}}>{d.toLocaleDateString("en-IE",{weekday:"short"}).slice(0,3)}</span>
+            <span style={{fontSize:16,fontWeight:800,color:today?"#fff":"var(--tx)"}}>{d.getDate()}</span>
+            {dayEvts.length>0&&<div style={{display:"flex",gap:2}}>{dayEvts.slice(0,3).map((e,i)=><div key={i} style={{width:5,height:5,borderRadius:"50%",background:today?"rgba(255,255,255,.6)":(e.colour||"var(--acc)")}}/>)}</div>}
           </div>;
         })}
       </div>
@@ -1651,27 +1651,27 @@ function Hub({user,profile,onRefresh,onLogout}){
         const unpaidCount=isAdmin?(pays||[]).filter(p=>!p.paid&&p.status!=="not_renewing").length:0;
         const unpaidTotal=isAdmin?(pays||[]).filter(p=>!p.paid&&p.status!=="not_renewing").reduce((s,p)=>s+parseFloat(p.amount||0),0):0;
         
-        return <div style={{display:"flex",gap:10,overflowX:"auto",marginBottom:16,WebkitOverflowScrolling:"touch",paddingBottom:4}} className="hsb">
+        return <div style={{display:"flex",gap:8,overflowX:"auto",marginBottom:14,WebkitOverflowScrolling:"touch",paddingBottom:4}} className="hsb">
           {/* Today's events */}
-          <div style={{minWidth:115,padding:"14px 16px",borderRadius:16,background:"var(--gxl)",border:"1.5px solid #c8dce8",textAlign:"center",flexShrink:0}}>
+          <div style={{minWidth:110,padding:"12px 14px",borderRadius:14,background:"var(--gxl)",border:"1.5px solid #c8dce8",textAlign:"center",flexShrink:0}}>
             <div style={{fontSize:11,fontWeight:700,color:"var(--gl)"}}>Today</div>
             <div style={{fontSize:28,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)",lineHeight:1.2}}>{todayEvts.length}</div>
             <div style={{fontSize:11,color:"var(--mt)"}}>{todayEvts.length===1?"event":"events"}</div>
           </div>
           {/* This week */}
-          <div style={{minWidth:115,padding:"14px 16px",borderRadius:16,background:"#f5f0eb",border:"1.5px solid #e5ddd4",textAlign:"center",flexShrink:0}}>
+          <div style={{minWidth:110,padding:"12px 14px",borderRadius:14,background:"#f5f0eb",border:"1.5px solid #e5ddd4",textAlign:"center",flexShrink:0}}>
             <div style={{fontSize:11,fontWeight:700,color:"#8a7560"}}>This week</div>
             <div style={{fontSize:28,fontWeight:800,color:"var(--tx)",fontFamily:"var(--sr)",lineHeight:1.2}}>{thisWeekCount}</div>
             <div style={{fontSize:11,color:"var(--mt)"}}>activities</div>
           </div>
           {/* Holidays countdown */}
-          {nextHol&&daysToHol!==null&&daysToHol<=60&&<div style={{minWidth:115,padding:"14px 16px",borderRadius:16,background:"#fef3e2",border:"1.5px solid #fad9a1",textAlign:"center",flexShrink:0}}>
+          {nextHol&&daysToHol!==null&&daysToHol<=60&&<div style={{minWidth:110,padding:"12px 14px",borderRadius:14,background:"#fef3e2",border:"1.5px solid #fad9a1",textAlign:"center",flexShrink:0}}>
             <div style={{fontSize:11,fontWeight:700,color:"#b8860b"}}>{nextHol.name}</div>
             <div style={{fontSize:28,fontWeight:800,color:"#d4a017",fontFamily:"var(--sr)",lineHeight:1.2}}>{daysToHol}</div>
             <div style={{fontSize:11,color:"var(--mt)"}}>days away</div>
           </div>}
           {/* Fees due */}
-          {isAdmin&&unpaidCount>0&&<div style={{minWidth:115,padding:"14px 16px",borderRadius:16,background:"#fef2f2",border:"1.5px solid #fecaca",textAlign:"center",flexShrink:0}} onClick={()=>setTab("money")}>
+          {isAdmin&&unpaidCount>0&&<div style={{minWidth:110,padding:"12px 14px",borderRadius:14,background:"#fef2f2",border:"1.5px solid #fecaca",textAlign:"center",flexShrink:0}} onClick={()=>setTab("money")}>
             <div style={{fontSize:11,fontWeight:700,color:"#dc2626"}}>Fees due</div>
             <div style={{fontSize:28,fontWeight:800,color:"#dc2626",fontFamily:"var(--sr)",lineHeight:1.2}}>€{unpaidTotal.toFixed(0)}</div>
             <div style={{fontSize:11,color:"var(--mt)"}}>{unpaidCount} unpaid</div>
@@ -1684,8 +1684,8 @@ function Hub({user,profile,onRefresh,onLogout}){
         const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===selectedDay.getFullYear()&&e.date.getMonth()===selectedDay.getMonth()&&e.date.getDate()===selectedDay.getDate());
         const isHol=(holidays||[]).some(h=>{const s=new Date(h.start_date),e=new Date(h.end_date);return selectedDay>=s&&selectedDay<=e});
         const holName=isHol?(holidays||[]).find(h=>selectedDay>=new Date(h.start_date)&&selectedDay<=new Date(h.end_date))?.name:"";
-        return <div style={{marginBottom:16,background:"var(--card)",borderRadius:18,border:"1px solid var(--bd)",boxShadow:"var(--shadow-lg)",overflow:"hidden",animation:"slideUp .25s ease"}}>
-          <div style={{padding:"14px 18px",borderBottom:"1px solid var(--bd)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        return <div style={{marginBottom:14,background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"var(--shadow)",overflow:"hidden",animation:"slideUp .2s ease"}}>
+          <div style={{padding:"12px 16px",borderBottom:"1px solid var(--bd)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
               <div style={{fontSize:14,fontWeight:700,color:"var(--g)"}}>{selectedDay.toLocaleDateString("en-IE",{weekday:"long",day:"numeric",month:"long"})}</div>
               {isHol&&<div style={{fontSize:11,color:"#b8860b",fontWeight:600}}>{holName}</div>}
@@ -1973,27 +1973,27 @@ function Hub({user,profile,onRefresh,onLogout}){
               memberEvts[key].events.push(e);
             });
             const lanes=Object.values(memberEvts);
-            return <div key={d.toISOString()} style={{marginBottom:16}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                <div style={{width:44,height:44,borderRadius:14,background:today?"var(--acc)":"var(--card)",border:today?"none":"1px solid var(--bd)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",boxShadow:today?"0 4px 12px rgba(232,93,74,.25)":"var(--shadow)"}}>
+            return <div key={d.toISOString()} style={{marginBottom:12}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                <div style={{width:40,height:40,borderRadius:12,background:today?"var(--acc)":"var(--card)",border:today?"none":"1px solid var(--bd)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",boxShadow:today?"0 4px 12px rgba(232,93,74,.25)":"var(--shadow)"}}>
                   <span style={{fontSize:9,fontWeight:700,color:today?"rgba(255,255,255,.7)":"var(--mt)",textTransform:"uppercase"}}>{d.toLocaleDateString("en-IE",{weekday:"short"})}</span>
                   <span style={{fontSize:16,fontWeight:800,color:today?"#fff":"var(--tx)",lineHeight:1}}>{d.getDate()}</span>
                 </div>
-                {today&&<span style={{fontSize:12,fontWeight:700,color:"var(--acc)",textTransform:"uppercase",letterSpacing:.5}}>Today</span>}
+                {today&&<span style={{fontSize:11,fontWeight:700,color:"var(--acc)",textTransform:"uppercase",letterSpacing:.5}}>Today</span>}
               </div>
               {lanes.length===0?<div style={{padding:"8px 0 4px 48px",fontSize:13,color:"var(--mt)"}}>Free day ✨</div>
-              :<div style={{display:"flex",flexDirection:"column",gap:8,paddingLeft:54}}>
+              :<div style={{display:"flex",flexDirection:"column",gap:6,paddingLeft:48}}>
                 {lanes.map((lane,li)=>lane.events.map((e,ei)=>
                   <div key={e.id||li+"-"+ei} onClick={()=>setEditEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:e.skipped?"#f9f9f9":"var(--card)",border:"1px solid var(--bd)",boxShadow:e.skipped?"none":"var(--shadow)",cursor:"pointer",opacity:e.skipped?.5:1}}>
                     <div style={{width:5,background:e.skipped?"var(--bd)":(e.colour||COLS[li%COLS.length]),flexShrink:0}}/>
-                    <div style={{flex:1,padding:"12px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+                    <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
                       <div>
-                        <div style={{fontSize:14,fontWeight:700,color:e.skipped?"var(--mt)":"var(--tx)",textDecoration:e.skipped?"line-through":"none"}}>{e.member}</div>
-                        <div style={{fontSize:13,color:"var(--mt)"}}>{e.club||e.title||""}{e.skipped?" — Skipped":""}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:e.skipped?"var(--mt)":"var(--tx)",textDecoration:e.skipped?"line-through":"none"}}>{e.member}</div>
+                        <div style={{fontSize:12,color:"var(--mt)"}}>{e.club||e.title||""}{e.skipped?" — Skipped":""}</div>
                       </div>
                       <div style={{textAlign:"right",flexShrink:0}}>
-                        <div style={{fontSize:14,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
-                        {e.driver&&<div style={{fontSize:12,fontWeight:600,color:"var(--acc)",marginTop:2}}>🚗 {e.driver}</div>}
+                        <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
+                        {e.driver&&<div style={{fontSize:11,fontWeight:600,color:"var(--acc)",marginTop:2}}>🚗 {e.driver}</div>}
                       </div>
                     </div>
                   </div>
@@ -2004,7 +2004,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         </div>}
 
         {/* FORWARD BANNER */}
-        <div style={{background:"var(--g)",borderRadius:18,padding:20,marginTop:20,color:"#fff"}}>
+        <div style={{background:"var(--g)",borderRadius:14,padding:16,marginTop:16,color:"#fff"}}>
           <h4 style={{fontFamily:"var(--sr)",fontSize:14,fontWeight:700,marginBottom:8}}>📬 Forward club messages</h4>
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
             <div style={{background:"rgba(255,255,255,.06)",borderRadius:10,padding:10}}>
