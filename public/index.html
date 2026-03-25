@@ -1694,17 +1694,17 @@ function Hub({user,profile,onRefresh,onLogout}){
             {dayEvts.length===0?<div style={{padding:"16px 0",textAlign:"center",color:"var(--mt)",fontSize:13}}>{isHol?"School holiday — no activities":"No activities this day"}</div>
             :dayEvts.map((e,i)=><div key={e.id||i} onClick={()=>setTapEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6,cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.98)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
               <div style={{width:4,background:e.colour||"#999",flexShrink:0}}/>
-              <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
-                <div>
-                  <div style={{fontSize:13,fontWeight:700,color:"var(--tx)"}}>{e.member}</div>
-                  <div style={{fontSize:12,color:"var(--mt)"}}>{e.source_type==="camp"?"🏕️ ":""}{e.club||e.title||""}</div>
+              <div style={{flex:1,padding:"12px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+                <div style={{minWidth:0}}>
+                  <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>{e.source_type==="camp"?"🏕️ ":""}{e.club||e.title||""}</div>
+                  <div style={{fontSize:12,color:"var(--mt)",marginTop:1}}>{e.member}</div>
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:6}}>
                   <div style={{textAlign:"right",flexShrink:0}}>
-                    <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
-                    {e.driver&&<div style={{fontSize:11,fontWeight:600,color:"var(--acc)",marginTop:2}}>🚗 {e.driver}</div>}
+                    <div style={{fontSize:14,fontWeight:700,color:"var(--g)",fontVariantNumeric:"tabular-nums"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
+                    {e.driver&&<div style={{fontSize:12,color:"var(--mt)",marginTop:1,display:"flex",alignItems:"center",gap:3,justifyContent:"flex-end"}}><span style={{color:"var(--mt)"}}>{ICN.car}</span> {e.driver}</div>}
                   </div>
-                  <span style={{fontSize:14,color:"var(--bd)"}}>›</span>
+                  <span style={{color:"#ddd"}}>{ICN.chevron}</span>
                 </div>
               </div>
             </div>)}
@@ -1813,17 +1813,17 @@ function Hub({user,profile,onRefresh,onLogout}){
                 {dayE.length===0?<div style={{padding:"16px 0",textAlign:"center",color:"var(--mt)",fontSize:13}}>No activities this day</div>
                 :dayE.map((e,i)=><div key={e.id||i} onClick={()=>setTapEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6,cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.98)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
                   <div style={{width:4,background:e.colour||"#999",flexShrink:0}}/>
-                  <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
-                    <div>
-                      <div style={{fontSize:13,fontWeight:700,color:"var(--tx)"}}>{e.member}</div>
-                      <div style={{fontSize:12,color:"var(--mt)"}}>{e.source_type==="camp"?"🏕️ ":""}{e.club||e.title||""}</div>
+                  <div style={{flex:1,padding:"12px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+                    <div style={{minWidth:0}}>
+                      <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>{e.source_type==="camp"?"🏕️ ":""}{e.club||e.title||""}</div>
+                      <div style={{fontSize:12,color:"var(--mt)",marginTop:1}}>{e.member}</div>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:6}}>
                       <div style={{textAlign:"right",flexShrink:0}}>
-                        <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
-                        {e.driver&&<div style={{fontSize:11,fontWeight:600,color:"var(--acc)",marginTop:2}}>🚗 {e.driver}</div>}
+                        <div style={{fontSize:14,fontWeight:700,color:"var(--g)",fontVariantNumeric:"tabular-nums"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
+                        {e.driver&&<div style={{fontSize:12,color:"var(--mt)",marginTop:1,display:"flex",alignItems:"center",gap:3,justifyContent:"flex-end"}}><span style={{color:"var(--mt)"}}>{ICN.car}</span> {e.driver}</div>}
                       </div>
-                      <span style={{fontSize:14,color:"var(--bd)"}}>›</span>
+                      <span style={{color:"#ddd"}}>{ICN.chevron}</span>
                     </div>
                   </div>
                 </div>)}
@@ -1984,14 +1984,17 @@ function Hub({user,profile,onRefresh,onLogout}){
                 {lanes.map((lane,li)=>lane.events.map((e,ei)=>
                   <div key={e.id||li+"-"+ei} onClick={()=>setTapEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:e.skipped?"#f9f9f9":"var(--card)",border:"1px solid var(--bd)",boxShadow:e.skipped?"none":"var(--shadow)",cursor:"pointer",opacity:e.skipped?.5:1}}>
                     <div style={{width:5,background:e.skipped?"var(--bd)":(e.colour||COLS[li%COLS.length]),flexShrink:0}}/>
-                    <div style={{flex:1,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
-                      <div>
-                        <div style={{fontSize:13,fontWeight:700,color:e.skipped?"var(--mt)":"var(--tx)",textDecoration:e.skipped?"line-through":"none"}}>{e.member}</div>
-                        <div style={{fontSize:12,color:"var(--mt)"}}>{e.club||e.title||""}{e.skipped?" — Skipped":""}</div>
+                    <div style={{flex:1,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+                      <div style={{minWidth:0}}>
+                        <div style={{fontSize:15,fontWeight:600,color:e.skipped?"var(--mt)":"var(--tx)",textDecoration:e.skipped?"line-through":"none"}}>{e.club||e.title||""}{e.skipped?" — Skipped":""}</div>
+                        <div style={{fontSize:13,color:"var(--mt)",marginTop:1}}>{e.member}</div>
                       </div>
-                      <div style={{textAlign:"right",flexShrink:0}}>
-                        <div style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
-                        {e.driver&&<div style={{fontSize:11,fontWeight:600,color:"var(--acc)",marginTop:2}}>🚗 {e.driver}</div>}
+                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                        <div style={{textAlign:"right",flexShrink:0}}>
+                          <div style={{fontSize:14,fontWeight:700,color:"var(--g)",fontVariantNumeric:"tabular-nums"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
+                          {e.driver&&<div style={{fontSize:12,color:"var(--mt)",marginTop:1,display:"flex",alignItems:"center",gap:3,justifyContent:"flex-end"}}><span style={{color:"var(--mt)"}}>{ICN.car}</span> {e.driver}</div>}
+                        </div>
+                        <span style={{color:"#ddd"}}>{ICN.chevron}</span>
                       </div>
                     </div>
                   </div>
