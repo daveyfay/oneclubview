@@ -119,6 +119,11 @@ select{-webkit-appearance:none;appearance:none}
 /* Quick pick buttons */
 .qp{padding:10px 16px;border-radius:12px;border:1.5px solid var(--bd);background:#fff;font-size:13px;font-weight:600;font-family:var(--sn);cursor:pointer;color:var(--tx);transition:all .15s;white-space:nowrap}
 .qp:hover,.qp:active{border-color:var(--g);color:var(--g);background:var(--gxl)}
+/* Responsive — laptop sidebar */
+@media(min-width:900px){
+  body{display:flex;justify-content:center}
+  #root{max-width:600px;width:100%;position:relative}
+}
 </style>
 </head>
 <body>
@@ -363,6 +368,20 @@ const COUNTRY_CONFIG={
 function detectCountry(){try{const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||"";if(tz.startsWith("America"))return"US";if(tz.startsWith("Australia"))return"AU";if(tz.includes("London")||tz.includes("Belfast"))return"GB";return"IE"}catch(e){return"IE"}}
 const USER_COUNTRY=detectCountry();
 const CC=COUNTRY_CONFIG[USER_COUNTRY]||COUNTRY_CONFIG.IE;
+
+// Professional SVG icons (replace emoji in UI)
+const ICN={
+  calendar:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  wallet:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="15" rx="2"/><path d="M16 12h2"/><path d="M2 10h20"/></svg>,
+  tent:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 22h20L12 2z"/><path d="M12 2v20"/></svg>,
+  home:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+  search:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  chevron:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+  car:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 17h14M5 17a2 2 0 01-2-2V9a2 2 0 012-2h2l2-3h6l2 3h2a2 2 0 012 2v6a2 2 0 01-2 2"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/></svg>,
+  mail:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22 4 12 13 2 4"/></svg>,
+  arrow:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+  plus:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+};
 const SK="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxaWh3YXpoZXlwdm1yY3Jxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4Nzg1MjQsImV4cCI6MjA4ODQ1NDUyNH0.n5I1lkCu7Tf1sBbIceWUdsRQtIrH7-WGc3itZAfrBKI";
 let _t=null;let _rt=null;let _refreshing=null;
 const hd=()=>({apikey:SK,"Content-Type":"application/json",Authorization:"Bearer "+(_t||SK)});
@@ -1460,7 +1479,7 @@ function Hub({user,profile,onRefresh,onLogout}){
 
   const myRole=profile?.family_role||"admin";
   const isAdmin=myRole==="admin";
-  const allTabs=[{id:"week",l:"This Week",i:"📅"},{id:"money",l:"Money",i:"💳"},{id:"camps",l:"Camps",i:"🏕️"},{id:"clubs",l:"Clubs",i:"🏠"},{id:"discover",l:"Discover",i:"🔍"}];
+  const allTabs=[{id:"week",l:"Schedule",i:ICN.calendar},{id:"money",l:"Money",i:ICN.wallet},{id:"camps",l:"Camps",i:ICN.tent},{id:"clubs",l:"Clubs",i:ICN.home},{id:"discover",l:"Discover",i:ICN.search}];
   const tabs=isAdmin?allTabs:allTabs.filter(t=>t.id!=="money");
 
   if(loading)return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--warm)"}}><p style={{color:"var(--mt)"}}>Loading...</p></div>;
@@ -1634,7 +1653,7 @@ function Hub({user,profile,onRefresh,onLogout}){
           return <div key={d.toISOString()} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,minWidth:44,padding:"6px 4px",borderRadius:12,background:today?"var(--g)":sel?"var(--gxl)":"transparent",cursor:"pointer",border:sel&&!today?"1.5px solid var(--g)":"1.5px solid transparent"}} onClick={()=>setSelectedDay(sel?null:d)}>
             <span style={{fontSize:10,fontWeight:700,color:today?"rgba(255,255,255,.7)":"var(--mt)",textTransform:"uppercase"}}>{d.toLocaleDateString("en-IE",{weekday:"short"}).slice(0,3)}</span>
             <span style={{fontSize:16,fontWeight:800,color:today?"#fff":"var(--tx)"}}>{d.getDate()}</span>
-            {dayEvts.length>0&&<div style={{display:"flex",gap:2}}>{dayEvts.slice(0,3).map((e,i)=><div key={i} style={{width:5,height:5,borderRadius:"50%",background:today?"rgba(255,255,255,.6)":(e.colour||"var(--acc)")}}/>)}</div>}
+            {dayEvts.length>0&&<div style={{width:14,height:3,borderRadius:2,background:today?"rgba(255,255,255,.35)":"var(--acc)",marginTop:1}}/>}
           </div>;
         })}
       </div>
@@ -1651,31 +1670,10 @@ function Hub({user,profile,onRefresh,onLogout}){
         const unpaidCount=isAdmin?(pays||[]).filter(p=>!p.paid&&p.status!=="not_renewing").length:0;
         const unpaidTotal=isAdmin?(pays||[]).filter(p=>!p.paid&&p.status!=="not_renewing").reduce((s,p)=>s+parseFloat(p.amount||0),0):0;
         
-        return <div style={{display:"flex",gap:8,overflowX:"auto",marginBottom:14,WebkitOverflowScrolling:"touch",paddingBottom:4}} className="hsb">
-          {/* Today's events */}
-          <div style={{minWidth:110,padding:"12px 14px",borderRadius:14,background:"var(--gxl)",border:"1.5px solid #c8dce8",textAlign:"center",flexShrink:0}}>
-            <div style={{fontSize:11,fontWeight:700,color:"var(--gl)"}}>Today</div>
-            <div style={{fontSize:28,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)",lineHeight:1.2}}>{todayEvts.length}</div>
-            <div style={{fontSize:11,color:"var(--mt)"}}>{todayEvts.length===1?"event":"events"}</div>
-          </div>
-          {/* This week */}
-          <div style={{minWidth:110,padding:"12px 14px",borderRadius:14,background:"#f5f0eb",border:"1.5px solid #e5ddd4",textAlign:"center",flexShrink:0}}>
-            <div style={{fontSize:11,fontWeight:700,color:"#8a7560"}}>This week</div>
-            <div style={{fontSize:28,fontWeight:800,color:"var(--tx)",fontFamily:"var(--sr)",lineHeight:1.2}}>{thisWeekCount}</div>
-            <div style={{fontSize:11,color:"var(--mt)"}}>activities</div>
-          </div>
-          {/* Holidays countdown */}
-          {nextHol&&daysToHol!==null&&daysToHol<=60&&<div style={{minWidth:110,padding:"12px 14px",borderRadius:14,background:"#fef3e2",border:"1.5px solid #fad9a1",textAlign:"center",flexShrink:0}}>
-            <div style={{fontSize:11,fontWeight:700,color:"#b8860b"}}>{nextHol.name}</div>
-            <div style={{fontSize:28,fontWeight:800,color:"#d4a017",fontFamily:"var(--sr)",lineHeight:1.2}}>{daysToHol}</div>
-            <div style={{fontSize:11,color:"var(--mt)"}}>days away</div>
-          </div>}
-          {/* Fees due */}
-          {isAdmin&&unpaidCount>0&&<div style={{minWidth:110,padding:"12px 14px",borderRadius:14,background:"#fef2f2",border:"1.5px solid #fecaca",textAlign:"center",flexShrink:0}} onClick={()=>setTab("money")}>
-            <div style={{fontSize:11,fontWeight:700,color:"#dc2626"}}>Fees due</div>
-            <div style={{fontSize:28,fontWeight:800,color:"#dc2626",fontFamily:"var(--sr)",lineHeight:1.2}}>€{unpaidTotal.toFixed(0)}</div>
-            <div style={{fontSize:11,color:"var(--mt)"}}>{unpaidCount} unpaid</div>
-          </div>}
+        return <div style={{display:"flex",gap:14,padding:"0 0 16px",fontSize:13,color:"var(--mt)",flexWrap:"wrap"}}>
+          <span><strong style={{color:"var(--g)",fontWeight:700}}>{thisWeekCount}</strong> activities</span>
+          {nextHol&&daysToHol!==null&&daysToHol<=60&&<><span style={{color:"var(--bd)"}}>·</span><span><strong style={{color:"#c49000",fontWeight:700}}>{daysToHol}</strong> days to {nextHol.name}</span></>}
+          {isAdmin&&unpaidCount>0&&<><span style={{color:"var(--bd)"}}>·</span><span onClick={()=>setTab("money")} style={{cursor:"pointer"}}><strong style={{color:"var(--acc)",fontWeight:700}}>€{unpaidTotal.toFixed(0)}</strong> due</span></>}
         </div>;
       })()}
 
@@ -2005,7 +2003,7 @@ function Hub({user,profile,onRefresh,onLogout}){
 
         {/* FORWARD BANNER */}
         <div style={{background:"var(--g)",borderRadius:14,padding:16,marginTop:16,color:"#fff"}}>
-          <h4 style={{fontFamily:"var(--sr)",fontSize:14,fontWeight:700,marginBottom:8}}>📬 Forward club messages</h4>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><span style={{color:"rgba(255,255,255,.5)"}}>{ICN.mail}</span><span style={{fontSize:14,fontWeight:700}}>Forward club emails</span></div>
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
             <div style={{background:"rgba(255,255,255,.06)",borderRadius:10,padding:10}}>
               <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,.7)",marginBottom:3}}>📧 Email from a club?</div>
