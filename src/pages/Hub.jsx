@@ -399,6 +399,37 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       </div>
       </>}
 
+      {/* DAY PANEL — shows on Camps/Money tabs when a day pill is tapped */}
+      {(tab==="camps"||tab==="money")&&selectedDay&&(()=>{
+        const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===selectedDay.getFullYear()&&e.date.getMonth()===selectedDay.getMonth()&&e.date.getDate()===selectedDay.getDate());
+        const isHol=(holidays||[]).some(h=>{const s=new Date(h.start_date),e=new Date(h.end_date);return selectedDay>=s&&selectedDay<=e});
+        const holName=isHol?(holidays||[]).find(h=>selectedDay>=new Date(h.start_date)&&selectedDay<=new Date(h.end_date))?.name:"";
+        return <div style={{marginBottom:14,background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"var(--shadow)",overflow:"hidden",animation:"slideUp .2s ease"}}>
+          <div style={{padding:"12px 16px",borderBottom:"1px solid var(--bd)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:14,fontWeight:700,color:"var(--g)"}}>{selectedDay.toLocaleDateString("en-IE",{weekday:"long",day:"numeric",month:"long"})}</div>
+              {isHol&&<div style={{fontSize:11,color:"#b8860b",fontWeight:600}}>{holName}</div>}
+            </div>
+            <button onClick={()=>setSelectedDay(null)} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"var(--mt)",padding:"4px"}}>✕</button>
+          </div>
+          <div style={{padding:"8px 12px",maxHeight:200,overflowY:"auto"}}>
+            {dayEvts.length===0?<div style={{padding:"12px 0",textAlign:"center",color:"var(--mt)",fontSize:13}}>{isHol?"School holiday — no activities scheduled":"Nothing scheduled this day"}</div>
+            :dayEvts.map((e,i)=><div key={e.id||i} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6}}>
+              <div style={{width:4,background:e.colour||"#999",flexShrink:0}}/>
+              <div style={{flex:1,padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+                <div style={{minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:600,color:"var(--tx)"}}>{e.source_type==="camp"?"🏕️ ":""}{e.club||e.title||""}</div>
+                  <div style={{fontSize:11,color:"var(--mt)",marginTop:1}}>{e.member}</div>
+                </div>
+                <div style={{textAlign:"right",flexShrink:0}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"var(--g)",fontVariantNumeric:"tabular-nums"}}>{e.time||""}{e.endTime?"–"+e.endTime:""}</div>
+                </div>
+              </div>
+            </div>)}
+          </div>
+        </div>;
+      })()}
+
       {/* INSIGHT CARDS — inspired by Flo's "My daily insights" */}
       {tab==="week"&&(()=>{
         const now=new Date();
