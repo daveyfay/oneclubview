@@ -33,6 +33,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
   const[campLoc,setCampLoc]=useState("all");
 
   async function load(){
+    try{
     // Get family member IDs for shared data
     // Re-fetch profile to get latest family_id
     const freshProfile=await db("profiles","GET",{filters:["id=eq."+user.id]});
@@ -72,28 +73,33 @@ export default function Hub({user,profile,onRefresh,onLogout}){
     // Load family locations
     const fLocs=await db("family_locations","GET",{filters:["user_id=eq."+user.id,"active=eq.true"],order:"label.asc"});
     setFamilyLocs(fLocs||[]);
-    // Auto-add school locations if not already saved
+    // Auto-add school locations if not already saved — batch insert
     if(schoolLocs.length===0&&kidSchools.length>0){
       const uniqueSchools2=[...new Set(kidSchools)];
       const schoolQ2=uniqueSchools2.map(s=>"name.ilike.*"+encodeURIComponent(s.replace(/'/g,"''"))+"*").join(",");
       const sch2=await db("schools","GET",{select:"name,latitude,longitude",filters:["or=("+schoolQ2+")","latitude=not.is.null"],limit:20});
       const newSchLocs=(sch2||[]).filter(s=>s.latitude).map(s=>({lat:Number(s.latitude),lng:Number(s.longitude),name:s.name}));
       setSchoolLocs(newSchLocs);
-      // Auto-insert school locations into family_locations if not there yet
-      for(const sl of newSchLocs){
-        const exists=(fLocs||[]).find(fl=>fl.label.includes("School")&&Math.abs(Number(fl.latitude)-sl.lat)<0.01);
-        if(!exists)await db("family_locations","POST",{body:{user_id:user.id,label:"🏫 "+sl.name,latitude:sl.lat,longitude:sl.lng,radius_km:10,auto_source:"school",active:true}});
+      // Batch insert school locations into family_locations if not there yet
+      const toInsert=newSchLocs.filter(sl=>!(fLocs||[]).find(fl=>fl.label.includes("School")&&Math.abs(Number(fl.latitude)-sl.lat)<0.01));
+      if(toInsert.length>0){
+        await Promise.all(toInsert.map(sl=>db("family_locations","POST",{body:{user_id:user.id,label:"🏫 "+sl.name,latitude:sl.lat,longitude:sl.lng,radius_km:10,auto_source:"school",active:true}})));
+        // Re-fetch after batch insert
+        const fLocs2=await db("family_locations","GET",{filters:["user_id=eq."+user.id,"active=eq.true"],order:"label.asc"});
+        setFamilyLocs(fLocs2||[]);
       }
-      // Re-fetch after auto-insert
-      const fLocs2=await db("family_locations","GET",{filters:["user_id=eq."+user.id,"active=eq.true"],order:"label.asc"});
-      setFamilyLocs(fLocs2||[]);
     }
     setLoading(false);
     // Load notifications (inbound messages)
     const notifs=await db("inbound_messages","GET",{filters:["user_id=eq."+user.id],order:"created_at.desc",limit:10});
     setNotifications(notifs||[]);
-    // Update last active
-    db("profiles","PATCH",{body:{last_active_at:new Date().toISOString()},filters:["id=eq."+user.id]});
+    // Update last active (fire-and-forget but log errors)
+    db("profiles","PATCH",{body:{last_active_at:new Date().toISOString()},filters:["id=eq."+user.id]}).catch(e=>console.error("last_active update failed:",e));
+    }catch(err){
+      console.error("Hub load() failed:",err);
+      showToast("Something went wrong loading your data. Pull down to retry.","err");
+      setLoading(false);
+    }
   }
   useEffect(()=>{
     load();
@@ -102,13 +108,13 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       navigator.geolocation.getCurrentPosition(pos=>{
         const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};
         setUserLoc(loc);
-        db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}});
+        db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}}).catch(e=>console.error("Profile location update failed:",e));
         // Check if this area has been scraped recently — if not, fire ONE scrape
         rpc("needs_scrape",{lat:loc.lat,lng:loc.lng}).then(needed=>{
           if(needed){
-            fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({latitude:loc.lat,longitude:loc.lng,user_id:user.id})}).then(r=>r.json()).then(d=>{if(d.status==="success")load()}).catch(()=>{});
+            fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({latitude:loc.lat,longitude:loc.lng,user_id:user.id})}).then(r=>r.json()).then(d=>{if(d.status==="success")load()}).catch(e=>console.error("Scrape failed:",e));
           }
-        }).catch(()=>{});
+        }).catch(e=>console.error("needs_scrape check failed:",e));
       },()=>{
         // Geolocation denied — use saved profile location
         db("profiles","GET",{filters:["id=eq."+user.id],select:"latitude,longitude"}).then(p=>{
@@ -116,22 +122,23 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             const loc={lat:Number(p[0].latitude),lng:Number(p[0].longitude)};
             setUserLoc(loc);
           }
-        });
+        }).catch(e=>console.error("Profile location fallback failed:",e));
       },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
     }
   },[]);
 
   // When family locations load, scrape only genuinely new areas (not scraped in 7 days within 15km)
+  const familyLocsKey=useMemo(()=>familyLocs.map(fl=>fl.id+":"+fl.latitude+":"+fl.longitude).join("|"),[familyLocs]);
   useEffect(()=>{
     if(familyLocs.length===0)return;
     familyLocs.forEach(fl=>{
       rpc("needs_scrape",{lat:Number(fl.latitude),lng:Number(fl.longitude)}).then(needed=>{
         if(needed){
-          fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({latitude:Number(fl.latitude),longitude:Number(fl.longitude)})}).then(r=>r.json()).then(d=>{if(d.status==="success")load()}).catch(()=>{});
+          fetch(SB+"/functions/v1/scrape-local",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({latitude:Number(fl.latitude),longitude:Number(fl.longitude)})}).then(r=>r.json()).then(d=>{if(d.status==="success")load()}).catch(e=>console.error("Family loc scrape failed:",e));
         }
-      }).catch(()=>{});
+      }).catch(e=>console.error("needs_scrape check failed:",e));
     });
-  },[familyLocs.length]);
+  },[familyLocsKey]);
 
   const members=useMemo(()=>{
     const m=[{id:"all",name:"Everyone",emoji:"👨‍👩‍👧‍👦",type:"all"}];
@@ -800,12 +807,12 @@ export default function Hub({user,profile,onRefresh,onLogout}){
               <div><div style={{fontSize:14,fontWeight:600}}>{kid?.first_name||profile?.first_name||"You"} — {p.description}</div><div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>{cl?.club_name||""} • Due {new Date(p.due_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</div></div>
               <div style={{textAlign:"right"}}><div style={{fontSize:18,fontWeight:800,color:p.paid?"var(--gl)":p.status==="not_renewing"?"#888":overdue?"#dc2626":"var(--tx)",fontFamily:"var(--sr)",textDecoration:p.status==="not_renewing"?"line-through":"none"}}>€{parseFloat(p.amount).toFixed(0)}</div>
                 {isAdmin&&!p.paid&&p.status!=="not_renewing"&&<div style={{display:"flex",gap:4,marginTop:4,justifyContent:"flex-end"}}>
-                  <button onClick={async()=>{await db("payment_reminders","PATCH",{body:{paid:true},filters:["id=eq."+p.id]});await load()}} style={{fontSize:11,fontWeight:700,color:"var(--gl)",background:"var(--gxl)",border:"none",borderRadius:8,padding:"3px 10px",cursor:"pointer"}}>Paid</button>
-                  <button onClick={async()=>{await db("payment_reminders","PATCH",{body:{status:"not_renewing"},filters:["id=eq."+p.id]});await load()}} style={{fontSize:11,fontWeight:700,color:"#888",background:"#f3f3f3",border:"none",borderRadius:8,padding:"3px 10px",cursor:"pointer"}}>Not renewing</button>
+                  <button onClick={async()=>{try{await db("payment_reminders","PATCH",{body:{paid:true},filters:["id=eq."+p.id]});showToast("Marked as paid");await load()}catch(e){showToast("Failed to update. Try again.","err")}}} style={{fontSize:11,fontWeight:700,color:"var(--gl)",background:"var(--gxl)",border:"none",borderRadius:8,padding:"3px 10px",cursor:"pointer"}}>Paid</button>
+                  <button onClick={async()=>{try{await db("payment_reminders","PATCH",{body:{status:"not_renewing"},filters:["id=eq."+p.id]});await load()}catch(e){showToast("Failed to update. Try again.","err")}}} style={{fontSize:11,fontWeight:700,color:"#888",background:"#f3f3f3",border:"none",borderRadius:8,padding:"3px 10px",cursor:"pointer"}}>Not renewing</button>
                 </div>}
                 {p.status==="not_renewing"&&<div style={{display:"flex",gap:4,marginTop:4,justifyContent:"flex-end",alignItems:"center"}}>
                   <span style={{fontSize:11,color:"#888",fontWeight:600}}>Not renewing</span>
-                  <button onClick={async()=>{await db("payment_reminders","DELETE",{filters:["id=eq."+p.id]});await load()}} style={{fontSize:10,fontWeight:600,color:"#dc2626",background:"none",border:"none",cursor:"pointer",textDecoration:"underline"}}>Remove</button>
+                  <button onClick={async()=>{try{await db("payment_reminders","DELETE",{filters:["id=eq."+p.id]});await load()}catch(e){showToast("Failed to remove. Try again.","err")}}} style={{fontSize:10,fontWeight:600,color:"#dc2626",background:"none",border:"none",cursor:"pointer",textDecoration:"underline"}}>Remove</button>
                 </div>}
                 {p.paid&&<span style={{fontSize:11,color:"var(--gl)",fontWeight:700}}>✓ Paid</span>}
               </div>
@@ -958,7 +965,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             {fl.address&&<div style={{fontSize:12,color:"var(--mt)"}}>{fl.address}</div>}
             <div style={{fontSize:11,color:"var(--mt)"}}>Within {fl.radius_km}km</div>
           </div>
-          <button onClick={async()=>{await db("family_locations","DELETE",{filters:["id=eq."+fl.id]});setFamilyLocs(familyLocs.filter(f=>f.id!==fl.id))}} style={{padding:"4px 10px",borderRadius:8,border:"1px solid #e5e5e5",background:"none",fontSize:11,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>Remove</button>
+          <button onClick={async()=>{try{await db("family_locations","DELETE",{filters:["id=eq."+fl.id]});setFamilyLocs(prev=>prev.filter(f=>f.id!==fl.id))}catch(e){showToast("Failed to remove location.","err")}}} style={{padding:"4px 10px",borderRadius:8,border:"1px solid #e5e5e5",background:"none",fontSize:11,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>Remove</button>
         </div>)}
         {userLoc&&!familyLocs.find(fl=>Math.abs(Number(fl.latitude)-userLoc.lat)<0.01&&Math.abs(Number(fl.longitude)-userLoc.lng)<0.01)&&<div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 0",borderBottom:"1px solid var(--bd)"}}>
           <div style={{flex:1}}>
@@ -978,7 +985,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       {showNotifs&&<div style={{position:"fixed",top:52,right:12,left:12,zIndex:61,background:"#fff",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"0 8px 30px rgba(0,0,0,.12)",padding:8,maxHeight:"60vh",overflowY:"auto",maxWidth:400,marginLeft:"auto"}}>
         <div style={{padding:"8px 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <span style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>Updates</span>
-          {notifications.filter(n=>!n.read_at).length>0&&<button onClick={async(e)=>{e.stopPropagation();for(const n of notifications.filter(x=>!x.read_at)){await db("inbound_messages","PATCH",{body:{read_at:new Date().toISOString()},filters:["id=eq."+n.id]})}load()}} style={{fontSize:11,fontWeight:600,color:"var(--acc)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)",padding:"2px 6px"}}>Mark all read</button>}
+          {notifications.filter(n=>!n.read_at).length>0&&<button onClick={async(e)=>{e.stopPropagation();try{await Promise.all(notifications.filter(x=>!x.read_at).map(n=>db("inbound_messages","PATCH",{body:{read_at:new Date().toISOString()},filters:["id=eq."+n.id]})));load()}catch(err){showToast("Failed to mark as read.","err")}}} style={{fontSize:11,fontWeight:600,color:"var(--acc)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)",padding:"2px 6px"}}>Mark all read</button>}
         </div>
         {notifications.length===0?<div style={{padding:"16px 10px",textAlign:"center",color:"var(--mt)",fontSize:13}}>No updates yet. Forward a club email to see them here.</div>
         :notifications.slice(0,8).map(n=><div key={n.id} style={{padding:"10px",borderRadius:10,marginBottom:2,background:n.read_at?"#fff":"var(--gxl)",cursor:"pointer"}} onClick={async(e)=>{e.stopPropagation();if(!n.read_at)await db("inbound_messages","PATCH",{body:{read_at:new Date().toISOString()},filters:["id=eq."+n.id]});const actions={fee_due:"money",cancellation:"week",schedule_update:"week",reminder:"week",term_dates:"clubs",general:"week"};setTab(actions[n.parsed_action]||"week");setShowNotifs(false);window.scrollTo(0,0);load()}}>
@@ -1067,8 +1074,10 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       {/* Delete Account Confirm */}
       <OcvConfirm open={showDeleteAcct} onClose={()=>setShowDeleteAcct(false)} title="Delete account?" message={"We'll email you confirmation and delete all your data within 30 days. You can also email hello@oneclubview.com."} confirmText="Delete my account" confirmColor="#dc2626" onConfirm={async()=>{
         const _t=getToken();
+        const safeEmail=(user.email||"").replace(/[<>&"']/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;","'":"&#39;"}[c]));
+        const safeId=(user.id||"").replace(/[<>&"']/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;","'":"&#39;"}[c]));
         try{
-          await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:"hello@oneclubview.com",subject:"Account deletion request: "+user.email,html:"<p>User "+user.email+" (id: "+user.id+") has requested account deletion.</p>"})});
+          await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:"hello@oneclubview.com",subject:"Account deletion request: "+user.email,html:"<p>User "+safeEmail+" (id: "+safeId+") has requested account deletion.</p>"})});
           await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:user.email,subject:"Account deletion request received",html:"<p>We've received your request to delete your OneClubView account. All your data will be removed within 30 days.</p>"})});
           showToast("Deletion request submitted. Check your email.");onLogout()
         }catch(e){showToast("Error. Please email hello@oneclubview.com","err")}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { db } from '../../lib/supabase';
 
 function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) {
   const [name, setName] = useState("");

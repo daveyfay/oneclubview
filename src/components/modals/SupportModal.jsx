@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { db } from '../../lib/supabase';
+import { track } from '../../lib/utils';
 
 function SupportModal({ userId, userEmail, onClose }) {
   const [subject, setSubject] = useState("");

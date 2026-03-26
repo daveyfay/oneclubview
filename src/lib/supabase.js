@@ -1,8 +1,8 @@
 import { track } from './utils';
 
-// ── Supabase config ──
-const SB = "https://uqihwazheypvmrcrqklg.supabase.co";
-const SK = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxaWh3YXpoZXlwdm1yY3Jxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4Nzg1MjQsImV4cCI6MjA4ODQ1NDUyNH0.n5I1lkCu7Tf1sBbIceWUdsRQtIrH7-WGc3itZAfrBKI";
+// ── Supabase config ── (falls back to hardcoded values for dev/testing)
+const SB = import.meta.env.VITE_SUPABASE_URL || "https://uqihwazheypvmrcrqklg.supabase.co";
+const SK = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxaWh3YXpoZXlwdm1yY3Jxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4Nzg1MjQsImV4cCI6MjA4ODQ1NDUyNH0.n5I1lkCu7Tf1sBbIceWUdsRQtIrH7-WGc3itZAfrBKI";
 
 let _t = null;   // access token
 let _rt = null;   // refresh token

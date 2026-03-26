@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { au, db, SB, SK, setTokens, restoreTokens, clearTokens, getToken, getRefreshToken } from './lib/supabase';
 import { track, showToast } from './lib/utils';
 import Logo from './components/Logo';
+import { OcvInput } from './components/modals';
 import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import OnboardKids from './pages/OnboardKids';
@@ -14,6 +15,8 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [kids, setKids] = useState([]);
+  const [showRecoveryPw, setShowRecoveryPw] = useState(false);
+  const [recoveryToken, setRecoveryToken] = useState(null);
 
   useEffect(() => {
     // Handle password recovery redirect from email link
@@ -25,23 +28,8 @@ export default function App() {
         const rt = params.get("refresh_token");
         setTokens(accessToken, rt);
         window.history.replaceState({}, "", window.location.pathname);
-        setTimeout(() => {
-          const np = prompt("Enter your new password (min 8 characters):");
-          if (np && np.length >= 8) {
-            fetch(SB + "/auth/v1/user", {
-              method: "PUT",
-              headers: { apikey: SK, Authorization: "Bearer " + accessToken, "Content-Type": "application/json" },
-              body: JSON.stringify({ password: np }),
-            }).then(r => {
-              if (r.ok) { showToast("Password changed!"); window.location.reload(); }
-              else showToast("Error changing password.", "err");
-            }).catch(() => showToast("Something went wrong.", "err"));
-          } else if (np) {
-            showToast("Password must be at least 8 characters.", "err");
-          } else {
-            window.location.reload();
-          }
-        }, 300);
+        setRecoveryToken(accessToken);
+        setShowRecoveryPw(true);
         return;
       }
     }
@@ -120,5 +108,23 @@ export default function App() {
   if (screen === "onboard_clubs") return <OnboardClubs userId={user.id} kids={kids} email={user?.email || profile?.email} onDone={() => setScreen("hub")} onLogout={logout} />;
   // TODO: AdminDashboard for hello@oneclubview.com
   if (screen === "hub") return <Hub user={user} profile={profile} onRefresh={(s) => { if (s === "clubs") setScreen("onboard_clubs"); }} onLogout={logout} />;
+
+  // Password recovery modal — rendered on any screen
+  if (showRecoveryPw) return <>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--warm)" }}><Logo /></div>
+    <OcvInput open={showRecoveryPw} onClose={() => { setShowRecoveryPw(false); window.location.reload(); }} title="Set your new password" placeholder="New password (min 8 characters)" inputType="password" onSubmit={async (np) => {
+      if (np.length < 8) { showToast("Password must be at least 8 characters.", "err"); return; }
+      try {
+        const r = await fetch(SB + "/auth/v1/user", {
+          method: "PUT",
+          headers: { apikey: SK, Authorization: "Bearer " + recoveryToken, "Content-Type": "application/json" },
+          body: JSON.stringify({ password: np }),
+        });
+        if (r.ok) { showToast("Password changed!"); setShowRecoveryPw(false); window.location.reload(); }
+        else showToast("Error changing password.", "err");
+      } catch (e) { showToast("Something went wrong.", "err"); }
+    }} />
+  </>;
+
   return null;
 }
