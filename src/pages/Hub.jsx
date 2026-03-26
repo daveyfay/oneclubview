@@ -19,15 +19,17 @@ import PasteScheduleModal from '../components/modals/PasteScheduleModal';
 import SupportModal from '../components/modals/SupportModal';
 import AddActivityModal from '../components/modals/AddActivityModal';
 import EventDetailModal from '../components/modals/EventDetailModal';
+import WeekGrid from '../components/hub/WeekGrid';
 
 export default function Hub({user,profile,onRefresh,onLogout}){
-  const[tab,setTab]=useState("week");const[filter,setFilter]=useState("all");
+  const[tab,setTab]=useState("overview");const[filter,setFilter]=useState("all");
+  const[exploreTab,setExploreTab]=useState("clubs");
   const[kids,setKids]=useState([]);const[clubs,setClubs]=useState([]);const[recs,setRecs]=useState([]);
   const[mans,setMans]=useState([]);const[pays,setPays]=useState([]);const[camps,setCamps]=useState([]);const[campBookings,setCampBookings]=useState([]);const[holidays,setHolidays]=useState([]);const[userHolidays,setUserHolidays]=useState([]);
   const[schoolLocs,setSchoolLocs]=useState([]);
   const[familyLocs,setFamilyLocs]=useState([]);const[showLocations,setShowLocations]=useState(false);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
-  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("timeline");const[selectedDay,setSelectedDay]=useState(null);const[calMonth,setCalMonth]=useState(new Date().getMonth());const[calYear,setCalYear]=useState(new Date().getFullYear());const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);const[showAddActivity,setShowAddActivity]=useState(false);const[tapEvent,setTapEvent]=useState(null);
+  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("grid");const[selectedDay,setSelectedDay]=useState(null);const[calMonth,setCalMonth]=useState(new Date().getMonth());const[calYear,setCalYear]=useState(new Date().getFullYear());const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);const[showAddActivity,setShowAddActivity]=useState(false);const[tapEvent,setTapEvent]=useState(null);
   const[showChangePw,setShowChangePw]=useState(false);const[showDeleteAcct,setShowDeleteAcct]=useState(false);
   const[showSaveLocModal,setShowSaveLocModal]=useState(false);const[showAddLocModal,setShowAddLocModal]=useState(false);
   const[campLoc,setCampLoc]=useState("all");
@@ -218,7 +220,8 @@ export default function Hub({user,profile,onRefresh,onLogout}){
 
   const myRole=profile?.family_role||"admin";
   const isAdmin=myRole==="admin";
-  const allTabs=[{id:"week",l:"Schedule",i:ICN.calendar},{id:"money",l:"Money",i:ICN.wallet},{id:"camps",l:"Camps",i:ICN.tent},{id:"clubs",l:"Clubs",i:ICN.home},{id:"discover",l:"Discover",i:ICN.search}];
+  const overviewIcon = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
+  const allTabs=[{id:"overview",l:"Overview",i:overviewIcon},{id:"week",l:"Schedule",i:ICN.calendar},{id:"money",l:"Money",i:ICN.wallet},{id:"explore",l:"Explore",i:ICN.search}];
   const tabs=isAdmin?allTabs:allTabs.filter(t=>t.id!=="money");
 
   if(loading)return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--warm)"}}><p style={{color:"var(--mt)"}}>Loading...</p></div>;
@@ -336,12 +339,12 @@ export default function Hub({user,profile,onRefresh,onLogout}){
               <button onClick={()=>setShowProfile(!showProfile)} style={{width:30,height:30,borderRadius:10,background:"var(--g)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>{(profile?.first_name||"U")[0]}</button>
             </div>
           </div>
-          <div className="hsb" style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6,WebkitOverflowScrolling:"touch",msOverflowStyle:"none"}}>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",paddingBottom:6}}>
             {members.map(m=><button key={m.id} onClick={()=>setFilter(m.id)} className={"pill "+(filter===m.id?"pon":"poff")} style={{flexShrink:0}}>{m.type!=="all"&&<span style={{width:7,height:7,borderRadius:"50%",background:m.type==="kid"?COLS[members.indexOf(m)%COLS.length]:m.type==="adult"?"#8b5cf6":"var(--g)",flexShrink:0}}/>}{m.type==="all"?"👨‍👩‍👧‍👦":""} {m.name}{m.age!=null&&<span style={{opacity:.5,marginLeft:2}}>({m.age})</span>}</button>)}
           </div>
         </div>
         <div style={{maxWidth:520,margin:"0 auto",display:"flex"}}>
-          {tabs.map(t=><button key={t.id} onClick={()=>{setTab(t.id);track("tab_view",{tab:t.id})}} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"9px 0",fontSize:11,fontWeight:600,border:"none",borderBottom:tab===t.id?"2px solid var(--g)":"2px solid transparent",cursor:"pointer",background:"none",color:tab===t.id?"var(--g)":"var(--mt)",fontFamily:"var(--sn)",transition:"color .15s"}}><span style={{display:"flex"}}>{t.i}</span><span>{t.l}</span></button>)}
+          {tabs.map(t=><button key={t.id} onClick={()=>{setTab(t.id);track("tab_view",{tab:t.id})}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,padding:"8px 0 6px",fontSize:10,fontWeight:600,border:"none",borderBottom:tab===t.id?"2.5px solid var(--g)":"2.5px solid transparent",cursor:"pointer",background:"none",color:tab===t.id?"var(--g)":"var(--mt)",fontFamily:"var(--sn)",transition:"color .15s"}}><span style={{display:"flex"}}>{t.i}</span><span>{t.l}</span></button>)}
         </div>
       </div>
 
@@ -375,17 +378,17 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         <button onClick={()=>onRefresh("clubs")} className="btn bp" style={{padding:"10px 24px",fontSize:13}}>+ Add a club</button>
       </div>}
 
-      {/* WEEK/MONTH HEADER + DAY PILLS — only on Schedule, Money, Camps tabs */}
-      {(tab==="week"||tab==="money"||tab==="camps")&&<>
+      {/* WEEK/MONTH HEADER + DAY PILLS — only on Schedule, Money tabs */}
+      {(tab==="week"||tab==="money")&&<>
       <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:4}}>
         <h2 style={{fontFamily:"var(--sr)",fontSize:20,fontWeight:800,color:"var(--g)"}}>This week</h2>
-        {tab==="week"&&<div style={{display:"flex",gap:4}}>
-          <button onClick={()=>{track("calendar_toggle",{view:weekView==="calendar"?"timeline":"calendar"});setWeekView(weekView==="calendar"?"timeline":"calendar")}} style={{fontSize:11,fontWeight:600,color:weekView==="calendar"?"var(--acc)":"var(--mt)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)"}}>{weekView==="calendar"?"Week view":"Calendar"}</button>
+        {tab==="week"&&<div style={{display:"flex",gap:6}}>
+          {["grid","list","calendar"].map(v=><button key={v} onClick={()=>{track("view_toggle",{view:v});setWeekView(v);setSelectedDay(null)}} style={{fontSize:11,fontWeight:600,color:weekView===v?"var(--acc)":"var(--mt)",background:weekView===v?"var(--accl)":"none",border:weekView===v?"1px solid #f8c4bc":"1px solid transparent",borderRadius:8,padding:"3px 8px",cursor:"pointer",fontFamily:"var(--sn)",textTransform:"capitalize"}}>{v}</button>)}
         </div>}
       </div>
 
-      {/* HORIZONTAL DAY PILLS */}
-      <div style={{display:"flex",gap:4,marginBottom:12,overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
+      {/* HORIZONTAL DAY PILLS — hide in grid mode since grid has its own day labels */}
+      {weekView!=="grid"&&<div style={{display:"flex",gap:4,marginBottom:12,overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
         {wd.map(d=>{
           const today=isToday(d);
           const sel=selectedDay&&selectedDay.getDate()===d.getDate()&&selectedDay.getMonth()===d.getMonth()&&selectedDay.getFullYear()===d.getFullYear();
@@ -396,11 +399,11 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             {dayEvts.length>0&&<div style={{width:14,height:3,borderRadius:2,background:today?"rgba(255,255,255,.35)":"var(--acc)",marginTop:1}}/>}
           </div>;
         })}
-      </div>
+      </div>}
       </>}
 
-      {/* DAY PANEL — shows on Camps/Money tabs when a day pill is tapped */}
-      {(tab==="camps"||tab==="money")&&selectedDay&&(()=>{
+      {/* DAY PANEL — shows on Money tab when a day pill is tapped */}
+      {(tab==="money")&&selectedDay&&(()=>{
         const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===selectedDay.getFullYear()&&e.date.getMonth()===selectedDay.getMonth()&&e.date.getDate()===selectedDay.getDate());
         const isHol=(holidays||[]).some(h=>{const s=new Date(h.start_date),e=new Date(h.end_date);return selectedDay>=s&&selectedDay<=e});
         const holName=isHol?(holidays||[]).find(h=>selectedDay>=new Date(h.start_date)&&selectedDay<=new Date(h.end_date))?.name:"";
@@ -450,7 +453,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       })()}
 
       {/* SELECTED DAY PANEL — shows in timeline mode when a day pill is tapped */}
-      {tab==="week"&&weekView==="timeline"&&selectedDay&&(()=>{
+      {tab==="week"&&(weekView==="list"||weekView==="grid")&&selectedDay&&(()=>{
         const dayEvts=weekEvts.filter(e=>e.date.getFullYear()===selectedDay.getFullYear()&&e.date.getMonth()===selectedDay.getMonth()&&e.date.getDate()===selectedDay.getDate());
         const isHol=(holidays||[]).some(h=>{const s=new Date(h.start_date),e=new Date(h.end_date);return selectedDay>=s&&selectedDay<=e});
         const holName=isHol?(holidays||[]).find(h=>selectedDay>=new Date(h.start_date)&&selectedDay<=new Date(h.end_date))?.name:"";
@@ -605,9 +608,9 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         </div>;
       })()}
 
-      {/* THIS WEEK */}
-      {tab==="week"&&<div>
-      {/* SMART ALERTS */}
+      {/* OVERVIEW TAB */}
+      {tab==="overview"&&<div>
+      {/* SMART ALERTS — moved from schedule tab */}
       {(()=>{
         const alerts=[];
         const now=new Date();
@@ -650,7 +653,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
                 return cs>=holStart&&cs<=holEnd;
               });
               if(suitableCamps.length>0&&booked.length===0){
-                alerts.push({type:"info",icon:"🏕️",text:kid.first_name+" has no camp booked for "+nextHol.name+". "+suitableCamps.length+" camp"+(suitableCamps.length>1?"s":"")+" suit"+(suitableCamps.length===1?"s":"")+" their age.",action:"camps"});
+                alerts.push({type:"info",icon:"🏕️",text:kid.first_name+" has no camp booked for "+nextHol.name+". "+suitableCamps.length+" camp"+(suitableCamps.length>1?"s":"")+" suit"+(suitableCamps.length===1?"s":"")+" their age.",action:"explore",subaction:"camps"});
               }
             });
           }
@@ -684,7 +687,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           const recs2=(campBookings||[]).filter(b=>b.status==="recommended");
           recs2.forEach(b=>{
             const camp=(camps||[]).find(c=>c.id===b.camp_id);
-            if(camp)alerts.push({type:"info",icon:"💡",text:"A carer recommended "+camp.title+" — tap to review",action:"camps"});
+            if(camp)alerts.push({type:"info",icon:"💡",text:"A carer recommended "+camp.title+" — tap to review",action:"explore",subaction:"camps"});
           });
         }
 
@@ -695,7 +698,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
 
           {alerts.slice(0,5).map((a,i)=>{
             const col=colors[a.type]||colors.info;
-            return <div key={i} onClick={()=>{if(a.action){setTab(a.action);if(a.day)setSelectedDay(a.day);window.scrollTo(0,0)}}} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,background:col.bg,border:"1px solid "+col.border,marginBottom:6,cursor:a.action?"pointer":"default"}} onTouchStart={ev=>{if(a.action)ev.currentTarget.style.opacity=".7"}} onTouchEnd={ev=>{ev.currentTarget.style.opacity="1"}}>
+            return <div key={i} onClick={()=>{if(a.action){if(a.action==="explore"){setTab("explore");setExploreTab(a.subaction||"clubs");}else{setTab(a.action);}if(a.day)setSelectedDay(a.day);window.scrollTo(0,0)}}} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,background:col.bg,border:"1px solid "+col.border,marginBottom:6,cursor:a.action?"pointer":"default"}} onTouchStart={ev=>{if(a.action)ev.currentTarget.style.opacity=".7"}} onTouchEnd={ev=>{ev.currentTarget.style.opacity="1"}}>
               <span style={{fontSize:16,flexShrink:0}}>{a.icon}</span>
               <span style={{flex:1,fontSize:12,color:col.text,fontWeight:600,lineHeight:1.4}}>{a.text}</span>
               {a.action&&<span style={{flexShrink:0,color:col.text,opacity:.5,fontSize:14}}>›</span>}
@@ -720,14 +723,98 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           if(clashes.length===0)return null;
           return <div style={{background:"#fef2f2",border:"1.5px solid #fecaca",borderRadius:16,padding:14,marginBottom:14,boxShadow:"var(--shadow)"}}>
             <div style={{fontSize:13,fontWeight:700,color:"#dc2626",marginBottom:6}}>⚠️ {clashes.length} clash{clashes.length>1?"es":""} this week</div>
-            {clashes.map((cl,i)=><div key={i} onClick={()=>{setSelectedDay(cl.day);setWeekView("timeline");window.scrollTo(0,0)}} style={{fontSize:12,color:"#991b1b",marginBottom:2,cursor:"pointer",padding:"4px 0",borderRadius:6}}>
+            {clashes.map((cl,i)=><div key={i} onClick={()=>{setTab("week");setSelectedDay(cl.day);setWeekView("list");window.scrollTo(0,0)}} style={{fontSize:12,color:"#991b1b",marginBottom:2,cursor:"pointer",padding:"4px 0",borderRadius:6}}>
               {fmtDate(cl.day)}: {cl.a.member} ({cl.a.title} {cl.a.time}) overlaps {cl.b.member} ({cl.b.title} {cl.b.time}) →
             </div>)}
           </div>;
         })()}
 
-        {/* SWIMLANE TIMELINE VIEW */}
-        {weekView==="timeline"&&<div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
+        {/* THIS WEEK STATS */}
+        <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:15,fontWeight:700,color:"var(--g)",marginBottom:10}}>This week</h3>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            <div style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center"}}>
+              <div style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>{activeWeekEvts.length}</div>
+              <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Activities</div>
+            </div>
+            <div style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center"}}>
+              <div style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>{new Set(activeWeekEvts.map(e=>e.club).filter(Boolean)).size}</div>
+              <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Clubs</div>
+            </div>
+            {isAdmin&&<div style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center"}}>
+              <div style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:totalDue>0?"var(--acc)":"var(--g)"}}>€{totalDue.toFixed(0)}</div>
+              <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Due soon</div>
+            </div>}
+            <div style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center"}}>
+              <div style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>{kids.length}</div>
+              <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Kids</div>
+            </div>
+          </div>
+        </div>
+
+        {/* FAMILY SUMMARY */}
+        <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:15,fontWeight:700,color:"var(--g)",marginBottom:10}}>Family</h3>
+          {kids.map((k,ki)=>{
+            const kidEvts=activeWeekEvts.filter(e=>e.memberId===k.id);
+            const kidClubs=[...new Set(kidEvts.map(e=>e.club).filter(Boolean))];
+            return <div key={k.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:ki<kids.length-1?"1px solid var(--bd)":"none"}}>
+              <div style={{width:32,height:32,borderRadius:10,background:COLS[ki%COLS.length],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700}}>{k.first_name?.[0]}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:600,color:"var(--tx)"}}>{k.first_name}{getAge(k.date_of_birth)!=null&&<span style={{color:"var(--mt)",fontWeight:400,fontSize:11,marginLeft:4}}>({getAge(k.date_of_birth)})</span>}</div>
+                <div style={{fontSize:11,color:"var(--mt)"}}>{kidEvts.length} activit{kidEvts.length===1?"y":"ies"}{kidClubs.length>0?" · "+kidClubs.join(", "):""}</div>
+              </div>
+            </div>;
+          })}
+          {/* Self */}
+          {(()=>{
+            const selfEvts=activeWeekEvts.filter(e=>e.memberId==="self");
+            return selfEvts.length>0?<div style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0"}}>
+              <div style={{width:32,height:32,borderRadius:10,background:"var(--g)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700}}>{(profile?.first_name||"M")[0]}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:600,color:"var(--tx)"}}>{profile?.first_name||"Me"}</div>
+                <div style={{fontSize:11,color:"var(--mt)"}}>Driving: {activeWeekEvts.filter(e=>e.driver===profile?.first_name).length} pickups this week</div>
+              </div>
+            </div>:null;
+          })()}
+        </div>
+
+        {/* SPEND SNAPSHOT (admin only) */}
+        {isAdmin&&pays.length>0&&<div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:15,fontWeight:700,color:"var(--g)",marginBottom:10}}>Spend</h3>
+          {(()=>{
+            const clubFees={};
+            pays.forEach(p=>{
+              const key=p.description||"Other";
+              if(!clubFees[key])clubFees[key]={total:0,paid:0};
+              clubFees[key].total+=parseFloat(p.amount||0);
+              if(p.paid)clubFees[key].paid+=parseFloat(p.amount||0);
+            });
+            const maxTotal=Math.max(...Object.values(clubFees).map(f=>f.total),1);
+            return Object.entries(clubFees).slice(0,4).map(([name,f])=><div key={name}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",fontSize:12}}>
+                <span style={{fontWeight:600,color:"var(--tx)"}}>{name}</span>
+                <span style={{fontWeight:700,color:"var(--g)"}}>€{f.total.toFixed(0)}</span>
+              </div>
+              <div style={{height:4,borderRadius:2,background:"var(--gxl)",margin:"2px 0 6px",overflow:"hidden"}}>
+                <div style={{height:"100%",borderRadius:2,width:(f.total/maxTotal*100)+"%",background:f.paid>=f.total?"linear-gradient(90deg,#22c55e,#16a34a)":"linear-gradient(90deg,var(--acc),#c44030)"}}/>
+              </div>
+            </div>);
+          })()}
+          <div style={{textAlign:"center",marginTop:4}}>
+            <span onClick={()=>setTab("money")} style={{fontSize:11,fontWeight:600,color:"var(--acc)",cursor:"pointer"}}>View all fees ›</span>
+          </div>
+        </div>}
+      </div>}
+
+      {/* THIS WEEK */}
+      {tab==="week"&&<div>
+
+        {/* WEEKLY GRID VIEW */}
+        {weekView==="grid"&&<WeekGrid weekDays={wd} events={filtEvts} holidays={[...(holidays||[]),...(userHolidays||[])]} onTapEvent={setTapEvent}/>}
+
+        {/* SWIMLANE LIST VIEW */}
+        {weekView==="list"&&<div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
           {wd.map(d=>{
             const dayEvts=(filter==="all"?weekEvts:weekEvts.filter(e=>e.memberId===filter)).filter(e=>e.date.getFullYear()===d.getFullYear()&&e.date.getMonth()===d.getMonth()&&e.date.getDate()===d.getDate());
             const today=isToday(d);
@@ -856,131 +943,139 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         {isAdmin&&<button onClick={()=>setShowAddPay(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add payment reminder</button>}
       </div>}
 
-      {tab==="camps"&&<div>
-        {/* Location filter pills */}
-        {allLocs.length>1&&<div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:10,WebkitOverflowScrolling:"touch"}}>
-          <button onClick={()=>setCampLoc("all")} className={"pill "+(campLoc==="all"?"pon":"poff")} style={{flexShrink:0}}>All locations</button>
-          {allLocs.map(l=><button key={l.label} onClick={()=>setCampLoc(campLoc===l.label?"all":l.label)} className={"pill "+(campLoc===l.label?"pon":"poff")} style={{flexShrink:0}}>{l.label}</button>)}
-        </div>}
-        {allLocs.length<=1&&allLocs.length>0&&<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"var(--mt)"}}>
-            <span>📍</span> {allLocs[0]?.label?.replace(/^[^\w]*\s*/,'')||"Near you"}
-          </div>
-          <button onClick={()=>setShowLocations(true)} style={{fontSize:11,fontWeight:600,color:"var(--acc)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)",whiteSpace:"nowrap"}}>Manage</button>
-        </div>}
-        {allLocs.length===0&&<button onClick={()=>setShowLocations(true)} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Add your locations to see nearby camps</button>}
-        {/* Holiday coverage summary */}
-        {kids.length>0&&(()=>{
-          const now=new Date();
-          const futureHols=(holidays||[]).filter(h=>new Date(h.end_date)>=now).slice(0,1);
-          if(futureHols.length===0)return null;
-          return <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:14,marginBottom:14,boxShadow:"var(--shadow)"}}>
-            <div style={{fontSize:13,fontWeight:700,color:"var(--g)",marginBottom:8}}>Holiday coverage</div>
-            <div style={{display:"flex",flexDirection:"column",gap:6}}>
-              {futureHols.map(h=>{
-                const booked=(campBookings||[]).filter(b=>{
-                  const camp=(camps||[]).find(ca=>ca.id===b.camp_id);
-                  return camp&&new Date(camp.start_date)>=new Date(h.start_date)&&new Date(camp.start_date)<=new Date(h.end_date);
-                });
-                const covered=booked.length>0;
-                return <div key={h.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",fontSize:12}}>
-                  <span style={{color:"var(--tx)",fontWeight:600}}>{h.name}</span>
-                  <span style={{fontWeight:700,color:covered?"#16a34a":"var(--acc)",background:covered?"#f0fdf4":"var(--accl)",padding:"2px 10px",borderRadius:8}}>
-                    {covered?booked.length+" booked":"Not covered"}
-                  </span>
-                </div>;
-              })}
-            </div>
-          </div>;
-        })()}
-        {(()=>{
-          const now=new Date();
-          const mergedHols=holidays.map(h=>{
-            const override=userHolidays.find(uh=>uh.base_holiday_id===h.id);
-            if(override){
-              if(override.holiday_type==="hidden")return null;
-              return {...override,is_user_override:true,holiday_type:override.holiday_type||h.holiday_type};
-            }
-            return {...h,is_user_override:false};
-          }).filter(Boolean);
-          userHolidays.filter(uh=>!uh.base_holiday_id&&uh.holiday_type!=="hidden").forEach(uh=>{
-            mergedHols.push({...uh,is_user_override:true});
-          });
-          const futureHols=mergedHols.filter(h=>new Date(h.end_date+"T23:59:59")>=now).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date)).slice(0,2);
-          const kidName=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter)?.first_name:null;
-          const kidAge=filter!=="all"&&filter!=="self"?getAge(kids.find(k=>k.id===filter)?.date_of_birth):null;
+      {tab==="explore"&&<div>
+        {/* Sub-tabs */}
+        <div style={{display:"flex",gap:0,marginBottom:12,borderBottom:"1px solid var(--bd)"}}>
+          {["clubs","camps","discover"].map(st=><button key={st} onClick={()=>setExploreTab(st)} style={{padding:"8px 14px",fontSize:12,fontWeight:600,color:exploreTab===st?"var(--g)":"var(--mt)",border:"none",background:"none",cursor:"pointer",fontFamily:"var(--sn)",borderBottom:exploreTab===st?"2px solid var(--acc)":"2px solid transparent",textTransform:"capitalize"}}>{st==="clubs"?"My Clubs":st==="camps"?"Camps":"Discover"}</button>)}
+        </div>
 
-          if(futureHols.length===0) return <p style={{color:"var(--mt)",padding:20,textAlign:"center"}}>No upcoming school holidays found</p>;
-
-          return futureHols.map(hol=>{
-            const hs=new Date(hol.start_date+"T00:00:00"),he=new Date(hol.end_date+"T23:59:59");
-            const holCamps=filtCamps.filter(camp=>{
-              const cs=new Date(camp.start_date+"T00:00:00");
-              return cs>=hs&&cs<=he;
-            }).sort((a,b)=>{
-              const distTo=(c)=>{
-                if(!c.latitude)return 999;
-                const cLat=Number(c.latitude),cLng=Number(c.longitude);
-                let min=999;
-                allLocs.forEach(loc=>{min=Math.min(min,calcKm(loc.lat,loc.lng,cLat,cLng))});
-                return min;
-              };
-              return distTo(a)-distTo(b);
+        {/* My Clubs sub-tab */}
+        {exploreTab==="clubs"&&<div>
+          {(()=>{
+            const grouped={};
+            clubs.forEach((c,i)=>{
+              if(!grouped[c.club_id])grouped[c.club_id]={...c,members:[],idx:i,nickname:c.nickname||null};
+              const kid=c.dependant_id?kids.find(k=>k.id===c.dependant_id):null;
+              grouped[c.club_id].members.push(kid?kid.first_name:(profile?.first_name||"You"));
             });
-            const holEmoji=hol.holiday_type==="easter"?"🐣":hol.holiday_type==="summer"?"☀️":hol.holiday_type==="christmas"?"🎄":"🍂";
-            const weeks=Math.max(1,Math.ceil((he-hs)/(7*86400000)));
-
-            return <div key={hol.id} style={{marginBottom:24}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-                <span style={{fontSize:20}}>{holEmoji}</span>
-                <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",flex:1}}>{hol.name}</h3>
-                <button onClick={(e)=>{e.stopPropagation();setEditHol(hol)}} style={{background:"var(--gxl)",border:"none",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700,color:"var(--gl)",cursor:"pointer",fontFamily:"var(--sn)"}}>✎ Edit dates</button>
-              </div>
-              <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>
-                {new Date(hol.start_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} – {new Date(hol.end_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} ({weeks} week{weeks>1?"s":""}){hol.is_user_override?" • customised":""}
-                {kidName&&kidAge!=null?" · Showing camps for "+kidName+" (age "+kidAge+")":""}
-                {" · "+holCamps.length+" camp"+(holCamps.length!==1?"s":"")+" found"}
-              </p>
-
-              {holCamps.length===0?
-                <div style={{padding:20,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center",marginBottom:8}}>
-                  <div style={{fontSize:28,marginBottom:6}}>🔍</div>
-                  <p style={{fontSize:13,color:"var(--mt)"}}>No camps listed yet for this break</p>
-                  <p style={{fontSize:12,color:"var(--mt)",marginTop:2}}>We'll alert you when camps appear</p>
+            return Object.values(grouped).map((c,i)=>
+              <div key={c.club_id} onClick={()=>setEditClub(c)} style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"var(--shadow)",padding:16,marginBottom:8,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
+                <div style={{width:40,height:40,borderRadius:10,background:c.colour||COLS[i%COLS.length],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:800,flexShrink:0}}>{c.club_name.split(" ").map(w=>w[0]).join("").substring(0,2)}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:600}}>{c.club_name}</div>
+                  <div style={{fontSize:12,color:"var(--mt)"}}>{(c.nickname?c.nickname+" — ":"")+c.members.join(", ")}{c.club_addr?" • "+c.club_addr:""}</div>
                 </div>
-              :holCamps.map(camp=><CampCard key={camp.id} camp={camp} userLoc={userLoc} allLocs={allLocs} user={user} kids={kids} filter={filter} campBookings={campBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load} isAdmin={isAdmin}/>)}
-            </div>
-          });
-        })()}
-        <button onClick={()=>setShowAddHol(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a school holiday or closure day</button>
-      </div>}
-
-      {tab==="clubs"&&<div>
-        {(()=>{
-          const grouped={};
-          clubs.forEach((c,i)=>{
-            if(!grouped[c.club_id])grouped[c.club_id]={...c,members:[],idx:i,nickname:c.nickname||null};
-            const kid=c.dependant_id?kids.find(k=>k.id===c.dependant_id):null;
-            grouped[c.club_id].members.push(kid?kid.first_name:(profile?.first_name||"You"));
-          });
-          return Object.values(grouped).map((c,i)=>
-            <div key={c.club_id} onClick={()=>setEditClub(c)} style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"var(--shadow)",padding:16,marginBottom:8,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
-              <div style={{width:40,height:40,borderRadius:10,background:c.colour||COLS[i%COLS.length],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:800,flexShrink:0}}>{c.club_name.split(" ").map(w=>w[0]).join("").substring(0,2)}</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:600}}>{c.club_name}</div>
-                <div style={{fontSize:12,color:"var(--mt)"}}>{(c.nickname?c.nickname+" — ":"")+c.members.join(", ")}{c.club_addr?" • "+c.club_addr:""}</div>
               </div>
-            </div>
-          );
-        })()}
-        {isAdmin&&<button onClick={()=>onRefresh("clubs")} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a club</button>}
-        <NearbyClubsSection userLoc={userLoc} familyLocs={familyLocs} clubs={clubs} setEditClub={setEditClub} isAdmin={isAdmin}/>
-      </div>}
+            );
+          })()}
+          {isAdmin&&<button onClick={()=>onRefresh("clubs")} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a club</button>}
+          <NearbyClubsSection userLoc={userLoc} familyLocs={familyLocs} clubs={clubs} setEditClub={setEditClub} isAdmin={isAdmin}/>
+        </div>}
 
-      {tab==="discover"&&<div>
-        {userLoc&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10,fontSize:12,color:"var(--mt)"}}><span>📍</span> Showing things to do near you</div>}
-        {!userLoc&&<button onClick={()=>{navigator.geolocation?.getCurrentPosition(pos=>{const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};setUserLoc(loc);db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}})},()=>{},{timeout:5000})}} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Enable location to see things to do near you</button>}
-        <ThingsToDoSection allLocs={allLocs} kids={kids} userLoc={userLoc} setUserLoc={setUserLoc} userId={user.id} onEventAdded={()=>load()}/>
+        {/* Camps sub-tab */}
+        {exploreTab==="camps"&&<div>
+          {allLocs.length>1&&<div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:10,WebkitOverflowScrolling:"touch"}}>
+            <button onClick={()=>setCampLoc("all")} className={"pill "+(campLoc==="all"?"pon":"poff")} style={{flexShrink:0}}>All locations</button>
+            {allLocs.map(l=><button key={l.label} onClick={()=>setCampLoc(campLoc===l.label?"all":l.label)} className={"pill "+(campLoc===l.label?"pon":"poff")} style={{flexShrink:0}}>{l.label}</button>)}
+          </div>}
+          {allLocs.length<=1&&allLocs.length>0&&<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"var(--mt)"}}>
+              <span>📍</span> {allLocs[0]?.label?.replace(/^[^\w]*\s*/,'')||"Near you"}
+            </div>
+            <button onClick={()=>setShowLocations(true)} style={{fontSize:11,fontWeight:600,color:"var(--acc)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)",whiteSpace:"nowrap"}}>Manage</button>
+          </div>}
+          {allLocs.length===0&&<button onClick={()=>setShowLocations(true)} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Add your locations to see nearby camps</button>}
+          {kids.length>0&&(()=>{
+            const now=new Date();
+            const futureHols=(holidays||[]).filter(h=>new Date(h.end_date)>=now).slice(0,1);
+            if(futureHols.length===0)return null;
+            return <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:14,marginBottom:14,boxShadow:"var(--shadow)"}}>
+              <div style={{fontSize:13,fontWeight:700,color:"var(--g)",marginBottom:8}}>Holiday coverage</div>
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                {futureHols.map(h=>{
+                  const booked=(campBookings||[]).filter(b=>{
+                    const camp=(camps||[]).find(ca=>ca.id===b.camp_id);
+                    return camp&&new Date(camp.start_date)>=new Date(h.start_date)&&new Date(camp.start_date)<=new Date(h.end_date);
+                  });
+                  const covered=booked.length>0;
+                  return <div key={h.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",fontSize:12}}>
+                    <span style={{color:"var(--tx)",fontWeight:600}}>{h.name}</span>
+                    <span style={{fontWeight:700,color:covered?"#16a34a":"var(--acc)",background:covered?"#f0fdf4":"var(--accl)",padding:"2px 10px",borderRadius:8}}>
+                      {covered?booked.length+" booked":"Not covered"}
+                    </span>
+                  </div>;
+                })}
+              </div>
+            </div>;
+          })()}
+          {(()=>{
+            const now=new Date();
+            const mergedHols=holidays.map(h=>{
+              const override=userHolidays.find(uh=>uh.base_holiday_id===h.id);
+              if(override){
+                if(override.holiday_type==="hidden")return null;
+                return {...override,is_user_override:true,holiday_type:override.holiday_type||h.holiday_type};
+              }
+              return {...h,is_user_override:false};
+            }).filter(Boolean);
+            userHolidays.filter(uh=>!uh.base_holiday_id&&uh.holiday_type!=="hidden").forEach(uh=>{
+              mergedHols.push({...uh,is_user_override:true});
+            });
+            const futureHols=mergedHols.filter(h=>new Date(h.end_date+"T23:59:59")>=now).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date)).slice(0,2);
+            const kidName=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter)?.first_name:null;
+            const kidAge=filter!=="all"&&filter!=="self"?getAge(kids.find(k=>k.id===filter)?.date_of_birth):null;
+
+            if(futureHols.length===0) return <p style={{color:"var(--mt)",padding:20,textAlign:"center"}}>No upcoming school holidays found</p>;
+
+            return futureHols.map(hol=>{
+              const hs=new Date(hol.start_date+"T00:00:00"),he=new Date(hol.end_date+"T23:59:59");
+              const holCamps=filtCamps.filter(camp=>{
+                const cs=new Date(camp.start_date+"T00:00:00");
+                return cs>=hs&&cs<=he;
+              }).sort((a,b)=>{
+                const distTo=(c)=>{
+                  if(!c.latitude)return 999;
+                  const cLat=Number(c.latitude),cLng=Number(c.longitude);
+                  let min=999;
+                  allLocs.forEach(loc=>{min=Math.min(min,calcKm(loc.lat,loc.lng,cLat,cLng))});
+                  return min;
+                };
+                return distTo(a)-distTo(b);
+              });
+              const holEmoji=hol.holiday_type==="easter"?"🐣":hol.holiday_type==="summer"?"☀️":hol.holiday_type==="christmas"?"🎄":"🍂";
+              const weeks=Math.max(1,Math.ceil((he-hs)/(7*86400000)));
+
+              return <div key={hol.id} style={{marginBottom:24}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                  <span style={{fontSize:20}}>{holEmoji}</span>
+                  <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",flex:1}}>{hol.name}</h3>
+                  <button onClick={(e)=>{e.stopPropagation();setEditHol(hol)}} style={{background:"var(--gxl)",border:"none",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700,color:"var(--gl)",cursor:"pointer",fontFamily:"var(--sn)"}}>✎ Edit dates</button>
+                </div>
+                <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>
+                  {new Date(hol.start_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} – {new Date(hol.end_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} ({weeks} week{weeks>1?"s":""}){hol.is_user_override?" • customised":""}
+                  {kidName&&kidAge!=null?" · Showing camps for "+kidName+" (age "+kidAge+")":""}
+                  {" · "+holCamps.length+" camp"+(holCamps.length!==1?"s":"")+" found"}
+                </p>
+
+                {holCamps.length===0?
+                  <div style={{padding:20,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center",marginBottom:8}}>
+                    <div style={{fontSize:28,marginBottom:6}}>🔍</div>
+                    <p style={{fontSize:13,color:"var(--mt)"}}>No camps listed yet for this break</p>
+                    <p style={{fontSize:12,color:"var(--mt)",marginTop:2}}>We'll alert you when camps appear</p>
+                  </div>
+                :holCamps.map(camp=><CampCard key={camp.id} camp={camp} userLoc={userLoc} allLocs={allLocs} user={user} kids={kids} filter={filter} campBookings={campBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load} isAdmin={isAdmin}/>)}
+              </div>
+            });
+          })()}
+          <button onClick={()=>setShowAddHol(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a school holiday or closure day</button>
+        </div>}
+
+        {/* Discover sub-tab */}
+        {exploreTab==="discover"&&<div>
+          {userLoc&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10,fontSize:12,color:"var(--mt)"}}><span>📍</span> Showing things to do near you</div>}
+          {!userLoc&&<button onClick={()=>{navigator.geolocation?.getCurrentPosition(pos=>{const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};setUserLoc(loc);db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}})},()=>{},{timeout:5000})}} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Enable location to see things to do near you</button>}
+          <ThingsToDoSection allLocs={allLocs} kids={kids} userLoc={userLoc} setUserLoc={setUserLoc} userId={user.id} onEventAdded={()=>load()}/>
+        </div>}
       </div>}
 
       </div>
@@ -1022,7 +1117,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           {notifications.filter(n=>!n.read_at).length>0&&<button onClick={async(e)=>{e.stopPropagation();try{await Promise.all(notifications.filter(x=>!x.read_at).map(n=>db("inbound_messages","PATCH",{body:{read_at:new Date().toISOString()},filters:["id=eq."+n.id]})));load()}catch(err){showToast("Failed to mark as read.","err")}}} style={{fontSize:11,fontWeight:600,color:"var(--acc)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)",padding:"2px 6px"}}>Mark all read</button>}
         </div>
         {notifications.length===0?<div style={{padding:"16px 10px",textAlign:"center",color:"var(--mt)",fontSize:13}}>No updates yet. Forward a club email to see them here.</div>
-        :notifications.slice(0,8).map(n=><div key={n.id} style={{padding:"10px",borderRadius:10,marginBottom:2,background:n.read_at?"#fff":"var(--gxl)",cursor:"pointer"}} onClick={async(e)=>{e.stopPropagation();if(!n.read_at)await db("inbound_messages","PATCH",{body:{read_at:new Date().toISOString()},filters:["id=eq."+n.id]});const actions={fee_due:"money",cancellation:"week",schedule_update:"week",reminder:"week",term_dates:"clubs",general:"week"};setTab(actions[n.parsed_action]||"week");setShowNotifs(false);window.scrollTo(0,0);load()}}>
+        :notifications.slice(0,8).map(n=><div key={n.id} style={{padding:"10px",borderRadius:10,marginBottom:2,background:n.read_at?"#fff":"var(--gxl)",cursor:"pointer"}} onClick={async(e)=>{e.stopPropagation();if(!n.read_at)await db("inbound_messages","PATCH",{body:{read_at:new Date().toISOString()},filters:["id=eq."+n.id]});const actions={fee_due:"money",cancellation:"week",schedule_update:"week",reminder:"week",term_dates:"explore",general:"week"};const actTab=actions[n.parsed_action]||"week";if(actTab==="explore"){setTab("explore");setExploreTab("clubs");}else{setTab(actTab);}setShowNotifs(false);window.scrollTo(0,0);load()}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
             <span style={{fontSize:12}}>{n.parsed_action==="fee_due"?"💳":n.parsed_action==="cancellation"?"🚫":n.parsed_action==="schedule_update"?"📅":n.parsed_action==="reminder"?"⏰":"📬"}{!n.read_at&&<span style={{width:6,height:6,borderRadius:3,background:"var(--acc)",flexShrink:0}}/>}</span>
             <span style={{fontSize:12,fontWeight:700,color:"var(--g)"}}>{n.parsed_data?.summary||n.subject||"Club update"}</span>
