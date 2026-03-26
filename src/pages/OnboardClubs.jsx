@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { db, SB, SK, hd } from '../lib/supabase';
+import { db, SB, SK, hd, getToken } from '../lib/supabase';
 import { track, showToast, san } from '../lib/utils';
 import { CT, CC } from '../lib/constants';
 import Logo from '../components/Logo';
@@ -135,7 +135,7 @@ export default function OnboardClubs({ userId, kids, email, onDone, onLogout }) 
   }, [showTrial]);
 
   if (showTrial) {
-    const _t = localStorage.getItem("sb_access_token");
+    const _t = getToken();
     return (
       <div className="fi" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "var(--warm)" }}>
         <div style={{ width: "100%", maxWidth: 440, textAlign: "center" }}>

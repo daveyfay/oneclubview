@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { SB, db, getToken } from '../../lib/supabase';
+import { showToast } from '../../lib/utils';
 import SchoolPicker from '../SchoolPicker';
 
 function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
@@ -25,7 +27,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + _t,
+            Authorization: "Bearer " + getToken(),
           },
           body: JSON.stringify({
             action: "check_limits",
@@ -48,7 +50,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: "Bearer " + _t,
+                Authorization: "Bearer " + getToken(),
               },
               body: JSON.stringify({
                 action: "upgrade",
@@ -63,7 +65,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
-                    Authorization: "Bearer " + _t,
+                    Authorization: "Bearer " + getToken(),
                   },
                   body: JSON.stringify({
                     action: "checkout",
@@ -115,7 +117,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: "Bearer " + _t,
+              Authorization: "Bearer " + getToken(),
             },
             body: JSON.stringify({
               to_email: adultEmail.trim(),
@@ -136,7 +138,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + _t,
+          Authorization: "Bearer " + getToken(),
         },
         body: JSON.stringify({
           action: "check_limits",
@@ -159,7 +161,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: "Bearer " + _t,
+              Authorization: "Bearer " + getToken(),
             },
             body: JSON.stringify({
               action: "upgrade",
@@ -174,7 +176,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
-                  Authorization: "Bearer " + _t,
+                  Authorization: "Bearer " + getToken(),
                 },
                 body: JSON.stringify({
                   action: "checkout",

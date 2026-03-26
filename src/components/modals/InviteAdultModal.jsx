@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SB, db, getToken } from '../../lib/supabase';
 
 function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
   const [email, setEmail] = useState("");
@@ -44,7 +45,7 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + _t,
+            Authorization: "Bearer " + getToken(),
           },
           body: JSON.stringify({
             to_email: email.trim(),

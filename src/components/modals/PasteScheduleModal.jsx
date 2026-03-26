@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SB, db, getToken } from '../../lib/supabase';
 
 function PasteScheduleModal({
   userId,
@@ -23,7 +24,7 @@ function PasteScheduleModal({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + _t,
+          Authorization: "Bearer " + getToken(),
         },
         body: JSON.stringify({
           text: text.trim(),
@@ -131,7 +132,7 @@ function PasteScheduleModal({
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: "Bearer " + _t,
+                Authorization: "Bearer " + getToken(),
               },
               body: JSON.stringify({
                 to_email: fm.email,

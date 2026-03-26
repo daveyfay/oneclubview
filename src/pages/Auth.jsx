@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { au, db, SB, SK, hd } from '../lib/supabase';
+import { au, db, SB, SK, hd, setTokens } from '../lib/supabase';
 import { track, showToast } from '../lib/utils';
 import Logo from '../components/Logo';
 import { OcvInput } from '../components/modals';
@@ -73,12 +73,7 @@ function Auth({ onAuth, mode: im }) {
 
         if (signupData.access_token) {
           track('sign_up', { method: 'email' });
-          const _t = signupData.access_token;
-          localStorage.setItem('ocv_token', _t);
-          if (signupData.refresh_token) {
-            const _rt = signupData.refresh_token;
-            localStorage.setItem('ocv_rt', _rt);
-          }
+          setTokens(signupData.access_token, signupData.refresh_token);
         }
 
         const u = signupData.user;
