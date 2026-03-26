@@ -242,7 +242,7 @@ function Landing({ onGo, onLogin }) {
             </span>
           </div>
           <h1 className="r2" style={{ fontFamily: "var(--sr)", fontSize: 'clamp(32px,6vw,48px)', fontWeight: 800, color: '#fff', lineHeight: 1.1, marginBottom: 16 }}>
-            All your clubs.
+            All your kids' activities.
             <br />
             <span style={{ color: '#e85d4a' }}>One calm view.</span>
           </h1>
