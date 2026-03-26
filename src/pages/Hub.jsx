@@ -6,6 +6,19 @@ import ICN from '../lib/icons';
 import Logo from '../components/Logo';
 import { OcvModal, OcvConfirm, OcvInput } from '../components/modals';
 import CancelFeedback from '../components/CancelFeedback';
+import CampCard from '../components/hub/CampCard';
+import NearbyClubsSection from '../components/hub/NearbyClubsSection';
+import ThingsToDoSection from '../components/hub/ThingsToDoSection';
+import AddEventModal from '../components/modals/AddEventModal';
+import AddPaymentModal from '../components/modals/AddPaymentModal';
+import AddKidModal from '../components/modals/AddKidModal';
+import EditClubModal from '../components/modals/EditClubModal';
+import EditHolidayModal from '../components/modals/EditHolidayModal';
+import AddHolidayModal from '../components/modals/AddHolidayModal';
+import PasteScheduleModal from '../components/modals/PasteScheduleModal';
+import SupportModal from '../components/modals/SupportModal';
+import AddActivityModal from '../components/modals/AddActivityModal';
+import EventDetailModal from '../components/modals/EventDetailModal';
 
 export default function Hub({user,profile,onRefresh,onLogout}){
   const[tab,setTab]=useState("week");const[filter,setFilter]=useState("all");
@@ -739,19 +752,194 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       </div>}
 
       {tab==="money"&&<div>
-        {/* TODO: Money tab content */}
+        {/* Spend summary */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
+          <div style={{background:"var(--card)",borderRadius:14,padding:12,border:"1px solid var(--bd)",textAlign:"center",boxShadow:"var(--shadow)"}}>
+            <div style={{fontSize:20,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)"}}>€{filtPays.reduce((s,p)=>s+parseFloat(p.amount||0),0).toFixed(0)}</div>
+            <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Total tracked</div>
+          </div>
+          <div style={{background:"var(--card)",borderRadius:14,padding:12,border:"1px solid var(--bd)",textAlign:"center",boxShadow:"var(--shadow)"}}>
+            <div style={{fontSize:20,fontWeight:800,color:"#16a34a",fontFamily:"var(--sr)"}}>€{filtPays.filter(p=>p.paid).reduce((s,p)=>s+parseFloat(p.amount||0),0).toFixed(0)}</div>
+            <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Paid</div>
+          </div>
+          <div style={{background:"var(--card)",borderRadius:14,padding:12,border:"1px solid var(--bd)",textAlign:"center",boxShadow:"var(--shadow)"}}>
+            <div style={{fontSize:20,fontWeight:800,color:"var(--acc)",fontFamily:"var(--sr)"}}>€{filtPays.filter(p=>!p.paid).reduce((s,p)=>s+parseFloat(p.amount||0),0).toFixed(0)}</div>
+            <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Outstanding</div>
+          </div>
+        </div>
+
+        {(()=>{
+          const overdue=filtPays.filter(p=>!p.paid&&new Date(p.due_date)<new Date());
+          if(overdue.length===0)return null;
+          const total=overdue.reduce((s,p)=>s+parseFloat(p.amount),0);
+          return <div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:14,padding:14,marginBottom:14,display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:24}}>🚨</span>
+            <div>
+              <div style={{fontSize:14,fontWeight:700,color:"#dc2626"}}>€{total.toFixed(0)} overdue</div>
+              <div style={{fontSize:12,color:"#991b1b"}}>{overdue.length} payment{overdue.length>1?"s":""} past due date</div>
+            </div>
+          </div>;
+        })()}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+          <div style={{background:"var(--accl)",borderRadius:14,padding:16,border:"1px solid #f0d078"}}>
+            <div style={{fontSize:28,fontWeight:800,color:"#c44030",fontFamily:"var(--sr)"}}>€{totalDue.toFixed(0)}</div>
+            <div style={{fontSize:12,fontWeight:600,color:"#a68600",marginTop:2}}>Outstanding</div>
+          </div>
+          <div style={{background:"var(--gxl)",borderRadius:14,padding:16,border:"1px solid #c8e6c9"}}>
+            <div style={{fontSize:28,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)"}}>€{totalPaid.toFixed(0)}</div>
+            <div style={{fontSize:12,fontWeight:600,color:"var(--gl)",marginTop:2}}>Paid</div>
+          </div>
+        </div>
+        {filtPays.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"var(--mt)"}}><div style={{fontSize:36,marginBottom:8}}>💳</div><p style={{fontSize:14}}>No payment reminders yet</p></div>
+        :filtPays.map(p=>{
+          const overdue=!p.paid&&new Date(p.due_date)<new Date();
+          const kid=p.dependant_id?kids.find(k=>k.id===p.dependant_id):null;
+          const cl=clubs.find(c=>c.club_id===p.club_id);
+          return <div key={p.id} style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"var(--shadow)",padding:16,marginBottom:8}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div><div style={{fontSize:14,fontWeight:600}}>{kid?.first_name||profile?.first_name||"You"} — {p.description}</div><div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>{cl?.club_name||""} • Due {new Date(p.due_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})}</div></div>
+              <div style={{textAlign:"right"}}><div style={{fontSize:18,fontWeight:800,color:p.paid?"var(--gl)":p.status==="not_renewing"?"#888":overdue?"#dc2626":"var(--tx)",fontFamily:"var(--sr)",textDecoration:p.status==="not_renewing"?"line-through":"none"}}>€{parseFloat(p.amount).toFixed(0)}</div>
+                {isAdmin&&!p.paid&&p.status!=="not_renewing"&&<div style={{display:"flex",gap:4,marginTop:4,justifyContent:"flex-end"}}>
+                  <button onClick={async()=>{await db("payment_reminders","PATCH",{body:{paid:true},filters:["id=eq."+p.id]});await load()}} style={{fontSize:11,fontWeight:700,color:"var(--gl)",background:"var(--gxl)",border:"none",borderRadius:8,padding:"3px 10px",cursor:"pointer"}}>Paid</button>
+                  <button onClick={async()=>{await db("payment_reminders","PATCH",{body:{status:"not_renewing"},filters:["id=eq."+p.id]});await load()}} style={{fontSize:11,fontWeight:700,color:"#888",background:"#f3f3f3",border:"none",borderRadius:8,padding:"3px 10px",cursor:"pointer"}}>Not renewing</button>
+                </div>}
+                {p.status==="not_renewing"&&<div style={{display:"flex",gap:4,marginTop:4,justifyContent:"flex-end",alignItems:"center"}}>
+                  <span style={{fontSize:11,color:"#888",fontWeight:600}}>Not renewing</span>
+                  <button onClick={async()=>{await db("payment_reminders","DELETE",{filters:["id=eq."+p.id]});await load()}} style={{fontSize:10,fontWeight:600,color:"#dc2626",background:"none",border:"none",cursor:"pointer",textDecoration:"underline"}}>Remove</button>
+                </div>}
+                {p.paid&&<span style={{fontSize:11,color:"var(--gl)",fontWeight:700}}>✓ Paid</span>}
+              </div>
+            </div>
+          </div>
+        })}
+        {isAdmin&&<button onClick={()=>setShowAddPay(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add payment reminder</button>}
       </div>}
 
       {tab==="camps"&&<div>
-        {/* TODO: Camps tab content */}
+        {/* Location filter pills */}
+        {allLocs.length>1&&<div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:10,WebkitOverflowScrolling:"touch"}}>
+          <button onClick={()=>setCampLoc("all")} className={"pill "+(campLoc==="all"?"pon":"poff")} style={{flexShrink:0}}>All locations</button>
+          {allLocs.map(l=><button key={l.label} onClick={()=>setCampLoc(campLoc===l.label?"all":l.label)} className={"pill "+(campLoc===l.label?"pon":"poff")} style={{flexShrink:0}}>{l.label}</button>)}
+        </div>}
+        {allLocs.length<=1&&allLocs.length>0&&<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"var(--mt)"}}>
+            <span>📍</span> {allLocs[0]?.label?.replace(/^[^\w]*\s*/,'')||"Near you"}
+          </div>
+          <button onClick={()=>setShowLocations(true)} style={{fontSize:11,fontWeight:600,color:"var(--acc)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)",whiteSpace:"nowrap"}}>Manage</button>
+        </div>}
+        {allLocs.length===0&&<button onClick={()=>setShowLocations(true)} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Add your locations to see nearby camps</button>}
+        {/* Holiday coverage summary */}
+        {kids.length>0&&(()=>{
+          const now=new Date();
+          const futureHols=(holidays||[]).filter(h=>new Date(h.end_date)>=now).slice(0,1);
+          if(futureHols.length===0)return null;
+          return <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:14,marginBottom:14,boxShadow:"var(--shadow)"}}>
+            <div style={{fontSize:13,fontWeight:700,color:"var(--g)",marginBottom:8}}>Holiday coverage</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {futureHols.map(h=>{
+                const booked=(campBookings||[]).filter(b=>{
+                  const camp=(camps||[]).find(ca=>ca.id===b.camp_id);
+                  return camp&&new Date(camp.start_date)>=new Date(h.start_date)&&new Date(camp.start_date)<=new Date(h.end_date);
+                });
+                const covered=booked.length>0;
+                return <div key={h.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",fontSize:12}}>
+                  <span style={{color:"var(--tx)",fontWeight:600}}>{h.name}</span>
+                  <span style={{fontWeight:700,color:covered?"#16a34a":"var(--acc)",background:covered?"#f0fdf4":"var(--accl)",padding:"2px 10px",borderRadius:8}}>
+                    {covered?booked.length+" booked":"Not covered"}
+                  </span>
+                </div>;
+              })}
+            </div>
+          </div>;
+        })()}
+        {(()=>{
+          const now=new Date();
+          const mergedHols=holidays.map(h=>{
+            const override=userHolidays.find(uh=>uh.base_holiday_id===h.id);
+            if(override){
+              if(override.holiday_type==="hidden")return null;
+              return {...override,is_user_override:true,holiday_type:override.holiday_type||h.holiday_type};
+            }
+            return {...h,is_user_override:false};
+          }).filter(Boolean);
+          userHolidays.filter(uh=>!uh.base_holiday_id&&uh.holiday_type!=="hidden").forEach(uh=>{
+            mergedHols.push({...uh,is_user_override:true});
+          });
+          const futureHols=mergedHols.filter(h=>new Date(h.end_date+"T23:59:59")>=now).sort((a,b)=>new Date(a.start_date)-new Date(b.start_date)).slice(0,2);
+          const kidName=filter!=="all"&&filter!=="self"?kids.find(k=>k.id===filter)?.first_name:null;
+          const kidAge=filter!=="all"&&filter!=="self"?getAge(kids.find(k=>k.id===filter)?.date_of_birth):null;
+
+          if(futureHols.length===0) return <p style={{color:"var(--mt)",padding:20,textAlign:"center"}}>No upcoming school holidays found</p>;
+
+          return futureHols.map(hol=>{
+            const hs=new Date(hol.start_date+"T00:00:00"),he=new Date(hol.end_date+"T23:59:59");
+            const holCamps=filtCamps.filter(camp=>{
+              const cs=new Date(camp.start_date+"T00:00:00");
+              return cs>=hs&&cs<=he;
+            }).sort((a,b)=>{
+              const distTo=(c)=>{
+                if(!c.latitude)return 999;
+                const cLat=Number(c.latitude),cLng=Number(c.longitude);
+                let min=999;
+                allLocs.forEach(loc=>{min=Math.min(min,calcKm(loc.lat,loc.lng,cLat,cLng))});
+                return min;
+              };
+              return distTo(a)-distTo(b);
+            });
+            const holEmoji=hol.holiday_type==="easter"?"🐣":hol.holiday_type==="summer"?"☀️":hol.holiday_type==="christmas"?"🎄":"🍂";
+            const weeks=Math.max(1,Math.ceil((he-hs)/(7*86400000)));
+
+            return <div key={hol.id} style={{marginBottom:24}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                <span style={{fontSize:20}}>{holEmoji}</span>
+                <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:700,color:"var(--g)",flex:1}}>{hol.name}</h3>
+                <button onClick={(e)=>{e.stopPropagation();setEditHol(hol)}} style={{background:"var(--gxl)",border:"none",borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700,color:"var(--gl)",cursor:"pointer",fontFamily:"var(--sn)"}}>✎ Edit dates</button>
+              </div>
+              <p style={{fontSize:12,color:"var(--mt)",marginBottom:12}}>
+                {new Date(hol.start_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} – {new Date(hol.end_date).toLocaleDateString("en-IE",{day:"numeric",month:"short"})} ({weeks} week{weeks>1?"s":""}){hol.is_user_override?" • customised":""}
+                {kidName&&kidAge!=null?" · Showing camps for "+kidName+" (age "+kidAge+")":""}
+                {" · "+holCamps.length+" camp"+(holCamps.length!==1?"s":"")+" found"}
+              </p>
+
+              {holCamps.length===0?
+                <div style={{padding:20,borderRadius:14,border:"2px dashed var(--bd)",textAlign:"center",marginBottom:8}}>
+                  <div style={{fontSize:28,marginBottom:6}}>🔍</div>
+                  <p style={{fontSize:13,color:"var(--mt)"}}>No camps listed yet for this break</p>
+                  <p style={{fontSize:12,color:"var(--mt)",marginTop:2}}>We'll alert you when camps appear</p>
+                </div>
+              :holCamps.map(camp=><CampCard key={camp.id} camp={camp} userLoc={userLoc} allLocs={allLocs} user={user} kids={kids} filter={filter} campBookings={campBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load} isAdmin={isAdmin}/>)}
+            </div>
+          });
+        })()}
+        <button onClick={()=>setShowAddHol(true)} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a school holiday or closure day</button>
       </div>}
 
       {tab==="clubs"&&<div>
-        {/* TODO: Clubs tab content */}
+        {(()=>{
+          const grouped={};
+          clubs.forEach((c,i)=>{
+            if(!grouped[c.club_id])grouped[c.club_id]={...c,members:[],idx:i,nickname:c.nickname||null};
+            const kid=c.dependant_id?kids.find(k=>k.id===c.dependant_id):null;
+            grouped[c.club_id].members.push(kid?kid.first_name:(profile?.first_name||"You"));
+          });
+          return Object.values(grouped).map((c,i)=>
+            <div key={c.club_id} onClick={()=>setEditClub(c)} style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"var(--shadow)",padding:16,marginBottom:8,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
+              <div style={{width:40,height:40,borderRadius:10,background:c.colour||COLS[i%COLS.length],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:800,flexShrink:0}}>{c.club_name.split(" ").map(w=>w[0]).join("").substring(0,2)}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:14,fontWeight:600}}>{c.club_name}</div>
+                <div style={{fontSize:12,color:"var(--mt)"}}>{(c.nickname?c.nickname+" — ":"")+c.members.join(", ")}{c.club_addr?" • "+c.club_addr:""}</div>
+              </div>
+            </div>
+          );
+        })()}
+        {isAdmin&&<button onClick={()=>onRefresh("clubs")} style={{width:"100%",padding:14,borderRadius:14,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--mt)",fontFamily:"var(--sn)",marginTop:8}}>+ Add a club</button>}
+        <NearbyClubsSection userLoc={userLoc} familyLocs={familyLocs} clubs={clubs} setEditClub={setEditClub} isAdmin={isAdmin}/>
       </div>}
 
       {tab==="discover"&&<div>
-        {/* TODO: Discover tab content */}
+        {userLoc&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10,fontSize:12,color:"var(--mt)"}}><span>📍</span> Showing things to do near you</div>}
+        {!userLoc&&<button onClick={()=>{navigator.geolocation?.getCurrentPosition(pos=>{const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};setUserLoc(loc);db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}})},()=>{},{timeout:5000})}} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Enable location to see things to do near you</button>}
+        <ThingsToDoSection allLocs={allLocs} kids={kids} userLoc={userLoc} setUserLoc={setUserLoc} userId={user.id}/>
       </div>}
 
       </div>
@@ -759,42 +947,215 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       {/* Manage Locations Modal */}
       {showLocations&&<div onClick={()=>setShowLocations(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.4)",zIndex:70}}/>}
       {showLocations&&<div style={{position:"fixed",top:"5vh",left:12,right:12,zIndex:71,background:"#fff",borderRadius:20,boxShadow:"0 12px 40px rgba(0,0,0,.15)",padding:20,maxHeight:"85vh",overflowY:"auto",maxWidth:440,margin:"0 auto"}}>
-        {/* TODO: Manage Locations Modal content */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:700,color:"var(--g)"}}>Your locations</h3>
+          <button onClick={()=>setShowLocations(false)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>✕</button>
+        </div>
+        <p style={{fontSize:12,color:"var(--mt)",marginBottom:16}}>Camps, clubs, and activities are shown near all your active locations.</p>
+        {familyLocs.map(fl=><div key={fl.id} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 0",borderBottom:"1px solid var(--bd)"}}>
+          <div style={{flex:1}}>
+            <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>{fl.label}</div>
+            {fl.address&&<div style={{fontSize:12,color:"var(--mt)"}}>{fl.address}</div>}
+            <div style={{fontSize:11,color:"var(--mt)"}}>Within {fl.radius_km}km</div>
+          </div>
+          <button onClick={async()=>{await db("family_locations","DELETE",{filters:["id=eq."+fl.id]});setFamilyLocs(familyLocs.filter(f=>f.id!==fl.id))}} style={{padding:"4px 10px",borderRadius:8,border:"1px solid #e5e5e5",background:"none",fontSize:11,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>Remove</button>
+        </div>)}
+        {userLoc&&!familyLocs.find(fl=>Math.abs(Number(fl.latitude)-userLoc.lat)<0.01&&Math.abs(Number(fl.longitude)-userLoc.lng)<0.01)&&<div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 0",borderBottom:"1px solid var(--bd)"}}>
+          <div style={{flex:1}}>
+            <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>📍 Current location</div>
+            <div style={{fontSize:11,color:"var(--mt)"}}>Detected via GPS</div>
+          </div>
+          <button onClick={()=>setShowSaveLocModal(true)} style={{padding:"4px 10px",borderRadius:8,border:"1.5px solid var(--g)",background:"none",fontSize:11,color:"var(--g)",cursor:"pointer",fontWeight:600,fontFamily:"var(--sn)"}}>+ Save</button>
+        </div>}
+        <div style={{marginTop:16}}>
+          <button onClick={()=>setShowAddLocModal(true)} style={{width:"100%",padding:12,borderRadius:12,border:"2px dashed var(--bd)",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)"}}>+ Add a location</button>
+        </div>
+        <p style={{fontSize:11,color:"var(--mt)",marginTop:12,textAlign:"center"}}>Add home, work, grandparents — see camps and clubs near all of them</p>
       </div>}
 
       {/* Notification Panel */}
       {showNotifs&&<div onClick={()=>setShowNotifs(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.3)",zIndex:60}}/>}
       {showNotifs&&<div style={{position:"fixed",top:52,right:12,left:12,zIndex:61,background:"#fff",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"0 8px 30px rgba(0,0,0,.12)",padding:8,maxHeight:"60vh",overflowY:"auto",maxWidth:400,marginLeft:"auto"}}>
-        {/* TODO: Notification Panel content */}
+        <div style={{padding:"8px 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{fontSize:13,fontWeight:700,color:"var(--g)"}}>Updates</span>
+          {notifications.filter(n=>!n.read_at).length>0&&<button onClick={async(e)=>{e.stopPropagation();for(const n of notifications.filter(x=>!x.read_at)){await db("inbound_messages","PATCH",{body:{read_at:new Date().toISOString()},filters:["id=eq."+n.id]})}load()}} style={{fontSize:11,fontWeight:600,color:"var(--acc)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)",padding:"2px 6px"}}>Mark all read</button>}
+        </div>
+        {notifications.length===0?<div style={{padding:"16px 10px",textAlign:"center",color:"var(--mt)",fontSize:13}}>No updates yet. Forward a club email to see them here.</div>
+        :notifications.slice(0,8).map(n=><div key={n.id} style={{padding:"10px",borderRadius:10,marginBottom:2,background:n.read_at?"#fff":"var(--gxl)",cursor:"pointer"}} onClick={async(e)=>{e.stopPropagation();if(!n.read_at)await db("inbound_messages","PATCH",{body:{read_at:new Date().toISOString()},filters:["id=eq."+n.id]});const actions={fee_due:"money",cancellation:"week",schedule_update:"week",reminder:"week",term_dates:"clubs",general:"week"};setTab(actions[n.parsed_action]||"week");setShowNotifs(false);window.scrollTo(0,0);load()}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+            <span style={{fontSize:12}}>{n.parsed_action==="fee_due"?"💳":n.parsed_action==="cancellation"?"🚫":n.parsed_action==="schedule_update"?"📅":n.parsed_action==="reminder"?"⏰":"📬"}{!n.read_at&&<span style={{width:6,height:6,borderRadius:3,background:"var(--acc)",flexShrink:0}}/>}</span>
+            <span style={{fontSize:12,fontWeight:700,color:"var(--g)"}}>{n.parsed_data?.summary||n.subject||"Club update"}</span>
+          </div>
+          <div style={{fontSize:10,color:"var(--mt)"}}>{new Date(n.created_at).toLocaleDateString("en-IE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
+        </div>)}
       </div>}
 
       {/* Profile Menu */}
       {showProfile&&<div onClick={()=>setShowProfile(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.3)",zIndex:60}}/>}
       {showProfile&&<div style={{position:"fixed",top:56,right:12,zIndex:61,background:"#fff",borderRadius:16,border:"1px solid var(--bd)",boxShadow:"0 8px 30px rgba(0,0,0,.12)",padding:8,minWidth:200}}>
-        {/* TODO: Profile Menu content */}
+        <div style={{padding:"12px 14px",borderBottom:"1px solid var(--bd)"}}>
+          <div style={{fontSize:14,fontWeight:700,color:"var(--g)"}}>{profile?.first_name||"Me"}</div>
+          <div style={{fontSize:12,color:"var(--mt)"}}>{user?.email}</div>
+        </div>
+        <button onClick={()=>{setShowProfile(false);setShowSupport(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💬 Contact Support</button>
+        <button onClick={()=>setShowChangePw(true)} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🔑 Change Password</button>
+        {profile?.subscription_status==="active"&&<button onClick={()=>{setShowProfile(false);openPortal()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💳 Manage Subscription</button>}
+        {profile?.is_beta?<div style={{padding:"10px 14px",fontSize:12,fontWeight:700,color:"#16a34a",display:"flex",alignItems:"center",gap:8}}>🎁 Beta member — free forever</div>
+        :profile?.subscription_status!=="active"&&<button onClick={()=>{setShowProfile(false);startCheckout("standard")}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>⭐ Subscribe — €7.99/mo</button>}
+        <button onClick={()=>{setShowProfile(false);setShowFamily(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>👨‍👩‍👧‍👦 Family Members</button>
+        <a href="/privacy" style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>🔒 Privacy & Data</a>
+        <div style={{borderTop:"1px solid var(--bd)",marginTop:4,paddingTop:4}}>
+          <button onClick={()=>setShowDeleteAcct(true)} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🗑️ Delete Account</button>
+          <button onClick={()=>{setShowProfile(false);onLogout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🚪 Log out</button>
+        </div>
       </div>}
 
       {/* FAB */}
       {showFab&&<div onClick={()=>setShowFab(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:70}}/>}
       {showFab&&<div style={{position:"fixed",bottom:76,right:20,zIndex:71,display:"flex",flexDirection:"column",gap:8,alignItems:"flex-end"}}>
-        {/* TODO: FAB menu items */}
+        {[
+          {icon:"📅",label:"Add event",fn:()=>{setShowFab(false);setShowAddEv(true)},admin:true},
+          {icon:"📋",label:"Paste schedule",fn:()=>{setShowFab(false);setShowPaste(true)},admin:true},
+          {icon:"🥋",label:"Add activity",fn:()=>{setShowFab(false);setShowAddActivity(true)},admin:true},
+          {icon:"🏠",label:"Add club",fn:()=>{setShowFab(false);onRefresh("clubs")},admin:true},
+          {icon:"👤",label:"Add member",fn:()=>{setShowFab(false);setShowAddKid(true)},admin:true},
+          {icon:"💳",label:"Add fee reminder",fn:()=>{setShowFab(false);setShowAddPay(true)},admin:true},
+          {icon:"📤",label:"Share my week",fn:()=>{setShowFab(false);shareWeek()},admin:false},
+        ].filter(a=>isAdmin||!a.admin).map(a=><button key={a.label} onClick={a.fn} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 16px",borderRadius:12,background:"#fff",border:"1px solid var(--bd)",boxShadow:"0 4px 16px rgba(0,0,0,.1)",fontSize:13,fontWeight:600,color:"var(--g)",cursor:"pointer",fontFamily:"var(--sn)"}}>{a.icon} {a.label}</button>)}
       </div>}
       <button onClick={()=>setShowFab(!showFab)} style={{position:"fixed",bottom:"calc(20px + env(safe-area-inset-bottom, 0px))",right:20,width:52,height:52,borderRadius:"50%",background:showFab?"var(--mt)":"var(--g)",color:"#fff",border:"none",fontSize:24,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(26,42,58,.25)",zIndex:72,transition:"transform .15s,background .15s",transform:showFab?"rotate(45deg)":"none"}}>+</button>
 
-      {/* Modals — references as TODO */}
-      {/* TODO: Support Modal */}
-      {/* TODO: Add Activity Modal */}
-      {/* TODO: Event Detail Modal */}
-      {/* TODO: Change Password Modal */}
-      {/* TODO: Delete Account Confirm Modal */}
-      {/* TODO: Save GPS Location Modal */}
-      {/* TODO: Add Location Modal */}
-      {/* TODO: Family Members Modal */}
-      {/* TODO: Paste Schedule Modal */}
-      {/* TODO: Add Kid Modal */}
-      {/* TODO: Edit Club Modal */}
-      {/* TODO: Edit Holiday Modal */}
-      {/* TODO: Add Holiday Modal */}
+      {/* Modals */}
+      {showAddEv&&<AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddEv(false)} onSaved={()=>{setShowAddEv(false);load()}}/>}
+      {showAddPay&&<AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddPay(false)} onSaved={()=>{setShowAddPay(false);load()}}/>}
+
+      {showSupport&&<SupportModal userId={user.id} userEmail={user.email} onClose={()=>setShowSupport(false)}/>}
+      {showAddActivity&&<AddActivityModal userId={user.id} userLoc={userLoc} profile={profile} kids={kids} onClose={()=>setShowAddActivity(false)} onSaved={()=>{track("add_activity");setShowAddActivity(false);load()}}/>}
+      <EventDetailModal event={tapEvent} open={!!tapEvent} onClose={()=>setTapEvent(null)}
+        adults={[...new Set([profile?.first_name||"Me",...familyMembers.filter(m=>m.id!==user.id&&!kids.find(k=>k.first_name===m.first_name)).map(m=>m.first_name)].filter(Boolean))]}
+        familyAll={[...new Set([profile?.first_name||"Me",...kids.map(k=>k.first_name),...familyMembers.filter(m=>m.id!==user.id).map(m=>m.first_name)].filter(Boolean))]}
+        onDriverChange={async(ev,driver)=>{
+          if(ev.source_type==="recurring"){
+            await db("recurring_events","PATCH",{filters:["id=eq."+ev.source_id],body:{driver}});
+            showToast(driver+" is driving");setTapEvent({...ev,driver});load();
+          }
+        }}
+        onAttendeesChange={async(ev,attendees)=>{
+          if(ev.source_type==="manual"&&ev.source_id){
+            await db("manual_events","PATCH",{filters:["id=eq."+ev.source_id],body:{description:attendees.length>0?"Going: "+attendees.join(", "):""}});
+          }
+        }}
+        onDelete={async(ev)=>{
+          if(ev.source_type==="manual"){
+            await db("manual_events","DELETE",{filters:["id=eq."+ev.source_id]});
+            showToast("Removed from schedule");setTapEvent(null);load();
+          }else if(ev.source_type==="recurring"){
+            const dateStr=ev.date.toISOString().split("T")[0];
+            const rec=recs.find(r=>r.id===ev.source_id);
+            const excluded=[...(rec?.excluded_dates||[]),dateStr];
+            await db("recurring_events","PATCH",{filters:["id=eq."+ev.source_id],body:{excluded_dates:excluded}});
+            showToast("Skipped for this week");setTapEvent(null);load();
+          }
+        }}/>
+
+      {/* Change Password Modal */}
+      <OcvInput open={showChangePw} onClose={()=>setShowChangePw(false)} title="Change password" placeholder="New password (min 8 characters)" inputType="password" onSubmit={async(np)=>{
+        if(np.length<8){showToast("Password must be at least 8 characters.","err");return}
+        try{const r=await fetch(SB+"/auth/v1/user",{method:"PUT",headers:hd(),body:JSON.stringify({password:np})});if(r.ok)showToast("Password changed!");else showToast("Error changing password.","err")}catch(e){showToast("Something went wrong.","err")}
+      }}/>
+
+      {/* Delete Account Confirm */}
+      <OcvConfirm open={showDeleteAcct} onClose={()=>setShowDeleteAcct(false)} title="Delete account?" message={"We'll email you confirmation and delete all your data within 30 days. You can also email hello@oneclubview.com."} confirmText="Delete my account" confirmColor="#dc2626" onConfirm={async()=>{
+        const _t=getToken();
+        try{
+          await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:"hello@oneclubview.com",subject:"Account deletion request: "+user.email,html:"<p>User "+user.email+" (id: "+user.id+") has requested account deletion.</p>"})});
+          await fetch(SB+"/functions/v1/send-invite",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({type:"notification",to:user.email,subject:"Account deletion request received",html:"<p>We've received your request to delete your OneClubView account. All your data will be removed within 30 days.</p>"})});
+          showToast("Deletion request submitted. Check your email.");onLogout()
+        }catch(e){showToast("Error. Please email hello@oneclubview.com","err")}
+      }}/>
+
+      {/* Save GPS Location Modal */}
+      <OcvInput open={showSaveLocModal} onClose={()=>setShowSaveLocModal(false)} title="Name this location" placeholder="e.g. Home, Work, Grandparents" defaultValue="Home" onSubmit={async(label)=>{
+        await db("family_locations","POST",{body:{user_id:user.id,label:"🏠 "+label,latitude:userLoc.lat,longitude:userLoc.lng,radius_km:15,auto_source:"gps",active:true}});
+        setShowSaveLocModal(false);showToast("Location saved!");load();
+      }}/>
+
+      {/* Add Location Modal */}
+      {showAddLocModal&&<OcvModal open={showAddLocModal} onClose={()=>setShowAddLocModal(false)} title="Add a location">
+        <form onSubmit={async e=>{
+          e.preventDefault();
+          const label=e.target.locName.value.trim();
+          const addr=e.target.locAddr.value.trim();
+          if(!label||!addr)return;
+          try{
+            const r=await fetch("https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(addr+", Ireland")+"&format=json&limit=1",{headers:{"User-Agent":"OneClubView/1.0"}});
+            const d=await r.json();
+            if(d&&d[0]){
+              await db("family_locations","POST",{body:{user_id:user.id,label:label,latitude:Number(d[0].lat),longitude:Number(d[0].lon),address:d[0].display_name?.split(",").slice(0,3).join(","),radius_km:15,auto_source:"manual",active:true}});
+              setShowAddLocModal(false);showToast("Location added!");load();
+            }else{showToast("Could not find that location.","err")}
+          }catch(e){showToast("Location search failed.","err")}
+        }} style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div>
+            <label style={{fontSize:13,fontWeight:600,color:"var(--g)",marginBottom:4,display:"block"}}>Name</label>
+            <input name="locName" placeholder="e.g. Work, Grandparents, Holiday home" autoFocus/>
+          </div>
+          <div>
+            <label style={{fontSize:13,fontWeight:600,color:"var(--g)",marginBottom:4,display:"block"}}>Town or address</label>
+            <input name="locAddr" placeholder="e.g. Stillorgan, Co. Dublin"/>
+          </div>
+          <button type="submit" className="btn bp">Add location</button>
+        </form>
+      </OcvModal>}
+
+      {/* Family Members Modal */}
+      {showFamily&&<div className="mbg fi" onClick={()=>setShowFamily(false)}>
+        <div className="mbox" onClick={e=>e.stopPropagation()} style={{maxHeight:"80vh"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+            <h3 style={{fontFamily:"var(--sr)",fontSize:18,fontWeight:800,color:"var(--g)"}}>Family Members</h3>
+            <button onClick={()=>setShowFamily(false)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--mt)"}}>×</button>
+          </div>
+          <div style={{marginBottom:16}}>
+            <span className="lbl" style={{marginBottom:8}}>Kids</span>
+            {kids.length===0&&<p style={{fontSize:13,color:"var(--mt)",padding:8}}>No kids added yet</p>}
+            {kids.map(k=>{
+              const age=getAge(k.date_of_birth);
+              return <div key={k.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid var(--bd)"}}>
+                <div style={{width:36,height:36,borderRadius:10,background:COLS[kids.indexOf(k)%COLS.length],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:14,fontWeight:700}}>{k.first_name?.[0]}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>{k.first_name}{age!=null&&<span style={{color:"var(--mt)",fontWeight:400,marginLeft:4}}>({age})</span>}</div>
+                  {k.school_name&&<div style={{fontSize:11,color:"var(--mt)"}}>{k.school_name}{k.school_class?" · "+k.school_class:""}</div>}
+                </div>
+                {isAdmin&&<button onClick={()=>{setShowFamily(false);setShowAddKid(k)}} style={{padding:"6px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"#fff",fontSize:12,fontWeight:600,color:"var(--tx)",cursor:"pointer",fontFamily:"var(--sn)"}}>Edit</button>}
+              </div>;
+            })}
+            {isAdmin&&<button onClick={()=>{setShowFamily(false);setShowAddKid(true)}} style={{width:"100%",marginTop:8,padding:10,borderRadius:10,border:"2px dashed var(--bd)",background:"none",fontSize:13,fontWeight:600,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>+ Add kid</button>}
+          </div>
+          <div>
+            <span className="lbl" style={{marginBottom:8}}>Adults</span>
+            <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid var(--bd)"}}>
+              <div style={{width:36,height:36,borderRadius:10,background:"var(--g)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:14,fontWeight:700}}>{(profile?.first_name||"U")[0]}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>{profile?.first_name||"You"}</div>
+                <div style={{fontSize:11,color:"var(--mt)"}}>{profile?.email} · Account owner</div>
+              </div>
+            </div>
+            {familyMembers.filter(fm=>fm.id!==user.id).map(fm=>{const rl=fm.family_role||"admin";const roleBadge={admin:"👨‍👩‍👧 Parent",carer:"🧑‍🍳 Carer",viewer:"👁️ Viewer"};return <div key={fm.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid var(--bd)"}}>
+              <div style={{width:36,height:36,borderRadius:10,background:rl==="admin"?"#8b5cf6":rl==="carer"?"#2d7cb5":"#888",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:14,fontWeight:700}}>{(fm.first_name||fm.email||"?")[0]}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>{fm.first_name||fm.email}</div>
+                <div style={{fontSize:11,color:"var(--mt)"}}>{fm.email} · {roleBadge[rl]||"Admin"}</div>
+              </div>
+            </div>})}
+            {isAdmin&&<button onClick={()=>{setShowFamily(false);setShowAddKid({_initType:"adult"})}} style={{width:"100%",marginTop:8,padding:10,borderRadius:10,border:"2px dashed var(--bd)",background:"none",fontSize:13,fontWeight:600,color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)"}}>+ Add family member</button>}
+          </div>
+        </div>
+      </div>}
+      {showPaste&&<PasteScheduleModal userId={user.id} clubs={clubs} kids={kids} profile={profile} onClose={()=>setShowPaste(false)} onSaved={()=>{setShowPaste(false);load()}}/>}
+      {showAddKid&&<AddKidModal userId={user.id} editKid={typeof showAddKid==="object"?showAddKid:null} profile={profile} onClose={()=>setShowAddKid(false)} onSaved={()=>{track("add_kid");setShowAddKid(false);load()}}/>}
+      {editClub&&<EditClubModal club={editClub} kids={kids} profile={profile} userId={user.id} onClose={()=>setEditClub(null)} onSaved={()=>{setEditClub(null);load()}} onDelete={()=>{setEditClub(null);load()}}/>}
+      {editHol&&<EditHolidayModal holiday={editHol} userId={user.id} onClose={()=>setEditHol(null)} onSaved={()=>{setEditHol(null);load()}}/>}
+      {showAddHol&&<AddHolidayModal userId={user.id} onClose={()=>setShowAddHol(false)} onSaved={()=>{setShowAddHol(false);load()}}/>}
     </div>
   );
 }
