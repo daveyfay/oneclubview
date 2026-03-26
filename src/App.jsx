@@ -8,7 +8,7 @@ import Auth from './pages/Auth';
 import OnboardKids from './pages/OnboardKids';
 import OnboardClubs from './pages/OnboardClubs';
 import Hub from './pages/Hub';
-// import AdminDashboard from './pages/AdminDashboard'; // TODO: extract
+import AdminDashboard from './pages/AdminDashboard';
 
 export default function App() {
   const [screen, setScreen] = useState("loading");
@@ -44,10 +44,12 @@ export default function App() {
       au("user").then(async u => {
         const p = await db("profiles", "GET", { filters: ["id=eq." + u.id] });
         let pr = p && p[0] ? p[0] : null;
-        // If returning from Stripe checkout, mark onboarding complete
+        // If returning from Stripe checkout, mark onboarding complete.
+        // NOTE: subscription_status is set server-side by the Stripe webhook only —
+        // never trust the client-side ?subscribed=true param for subscription state.
         if (justSubscribed && pr && !pr.onboarding_completed) {
-          await db("profiles", "PATCH", { filters: ["id=eq." + u.id], body: { onboarding_completed: true, onboarding_step: "done", subscription_status: "active" } });
-          pr = { ...pr, onboarding_completed: true, subscription_status: "active" };
+          await db("profiles", "PATCH", { filters: ["id=eq." + u.id], body: { onboarding_completed: true, onboarding_step: "done" } });
+          pr = { ...pr, onboarding_completed: true };
         }
         setUser(u);
         setProfile(pr);
@@ -106,8 +108,10 @@ export default function App() {
   if (screen === "auth_login") return <Auth onAuth={onAuth} mode="login" />;
   if (screen === "onboard_kids") return <OnboardKids userId={user.id} onDone={afterKids} onLogout={logout} />;
   if (screen === "onboard_clubs") return <OnboardClubs userId={user.id} kids={kids} email={user?.email || profile?.email} onDone={() => setScreen("hub")} onLogout={logout} />;
-  // TODO: AdminDashboard for hello@oneclubview.com
-  if (screen === "hub") return <Hub user={user} profile={profile} onRefresh={(s) => { if (s === "clubs") setScreen("onboard_clubs"); }} onLogout={logout} />;
+  if (screen === "hub" && user?.email === "hello@oneclubview.com") {
+    return <AdminDashboard user={user} profile={profile} onBack={() => setScreen("hub_force")} onLogout={logout} />;
+  }
+  if (screen === "hub" || screen === "hub_force") return <Hub user={user} profile={profile} onRefresh={(s) => { if (s === "clubs") setScreen("onboard_clubs"); }} onLogout={logout} />;
 
   // Password recovery modal — rendered on any screen
   if (showRecoveryPw) return <>

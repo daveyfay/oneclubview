@@ -1,9 +1,7 @@
-# NOTE: Currently deploying the monolith from public/
-# When react-migration is ready, switch to:
-#   command = "npm run build"
-#   publish = "dist"
+# React (Vite) build — migrated from monolith public/index.html
 [build]
-  publish = "public"
+  command = "npm run build"
+  publish = "dist"
 
 [[headers]]
   for = "/*"
