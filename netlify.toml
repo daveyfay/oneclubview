@@ -1,6 +1,6 @@
-# React (Vite) build — with static blog pre-rendering
+# React (Vite) build
 [build]
-  command = "node build-blog.js && npm run build"
+  command = "npm run build"
   publish = "dist"
 
 [[headers]]
