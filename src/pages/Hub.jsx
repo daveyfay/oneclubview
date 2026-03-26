@@ -375,7 +375,8 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         <button onClick={()=>onRefresh("clubs")} className="btn bp" style={{padding:"10px 24px",fontSize:13}}>+ Add a club</button>
       </div>}
 
-      {/* WEEK/MONTH HEADER — Flo-inspired */}
+      {/* WEEK/MONTH HEADER + DAY PILLS — only on Schedule, Money, Camps tabs */}
+      {(tab==="week"||tab==="money"||tab==="camps")&&<>
       <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:4}}>
         <h2 style={{fontFamily:"var(--sr)",fontSize:20,fontWeight:800,color:"var(--g)"}}>This week</h2>
         {tab==="week"&&<div style={{display:"flex",gap:4}}>
@@ -383,7 +384,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         </div>}
       </div>
 
-      {/* HORIZONTAL DAY PILLS — inspired by Flo's week strip */}
+      {/* HORIZONTAL DAY PILLS */}
       <div style={{display:"flex",gap:4,marginBottom:12,overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
         {wd.map(d=>{
           const today=isToday(d);
@@ -396,6 +397,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           </div>;
         })}
       </div>
+      </>}
 
       {/* INSIGHT CARDS — inspired by Flo's "My daily insights" */}
       {tab==="week"&&(()=>{
@@ -946,7 +948,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       {tab==="discover"&&<div>
         {userLoc&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10,fontSize:12,color:"var(--mt)"}}><span>📍</span> Showing things to do near you</div>}
         {!userLoc&&<button onClick={()=>{navigator.geolocation?.getCurrentPosition(pos=>{const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};setUserLoc(loc);db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}})},()=>{},{timeout:5000})}} style={{width:"100%",padding:"10px 14px",marginBottom:12,borderRadius:12,border:"2px dashed var(--bd)",background:"#fff",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--gl)",fontFamily:"var(--sn)",display:"flex",alignItems:"center",gap:8}}>📍 Enable location to see things to do near you</button>}
-        <ThingsToDoSection allLocs={allLocs} kids={kids} userLoc={userLoc} setUserLoc={setUserLoc} userId={user.id}/>
+        <ThingsToDoSection allLocs={allLocs} kids={kids} userLoc={userLoc} setUserLoc={setUserLoc} userId={user.id} onEventAdded={()=>load()}/>
       </div>}
 
       </div>

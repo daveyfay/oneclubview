@@ -4,7 +4,7 @@ import { track, showToast, calcKm, fmtDist, getAge } from '../../lib/utils';
 import ICN from '../../lib/icons';
 import DateTimePicker from '../modals/DateTimePicker';
 
-export default function ThingsToDoSection({allLocs,kids,userLoc,setUserLoc,userId}){
+export default function ThingsToDoSection({allLocs,kids,userLoc,setUserLoc,userId,onEventAdded}){
   const[things,setThings]=useState([]);const[loadingT,setLoadingT]=useState(true);const[tdFilter,setTdFilter]=useState("all");const[ageFilter,setAgeFilter]=useState(false);
   const[dpOpen,setDpOpen]=useState(false);const[dpItem,setDpItem]=useState(null);
   // Persist added items across page loads
@@ -94,7 +94,7 @@ export default function ThingsToDoSection({allLocs,kids,userLoc,setUserLoc,userI
           {!addedIds.has(t.id)?<button onClick={async()=>{
             if(t.event_date){
               await db("manual_events","POST",{body:{user_id:userId,title:t.title,event_date:t.event_date+"T"+(t.event_time||"10:00")+":00",location:t.location_name||"",description:t.description||""}});
-              markAdded(t.id);showToast("Added to your schedule!");
+              markAdded(t.id);showToast("Added to your schedule!");onEventAdded&&onEventAdded();
             }else{setDpItem(t);setDpOpen(true)}
           }} style={{flex:1,textAlign:"center",padding:12,borderRadius:14,border:"1.5px solid var(--g)",background:"none",color:"var(--g)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)",minHeight:44}}>📅 Add to schedule</button>
           :<span style={{flex:1,textAlign:"center",padding:12,borderRadius:14,background:"var(--sage)",color:"var(--gl)",fontSize:13,fontWeight:700,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>✓ Added</span>}
@@ -106,7 +106,7 @@ export default function ThingsToDoSection({allLocs,kids,userLoc,setUserLoc,userI
     <DateTimePicker open={dpOpen} onClose={()=>{setDpOpen(false);setDpItem(null)}} title={dpItem?"When are you going to "+dpItem.title+"?":"Pick a date"} onSelect={async(date,time)=>{
       if(dpItem){
         await db("manual_events","POST",{body:{user_id:userId,title:dpItem.title,event_date:date+"T"+time+":00",location:dpItem.location_name||"",description:dpItem.description||""}});
-        markAdded(dpItem.id);showToast("Added to your schedule!");
+        markAdded(dpItem.id);showToast("Added to your schedule!");onEventAdded&&onEventAdded();
       }
     }}/>
   </div>;
