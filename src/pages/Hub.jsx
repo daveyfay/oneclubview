@@ -663,7 +663,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             const a=todayEvts[i],b=todayEvts[j];
             if(a.memberId===b.memberId)continue;
             if((a.time<(b.endTime||"23:59"))&&(b.time<(a.endTime||"23:59"))){
-              alerts.push({type:"urgent",icon:"⚠️",text:"Clash today: "+a.member+" ("+a.title+" "+a.time+") overlaps "+b.member+" ("+b.title+" "+b.time+")",action:"week"});
+              alerts.push({type:"urgent",icon:"⚠️",text:"Clash today: "+a.member+" ("+a.title+" "+a.time+") overlaps "+b.member+" ("+b.title+" "+b.time+")",action:"week",day:new Date()});
             }
           }
         }
@@ -695,7 +695,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
 
           {alerts.slice(0,5).map((a,i)=>{
             const col=colors[a.type]||colors.info;
-            return <div key={i} onClick={()=>{if(a.action){setTab(a.action);window.scrollTo(0,0)}}} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",borderRadius:12,background:col.bg,border:"1px solid "+col.border,marginBottom:6,cursor:a.action?"pointer":"default"}}>
+            return <div key={i} onClick={()=>{if(a.action){setTab(a.action);if(a.day)setSelectedDay(a.day);window.scrollTo(0,0)}}} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",borderRadius:12,background:col.bg,border:"1px solid "+col.border,marginBottom:6,cursor:a.action?"pointer":"default"}}>
               <span style={{fontSize:16,flexShrink:0}}>{a.icon}</span>
               <span style={{fontSize:12,color:col.text,fontWeight:600,lineHeight:1.4}}>{a.text}</span>
             </div>;
@@ -719,8 +719,8 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           if(clashes.length===0)return null;
           return <div style={{background:"#fef2f2",border:"1.5px solid #fecaca",borderRadius:16,padding:14,marginBottom:14,boxShadow:"var(--shadow)"}}>
             <div style={{fontSize:13,fontWeight:700,color:"#dc2626",marginBottom:6}}>⚠️ {clashes.length} clash{clashes.length>1?"es":""} this week</div>
-            {clashes.map((cl,i)=><div key={i} style={{fontSize:12,color:"#991b1b",marginBottom:2}}>
-              {fmtDate(cl.day)}: {cl.a.member} ({cl.a.title} {cl.a.time}) overlaps {cl.b.member} ({cl.b.title} {cl.b.time})
+            {clashes.map((cl,i)=><div key={i} onClick={()=>{setSelectedDay(cl.day);setWeekView("timeline");window.scrollTo(0,0)}} style={{fontSize:12,color:"#991b1b",marginBottom:2,cursor:"pointer",padding:"4px 0",borderRadius:6}}>
+              {fmtDate(cl.day)}: {cl.a.member} ({cl.a.title} {cl.a.time}) overlaps {cl.b.member} ({cl.b.title} {cl.b.time}) →
             </div>)}
           </div>;
         })()}
