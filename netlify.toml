@@ -1,3 +1,7 @@
+# NOTE: Currently deploying the monolith from public/
+# When react-migration is ready, switch to:
+#   command = "npm run build"
+#   publish = "dist"
 [build]
   publish = "public"
 

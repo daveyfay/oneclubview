@@ -2,6 +2,34 @@
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@babel/plugin-transform-react-jsx": "^7.28.6",
-    "@babel/preset-react": "^7.28.5"
+    "@babel/preset-react": "^7.28.5",
+    "@vitejs/plugin-react": "^6.0.1",
+    "vite": "^8.0.3"
+  },
+  "name": "oneclubview",
+  "version": "1.0.0",
+  "description": "**All your clubs. One view.**",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daveyfay/oneclubview.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/daveyfay/oneclubview/issues"
+  },
+  "homepage": "https://github.com/daveyfay/oneclubview#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.100.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.2"
   }
 }

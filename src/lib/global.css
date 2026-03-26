@@ -1,0 +1,266 @@
+/* ── OneClubView Design System ── */
+
+/* CSS Variables */
+:root {
+  --g: #1a2a3a;
+  --gl: #2d4a5f;
+  --gxl: #e8f0f5;
+  --acc: #e85d4a;
+  --accl: #fff0ee;
+  --sage: #e8f0e8;
+  --warm: #f8f6f3;
+  --card: #fff;
+  --tx: #1a1a1a;
+  --mt: #7c8590;
+  --bd: #e4e2de;
+  --sr: 'Fraunces', Georgia, serif;
+  --sn: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --shadow: 0 2px 8px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.04);
+  --shadow-xl: 0 20px 50px rgba(0,0,0,.12);
+  --radius: 16px;
+  --card-padding: 18px;
+  --card-gap: 12px;
+}
+
+/* Reset */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+  font-family: var(--sn);
+  background: var(--warm);
+  color: var(--tx);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Hide scrollbars */
+.hsb::-webkit-scrollbar { display: none; }
+.hsb { scrollbar-width: none; }
+
+/* Form inputs */
+input, select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--bd);
+  font-size: 14px;
+  outline: none;
+  background: #fff;
+  font-family: var(--sn);
+  transition: border .2s;
+}
+input:focus, select:focus {
+  border-color: var(--g);
+  box-shadow: 0 0 0 3px rgba(26,42,58,.08);
+}
+select {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Modal backdrop */
+.mbg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(10,15,20,.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* Modal box */
+.mbox {
+  background: var(--card);
+  border-radius: 24px 24px 0 0;
+  padding: 28px 24px 24px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+}
+
+/* Animations */
+@keyframes ri {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.r { animation: ri .5s ease both; }
+.r2 { animation: ri .5s ease .1s both; }
+.r3 { animation: ri .5s ease .2s both; }
+.r4 { animation: ri .5s ease .3s both; }
+
+@keyframes fi {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fi { animation: fi .3s ease both; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.modal-overlay { animation: overlayIn .2s ease both; }
+.modal-sheet { animation: modalIn .25s cubic-bezier(.4,0,.2,1) both; }
+
+/* Labels */
+.lbl {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mt);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* Buttons */
+.btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--radius);
+  min-height: 48px;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--sn);
+  transition: transform .15s, box-shadow .15s;
+}
+.btn:disabled { opacity: .5; }
+.btn:active { transform: scale(.98); }
+.bp { background: var(--g); color: #fff; box-shadow: 0 4px 12px rgba(26,42,58,.2); }
+.bp:hover { box-shadow: 0 6px 20px rgba(26,42,58,.25); }
+.bs { background: #f0eeeb; color: var(--mt); }
+
+/* Pills */
+.pill {
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  min-height: 36px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: var(--sn);
+  transition: all .15s;
+}
+.pon { background: var(--g); color: #fff; box-shadow: 0 2px 8px rgba(26,42,58,.15); }
+.poff { background: #f0eeeb; color: var(--mt); }
+.htab { transition: all .15s; }
+
+/* Safe area */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-bot { padding-bottom: calc(env(safe-area-inset-bottom) + 20px); }
+}
+
+/* PWA standalone */
+@media (display-mode: standalone) {
+  body { -webkit-user-select: none; user-select: none; }
+  #root { padding-top: env(safe-area-inset-top); }
+  #root::before {
+    content: "";
+    display: block;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: env(safe-area-inset-top);
+    background: var(--warm);
+    z-index: 9999;
+  }
+}
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  top: env(safe-area-inset-top, 20px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  z-index: 9999;
+  padding: 14px 24px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--sn);
+  box-shadow: var(--shadow-lg);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+  max-width: 90vw;
+  text-align: center;
+}
+.toast.show { transform: translateX(-50%) translateY(20px); }
+.toast-ok { background: #1a2a3a; color: #fff; }
+.toast-err { background: #dc2626; color: #fff; }
+.toast-info { background: #fff; color: var(--tx); border: 1px solid var(--bd); }
+
+/* Date picker */
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+.dp-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-family: var(--sn);
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--tx);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+}
+.dp-cell:hover { background: var(--gxl); }
+.dp-cell.sel { background: var(--g); color: #fff; font-weight: 700; }
+.dp-cell.today { border: 2px solid var(--acc); font-weight: 700; }
+.dp-cell.other { color: var(--bd); }
+.dp-head { font-size: 12px; font-weight: 700; color: var(--mt); padding: 4px 0; }
+
+/* Quick pick buttons */
+.qp {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--bd);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--sn);
+  cursor: pointer;
+  color: var(--tx);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.qp:hover, .qp:active {
+  border-color: var(--g);
+  color: var(--g);
+  background: var(--gxl);
+}
+
+/* Responsive — laptop sidebar */
+@media (min-width: 900px) {
+  body { display: flex; justify-content: center; }
+  #root { max-width: 600px; width: 100%; position: relative; }
+}
