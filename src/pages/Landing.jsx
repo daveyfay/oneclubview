@@ -93,7 +93,7 @@ function FeatureTiles() {
   ];
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 20, marginTop: 48 }}>
+    <div className="ocv-feature-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 20, marginTop: 48 }}>
       {tiles.map((f, i) => (
         <div
           key={i}
@@ -200,6 +200,18 @@ const USER_COUNTRY = detectCountry();
 function Landing({ onGo, onLogin }) {
   return (
     <div style={{ minHeight: '100vh' }}>
+      <style>{`
+        @media(max-width:520px){
+          .ocv-pricing-grid{grid-template-columns:1fr !important;gap:16px !important}
+          .ocv-feature-grid{grid-template-columns:1fr 1fr !important;gap:12px !important}
+          .ocv-social-proof{flex-wrap:wrap;justify-content:center;gap:8px 16px !important;font-size:11px !important}
+          .ocv-hero-btns{flex-direction:column;gap:8px !important}
+          .ocv-hero-btns button{width:100%}
+        }
+        @media(max-width:360px){
+          .ocv-feature-grid{grid-template-columns:1fr !important}
+        }
+      `}</style>
       {/* HERO */}
       <div style={{ background: 'linear-gradient(135deg, #1a2a3a 0%, #2d4a5f 50%, #1a3a4a 100%)', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: -100, right: -100, width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle,rgba(232,93,74,.15) 0%,transparent 70%)' }} />
@@ -237,7 +249,7 @@ function Landing({ onGo, onLogin }) {
           <p className="r3" style={{ fontSize: 16, color: 'rgba(255,255,255,.65)', lineHeight: 1.6, marginBottom: 32, maxWidth: 380 }}>
             Schedule clashes, forgotten fees, full camps. OneClubView takes the chaos out of extracurricular life — for both parents.
           </p>
-          <div className="r4" style={{ display: 'flex', gap: 10 }}>
+          <div className="r4 ocv-hero-btns" style={{ display: 'flex', gap: 10 }}>
             <button
               onClick={onGo}
               style={{
@@ -276,7 +288,7 @@ function Landing({ onGo, onLogin }) {
       </div>
       {/* SOCIAL PROOF */}
       <div style={{ background: '#fff', padding: '20px 24px', borderBottom: '1px solid var(--bd)' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, fontSize: 12, color: 'var(--mt)' }}>
+        <div className="ocv-social-proof" style={{ maxWidth: 520, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, fontSize: 12, color: 'var(--mt)' }}>
           <span>
             <strong style={{ color: 'var(--tx)' }}>Schedule</strong> every club
           </span>
@@ -428,7 +440,7 @@ function Landing({ onGo, onLogin }) {
             </h2>
             <p style={{ fontSize: 14, color: 'var(--mt)' }}>Cancel anytime. No lock-in.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="ocv-pricing-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {/* Standard */}
             <div style={{ background: 'var(--warm)', borderRadius: 20, padding: 24, border: '2px solid var(--bd)' }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--mt)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>

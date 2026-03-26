@@ -695,9 +695,10 @@ export default function Hub({user,profile,onRefresh,onLogout}){
 
           {alerts.slice(0,5).map((a,i)=>{
             const col=colors[a.type]||colors.info;
-            return <div key={i} onClick={()=>{if(a.action){setTab(a.action);if(a.day)setSelectedDay(a.day);window.scrollTo(0,0)}}} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",borderRadius:12,background:col.bg,border:"1px solid "+col.border,marginBottom:6,cursor:a.action?"pointer":"default"}}>
+            return <div key={i} onClick={()=>{if(a.action){setTab(a.action);if(a.day)setSelectedDay(a.day);window.scrollTo(0,0)}}} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,background:col.bg,border:"1px solid "+col.border,marginBottom:6,cursor:a.action?"pointer":"default"}} onTouchStart={ev=>{if(a.action)ev.currentTarget.style.opacity=".7"}} onTouchEnd={ev=>{ev.currentTarget.style.opacity="1"}}>
               <span style={{fontSize:16,flexShrink:0}}>{a.icon}</span>
-              <span style={{fontSize:12,color:col.text,fontWeight:600,lineHeight:1.4}}>{a.text}</span>
+              <span style={{flex:1,fontSize:12,color:col.text,fontWeight:600,lineHeight:1.4}}>{a.text}</span>
+              {a.action&&<span style={{flexShrink:0,color:col.text,opacity:.5,fontSize:14}}>›</span>}
             </div>;
           })}
         </div>;

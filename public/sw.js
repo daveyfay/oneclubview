@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ocv-v1';
+const CACHE_NAME = 'ocv-v2';
 const OFFLINE_URLS = [
   '/',
   '/index.html',
