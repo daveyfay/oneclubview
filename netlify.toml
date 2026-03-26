@@ -1,6 +1,6 @@
-# React (Vite) build — migrated from monolith public/index.html
+# React (Vite) build — with static blog pre-rendering
 [build]
-  command = "npm run build"
+  command = "node build-blog.js && npm run build"
   publish = "dist"
 
 [[headers]]
@@ -12,4 +12,3 @@
   from = "/*"
   to = "/index.html"
   status = 200
-
