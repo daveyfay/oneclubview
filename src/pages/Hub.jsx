@@ -1146,18 +1146,45 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         </div>
       </div>}
 
-      {/* FAB */}
-      {showFab&&<div onClick={()=>setShowFab(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:70}}/>}
-      {showFab&&<div style={{position:"fixed",bottom:76,right:20,zIndex:71,display:"flex",flexDirection:"column",gap:8,alignItems:"flex-end"}}>
-        {[
-          {icon:"📅",label:"Add event",fn:()=>{setShowFab(false);setShowAddEv(true)},admin:true},
-          {icon:"📋",label:"Paste schedule",fn:()=>{setShowFab(false);setShowPaste(true)},admin:true},
-          {icon:"🥋",label:"Add activity",fn:()=>{setShowFab(false);setShowAddActivity(true)},admin:true},
-          {icon:"🏠",label:"Add club",fn:()=>{setShowFab(false);onRefresh("clubs")},admin:true},
-          {icon:"👤",label:"Add member",fn:()=>{setShowFab(false);setShowAddKid(true)},admin:true},
-          {icon:"💳",label:"Add fee reminder",fn:()=>{setShowFab(false);setShowAddPay(true)},admin:true},
-          {icon:"📤",label:"Share my week",fn:()=>{setShowFab(false);shareWeek()},admin:false},
-        ].filter(a=>isAdmin||!a.admin).map(a=><button key={a.label} onClick={a.fn} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 16px",borderRadius:12,background:"#fff",border:"1px solid var(--bd)",boxShadow:"0 4px 16px rgba(0,0,0,.1)",fontSize:13,fontWeight:600,color:"var(--g)",cursor:"pointer",fontFamily:"var(--sn)"}}>{a.icon} {a.label}</button>)}
+      {/* FAB + Bottom Sheet */}
+      {showFab&&<div onClick={()=>setShowFab(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(10,15,20,.35)",zIndex:70,transition:"opacity .2s"}}/>}
+      {showFab&&<div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:71,background:"#fff",borderRadius:"20px 20px 0 0",padding:"20px 20px calc(20px + env(safe-area-inset-bottom, 0px))",maxHeight:"75vh",overflowY:"auto",boxShadow:"0 -8px 40px rgba(0,0,0,.15)",animation:"slideUp .25s ease"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:17,fontWeight:800,color:"var(--g)"}}>Add to schedule</h3>
+          <button onClick={()=>setShowFab(false)} style={{background:"none",border:"none",fontSize:22,color:"var(--mt)",cursor:"pointer",padding:"4px"}}>×</button>
+        </div>
+        {/* Type cards */}
+        {isAdmin&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:16}}>
+          <div onClick={()=>{setShowFab(false);setShowAddEv(true)}} style={{padding:"14px 8px",borderRadius:14,border:"2px solid var(--bd)",background:"#fff",cursor:"pointer",textAlign:"center",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--g)";e.currentTarget.style.background="var(--gxl)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--bd)";e.currentTarget.style.background="#fff"}}>
+            <span style={{fontSize:22,display:"block",marginBottom:4}}>📅</span>
+            <span style={{fontSize:11,fontWeight:700,color:"var(--g)",display:"block"}}>Event</span>
+            <span style={{fontSize:9,fontWeight:500,color:"var(--mt)",display:"block",marginTop:2}}>Session or match</span>
+          </div>
+          <div onClick={()=>{setShowFab(false);onRefresh("clubs")}} style={{padding:"14px 8px",borderRadius:14,border:"2px solid var(--bd)",background:"#fff",cursor:"pointer",textAlign:"center",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--g)";e.currentTarget.style.background="var(--gxl)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--bd)";e.currentTarget.style.background="#fff"}}>
+            <span style={{fontSize:22,display:"block",marginBottom:4}}>🏠</span>
+            <span style={{fontSize:11,fontWeight:700,color:"var(--g)",display:"block"}}>Club</span>
+            <span style={{fontSize:9,fontWeight:500,color:"var(--mt)",display:"block",marginTop:2}}>Regular activity</span>
+          </div>
+          <div onClick={()=>{setShowFab(false);setShowAddActivity(true)}} style={{padding:"14px 8px",borderRadius:14,border:"2px solid var(--bd)",background:"#fff",cursor:"pointer",textAlign:"center",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--g)";e.currentTarget.style.background="var(--gxl)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--bd)";e.currentTarget.style.background="#fff"}}>
+            <span style={{fontSize:22,display:"block",marginBottom:4}}>🎉</span>
+            <span style={{fontSize:11,fontWeight:700,color:"var(--g)",display:"block"}}>Fun stuff</span>
+            <span style={{fontSize:9,fontWeight:500,color:"var(--mt)",display:"block",marginTop:2}}>From Discover</span>
+          </div>
+        </div>}
+        {/* Secondary options */}
+        <div style={{display:"flex",flexDirection:"column",gap:2}}>
+          {[
+            ...(isAdmin?[
+              {icon:"📋",label:"Paste schedule",desc:"From email or WhatsApp",fn:()=>{setShowFab(false);setShowPaste(true)}},
+              {icon:"👤",label:"Add family member",desc:"Kid or adult",fn:()=>{setShowFab(false);setShowAddKid(true)}},
+              {icon:"💳",label:"Add fee reminder",desc:"Track a payment",fn:()=>{setShowFab(false);setShowAddPay(true)}},
+            ]:[]),
+            {icon:"📤",label:"Share my week",desc:"Send to partner or group",fn:()=>{setShowFab(false);shareWeek()}},
+          ].map(a=><button key={a.label} onClick={a.fn} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,border:"none",background:"none",cursor:"pointer",fontFamily:"var(--sn)",textAlign:"left",width:"100%"}} onTouchStart={e=>e.currentTarget.style.background="var(--gxl)"} onTouchEnd={e=>e.currentTarget.style.background="none"}>
+            <span style={{fontSize:16,flexShrink:0}}>{a.icon}</span>
+            <div><div style={{fontSize:13,fontWeight:600,color:"var(--g)"}}>{a.label}</div><div style={{fontSize:10,color:"var(--mt)"}}>{a.desc}</div></div>
+          </button>)}
+        </div>
       </div>}
       <button onClick={()=>setShowFab(!showFab)} style={{position:"fixed",bottom:"calc(20px + env(safe-area-inset-bottom, 0px))",right:20,width:52,height:52,borderRadius:"50%",background:showFab?"var(--mt)":"var(--g)",color:"#fff",border:"none",fontSize:24,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(26,42,58,.25)",zIndex:72,transition:"transform .15s,background .15s",transform:showFab?"rotate(45deg)":"none"}}>+</button>
 
