@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { db } from '../../lib/supabase';
+import { showToast } from '../../lib/utils';
 
 function AddPaymentModal({ clubs, userId, kids, profile, onClose, onSaved }) {
   const [cid, setCid] = useState(clubs[0]?.club_id || "");

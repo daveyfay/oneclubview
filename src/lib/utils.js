@@ -68,7 +68,9 @@ export function fmtDist(km) {
 // ── Date formatting ──
 export function fmtDate(dateStr) {
   if (!dateStr) return "";
-  const d = new Date(dateStr + "T00:00:00");
+  // Handle both Date objects and date strings (e.g. "2026-03-27")
+  const d = dateStr instanceof Date ? dateStr : new Date(dateStr + "T00:00:00");
+  if (isNaN(d)) return "";
   return d.toLocaleDateString("en-IE", { day: "numeric", month: "short", year: "numeric" });
 }
 

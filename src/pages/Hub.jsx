@@ -378,9 +378,9 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       {/* WEEK/MONTH HEADER — Flo-inspired */}
       <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:4}}>
         <h2 style={{fontFamily:"var(--sr)",fontSize:20,fontWeight:800,color:"var(--g)"}}>This week</h2>
-        <div style={{display:"flex",gap:4}}>
+        {tab==="week"&&<div style={{display:"flex",gap:4}}>
           <button onClick={()=>{track("calendar_toggle",{view:weekView==="calendar"?"timeline":"calendar"});setWeekView(weekView==="calendar"?"timeline":"calendar")}} style={{fontSize:11,fontWeight:600,color:weekView==="calendar"?"var(--acc)":"var(--mt)",background:"none",border:"none",cursor:"pointer",fontFamily:"var(--sn)"}}>{weekView==="calendar"?"Week view":"Calendar"}</button>
-        </div>
+        </div>}
       </div>
 
       {/* HORIZONTAL DAY PILLS — inspired by Flo's week strip */}

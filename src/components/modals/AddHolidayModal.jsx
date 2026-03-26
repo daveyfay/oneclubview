@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { db } from '../../lib/supabase';
 
 function AddHolidayModal({ userId, onClose, onSaved }) {
   const [name, setName] = useState("");
