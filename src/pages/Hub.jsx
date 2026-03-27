@@ -50,7 +50,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
     setLoading(true);
     const[k,c,r,m,p,ca,hols,userHols,cBooks,lEvts,aCats]=await Promise.all([
       db("dependants","GET",{filters:[pidFilter],order:"created_at.asc"}),
-      db("hub_subscriptions","GET",{select:"id,club_id,dependant_id,colour,nickname,clubs(id,name,address,location,phone,rating)",filters:[uidFilter]}),
+      db("hub_subscriptions","GET",{select:"id,club_id,dependant_id,colour,nickname,clubs(id,name,address,location,phone,rating,term_start,term_end)",filters:[uidFilter]}),
       db("recurring_events","GET",{filters:[uidFilter]}),
       db("manual_events","GET",{filters:[uidFilter]}),
       db("payment_reminders","GET",{filters:[uidFilter],order:"due_date.asc"}),
@@ -70,7 +70,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       const sch=await db("schools","GET",{select:"name,latitude,longitude",filters:["or=("+schoolQ+")","latitude=not.is.null"],limit:20});
       setSchoolLocs((sch||[]).filter(s=>s.latitude).map(s=>({lat:Number(s.latitude),lng:Number(s.longitude),name:s.name})));
     }
-    setClubs((c||[]).map(s=>({...s,club_id:s.club_id||s.clubs?.id,club_name:s.clubs?.name||"?",club_addr:s.clubs?.address})));
+    setClubs((c||[]).map(s=>({...s,club_id:s.club_id||s.clubs?.id,club_name:s.clubs?.name||"?",club_addr:s.clubs?.address,term_start:s.clubs?.term_start||null,term_end:s.clubs?.term_end||null})));
     setRecs(r||[]);setMans(m||[]);setPays(p||[]);setCamps(ca||[]);setHolidays(hols||[]);setUserHolidays(userHols||[]);setCampBookings(cBooks||[]);setLocalEvents(lEvts||[]);setActCats(aCats||[]);
     // Load family locations
     const fLocs=await db("family_locations","GET",{filters:["user_id=eq."+user.id,"active=eq.true"],order:"label.asc"});
@@ -153,6 +153,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
   // Build weekly events with member names
   const wd=useMemo(()=>weekDates(),[]);
   const clubMap=useMemo(()=>{const m=new Map();(clubs||[]).forEach(c=>m.set(c.club_id,c));return m},[clubs]);
+  const clubTermMap=useMemo(()=>{const m=new Map();(clubs||[]).forEach(c=>{if(c.term_start&&c.term_end)m.set(c.club_id,{start:new Date(c.term_start+"T00:00:00"),end:new Date(c.term_end+"T23:59:59")})});return m},[clubs]);
   const kidMap=useMemo(()=>{const m=new Map();(kids||[]).forEach(k=>m.set(k.id,k));return m},[kids]);
   const weekEvts=useMemo(()=>{
     const evts=[];
@@ -160,6 +161,9 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       if(!re.active)return;
       wd.forEach(d=>{
         if(d.getDay()===re.day_of_week){
+          // Skip if outside club term dates
+          const term=clubTermMap.get(re.club_id);
+          if(term&&(d<term.start||d>term.end))return;
           const dStr=d.toISOString().split("T")[0];
           const isSkipped=(re.excluded_dates||[]).includes(dStr);
           const cl=clubMap.get(re.club_id);
@@ -182,7 +186,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       }
     });
     return evts.sort((a,b)=>a.date-b.date||(a.time||"").localeCompare(b.time||""));
-  },[recs,mans,clubMap,kidMap,profile,wd]);
+  },[recs,mans,clubMap,clubTermMap,kidMap,profile,wd]);
 
   const activeWeekEvts=weekEvts.filter(e=>!e.skipped);
   const filtEvts=filter==="all"?activeWeekEvts:activeWeekEvts.filter(e=>e.memberId===filter);
@@ -506,6 +510,9 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           const evts=[];
           (recs||[]).forEach(re=>{
             if(!re.active||re.day_of_week!==dow)return;
+            // Skip if outside club term dates
+            const term=clubTermMap.get(re.club_id);
+            if(term&&(cellDate<term.start||cellDate>term.end))return;
             const dStr=cellDate.toISOString().split("T")[0];
             if((re.excluded_dates||[]).includes(dStr))return;
             const cl=clubMap.get(re.club_id);
@@ -804,6 +811,34 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           <div style={{textAlign:"center",marginTop:4}}>
             <span onClick={()=>setTab("money")} style={{fontSize:11,fontWeight:600,color:"var(--acc)",cursor:"pointer"}}>View all fees ›</span>
           </div>
+        </div>}
+
+        {/* MY CLUBS */}
+        {clubs.length>0&&<div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
+          <h3 style={{fontFamily:"var(--sr)",fontSize:15,fontWeight:700,color:"var(--g)",marginBottom:10}}>My Clubs</h3>
+          {(()=>{
+            const grouped={};
+            clubs.forEach((c,i)=>{
+              if(!grouped[c.club_id])grouped[c.club_id]={...c,members:[],idx:i,nickname:c.nickname||null};
+              const kid=c.dependant_id?kids.find(k=>k.id===c.dependant_id):null;
+              grouped[c.club_id].members.push(kid?kid.first_name:(profile?.first_name||"You"));
+            });
+            return Object.values(grouped).map((c,i)=>{
+              const term=clubTermMap.get(c.club_id);
+              const termLabel=term?new Date(c.term_start).toLocaleDateString("en-IE",{day:"numeric",month:"short"})+" – "+new Date(c.term_end).toLocaleDateString("en-IE",{day:"numeric",month:"short"}):"";
+              return <div key={c.club_id} onClick={()=>setEditClub(c)} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<Object.keys(grouped).length-1?"1px solid var(--bd)":"none",cursor:"pointer"}}>
+                <div style={{width:36,height:36,borderRadius:10,background:c.colour||COLS[i%COLS.length],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:800,flexShrink:0}}>{c.club_name.split(" ").map(w=>w[0]).join("").substring(0,2)}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:600,color:"var(--tx)"}}>{c.nickname||c.club_name}</div>
+                  <div style={{fontSize:11,color:"var(--mt)"}}>{c.members.join(", ")}{termLabel?" · "+termLabel:""}</div>
+                </div>
+                <span style={{color:"#ddd",flexShrink:0,fontSize:14}}>›</span>
+              </div>;
+            });
+          })()}
+          {isAdmin&&<div style={{textAlign:"center",marginTop:8}}>
+            <span onClick={()=>onRefresh("clubs")} style={{fontSize:11,fontWeight:600,color:"var(--acc)",cursor:"pointer"}}>+ Add a club</span>
+          </div>}
         </div>}
       </div>}
 
@@ -1154,7 +1189,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           <button onClick={()=>setShowFab(false)} style={{background:"none",border:"none",fontSize:22,color:"var(--mt)",cursor:"pointer",padding:"4px"}}>×</button>
         </div>
         {/* Type cards */}
-        {isAdmin&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:16}}>
+        {isAdmin&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
           <div onClick={()=>{setShowFab(false);setShowAddEv(true)}} style={{padding:"14px 8px",borderRadius:14,border:"2px solid var(--bd)",background:"#fff",cursor:"pointer",textAlign:"center",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--g)";e.currentTarget.style.background="var(--gxl)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--bd)";e.currentTarget.style.background="#fff"}}>
             <span style={{fontSize:22,display:"block",marginBottom:4}}>📅</span>
             <span style={{fontSize:11,fontWeight:700,color:"var(--g)",display:"block"}}>Event</span>
@@ -1164,6 +1199,11 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             <span style={{fontSize:22,display:"block",marginBottom:4}}>🏠</span>
             <span style={{fontSize:11,fontWeight:700,color:"var(--g)",display:"block"}}>Club</span>
             <span style={{fontSize:9,fontWeight:500,color:"var(--mt)",display:"block",marginTop:2}}>Regular activity</span>
+          </div>
+          <div onClick={()=>{setShowFab(false);setShowAddEv(true)}} style={{padding:"14px 8px",borderRadius:14,border:"2px solid var(--bd)",background:"#fff",cursor:"pointer",textAlign:"center",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--g)";e.currentTarget.style.background="var(--gxl)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--bd)";e.currentTarget.style.background="#fff"}}>
+            <span style={{fontSize:22,display:"block",marginBottom:4}}>🤝</span>
+            <span style={{fontSize:11,fontWeight:700,color:"var(--g)",display:"block"}}>Playdate</span>
+            <span style={{fontSize:9,fontWeight:500,color:"var(--mt)",display:"block",marginTop:2}}>One-off meetup</span>
           </div>
           <div onClick={()=>{setShowFab(false);setShowAddActivity(true)}} style={{padding:"14px 8px",borderRadius:14,border:"2px solid var(--bd)",background:"#fff",cursor:"pointer",textAlign:"center",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--g)";e.currentTarget.style.background="var(--gxl)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--bd)";e.currentTarget.style.background="#fff"}}>
             <span style={{fontSize:22,display:"block",marginBottom:4}}>🎉</span>
