@@ -760,21 +760,21 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
           <h3 style={{fontFamily:"var(--sr)",fontSize:15,fontWeight:700,color:"var(--g)",marginBottom:10}}>This week</h3>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            <div style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center"}}>
+            <div onClick={()=>{setTab("week");window.scrollTo(0,0)}} style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center",cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.95)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
               <div style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>{activeWeekEvts.length}</div>
-              <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Activities</div>
+              <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Activities ›</div>
             </div>
-            <div style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center"}}>
+            <div onClick={()=>{setTab("clubs");window.scrollTo(0,0)}} style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center",cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.95)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
               <div style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>{new Set(activeWeekEvts.map(e=>e.club).filter(Boolean)).size}</div>
-              <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Clubs</div>
+              <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Clubs ›</div>
             </div>
-            {isAdmin&&<div style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center"}}>
+            {isAdmin&&<div onClick={()=>{setTab("money");window.scrollTo(0,0)}} style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center",cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.95)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
               <div style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:totalDue>0?"var(--acc)":"var(--g)"}}>€{totalDue.toFixed(0)}</div>
-              <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Due soon</div>
+              <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Due soon ›</div>
             </div>}
-            <div style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center"}}>
+            <div onClick={()=>{setShowProfile(true);window.scrollTo(0,0)}} style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center",cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.95)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
               <div style={{fontFamily:"var(--sr)",fontSize:22,fontWeight:800,color:"var(--g)"}}>{kids.length}</div>
-              <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Kids</div>
+              <div style={{fontSize:10,fontWeight:600,color:"var(--mt)",marginTop:2}}>Kids ›</div>
             </div>
           </div>
         </div>

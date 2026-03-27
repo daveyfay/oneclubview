@@ -52,23 +52,16 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
         setSv(false);
         return;
       }
+      const startDt = date + "T" + time + ":00";
+      const endDt = endTime ? date + "T" + endTime + ":00" : null;
       result = await db("manual_events", "POST", {
         body: {
           user_id: userId,
           club_id: cid,
           dependant_id: dep,
           title: title.trim(),
-          event_date: date + "T" + time + ":00",
-          duration_minutes: endTime
-            ? Math.max(
-                30,
-                Math.round(
-                  (new Date("2000-01-01T" + endTime) -
-                    new Date("2000-01-01T" + time)) /
-                    60000
-                )
-              )
-            : parseInt(dur) || 60,
+          event_date: startDt,
+          end_date: endDt,
           driver: driver || null,
         },
       });

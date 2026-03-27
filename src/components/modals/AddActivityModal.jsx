@@ -89,9 +89,12 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
             club_id: clubId,
             dependant_id: assignKid || null,
             title: name.trim(),
+            frequency: "weekly",
             day_of_week: dow,
-            start_time: time,
+            start_time: time + (time.length === 5 ? ":00" : ""),
             duration_minutes: parseInt(duration) || 60,
+            starts_from: new Date().toISOString().split("T")[0],
+            excluded_dates: [],
             active: true,
           },
         });
@@ -105,6 +108,7 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
             dependant_id: assignKid || null,
             description: (termName || "Term") + " fee",
             amount: parseFloat(cost),
+            currency: "EUR",
             due_date: new Date(Date.now() + 14 * 86400000)
               .toISOString()
               .split("T")[0],
