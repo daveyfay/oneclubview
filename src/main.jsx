@@ -2,17 +2,38 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './lib/global.css';
 import App from './App';
+import { Capacitor } from '@capacitor/core';
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 
-// Register service worker
-if ('serviceWorker' in navigator) {
+// Capacitor native app setup
+if (Capacitor.isNativePlatform()) {
+  import('@capacitor/status-bar').then(({ StatusBar, Style }) => {
+    StatusBar.setStyle({ style: Style.Light });
+    StatusBar.setBackgroundColor({ color: '#1a2a3a' });
+  }).catch(() => {});
+  import('@capacitor/splash-screen').then(({ SplashScreen }) => {
+    SplashScreen.hide();
+  }).catch(() => {});
+  // Handle hardware back button on Android
+  import('@capacitor/app').then(({ App: CapApp }) => {
+    CapApp.addListener('backButton', ({ canGoBack }) => {
+      if (canGoBack) window.history.back();
+      else CapApp.exitApp();
+    });
+  }).catch(() => {});
+}
+
+// Register service worker (web only)
+if (!Capacitor.isNativePlatform() && 'serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 
-// PWA install prompt
+// PWA install prompt (web only — skip in native app)
 let deferredPrompt;
+if (Capacitor.isNativePlatform()) deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
+  if (Capacitor.isNativePlatform()) return;
   e.preventDefault();
   deferredPrompt = e;
   setTimeout(() => {
@@ -28,8 +49,8 @@ window.addEventListener('beforeinstallprompt', e => {
   }, 30000);
 });
 
-// iOS install hint
-if (/iPhone|iPad/.test(navigator.userAgent) && !window.navigator.standalone) {
+// iOS install hint (web only)
+if (!Capacitor.isNativePlatform() && /iPhone|iPad/.test(navigator.userAgent) && !window.navigator.standalone) {
   setTimeout(() => {
     if (!localStorage.getItem('ocv_ios_hint')) {
       const b = document.createElement('div');
