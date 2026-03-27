@@ -8,12 +8,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 
 // Capacitor native app setup
 if (Capacitor.isNativePlatform()) {
+  // Mark body so CSS can target native
+  document.body.classList.add('native-app');
+
   import('@capacitor/status-bar').then(({ StatusBar, Style }) => {
     StatusBar.setStyle({ style: Style.Light });
     StatusBar.setBackgroundColor({ color: '#1a2a3a' });
+    StatusBar.setOverlaysWebView({ overlay: false });
   }).catch(() => {});
   import('@capacitor/splash-screen').then(({ SplashScreen }) => {
-    SplashScreen.hide();
+    setTimeout(() => SplashScreen.hide({ fadeOutDuration: 300 }), 600);
   }).catch(() => {});
   // Handle hardware back button on Android
   import('@capacitor/app').then(({ App: CapApp }) => {
@@ -22,6 +26,31 @@ if (Capacitor.isNativePlatform()) {
       else CapApp.exitApp();
     });
   }).catch(() => {});
+
+  // Haptic feedback helper — available globally
+  import('@capacitor/haptics').then(({ Haptics, ImpactStyle }) => {
+    window.__haptic = (style) => Haptics.impact({ style: style || ImpactStyle.Light }).catch(() => {});
+    window.__hapticMedium = () => Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+    window.__hapticSuccess = () => Haptics.notification({ type: 'SUCCESS' }).catch(() => {});
+  }).catch(() => {
+    window.__haptic = () => {};
+    window.__hapticMedium = () => {};
+    window.__hapticSuccess = () => {};
+  });
+
+  // Request location permission explicitly on native
+  import('@capacitor/core').then(() => {
+    // Capacitor Geolocation plugin would be ideal, but the web API
+    // also triggers the native permission dialog on Capacitor
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(() => {}, () => {}, { enableHighAccuracy: true, timeout: 5000 });
+    }
+  }).catch(() => {});
+} else {
+  // Web fallbacks
+  window.__haptic = () => {};
+  window.__hapticMedium = () => {};
+  window.__hapticSuccess = () => {};
 }
 
 // Register service worker (web only)

@@ -32,6 +32,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
   const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("grid");const[selectedDay,setSelectedDay]=useState(null);const[calMonth,setCalMonth]=useState(new Date().getMonth());const[calYear,setCalYear]=useState(new Date().getFullYear());const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);const[showAddActivity,setShowAddActivity]=useState(false);const[showAddPlaydate,setShowAddPlaydate]=useState(false);const[tapEvent,setTapEvent]=useState(null);
   const[showChangePw,setShowChangePw]=useState(false);const[showDeleteAcct,setShowDeleteAcct]=useState(false);
+  const[ptrState,setPtrState]=useState("");const ptrStart=useRef(0);const ptrDist=useRef(0);
   const[showSaveLocModal,setShowSaveLocModal]=useState(false);const[showAddLocModal,setShowAddLocModal]=useState(false);
   const[campLoc,setCampLoc]=useState("all");
 
@@ -339,8 +340,16 @@ export default function Hub({user,profile,onRefresh,onLogout}){
 
   const noClubsBanner=clubs.length===0;
 
+  function ptrTouchStart(e){if(window.scrollY<5){ptrStart.current=e.touches[0].clientY;ptrDist.current=0;}}
+  function ptrTouchMove(e){if(!ptrStart.current)return;const d=e.touches[0].clientY-ptrStart.current;if(d>0&&window.scrollY<5){ptrDist.current=d;if(d>60)setPtrState("ready");else if(d>10)setPtrState("pulling");}}
+  function ptrTouchEnd(){if(ptrState==="ready"){setPtrState("refreshing");window.__hapticSuccess&&window.__hapticSuccess();load().finally(()=>{setPtrState("");ptrStart.current=0;});}else{setPtrState("");ptrStart.current=0;}}
+
   return (
-    <div className="fi" style={{background:"var(--warm)",minHeight:"100vh"}}>
+    <div className="fi" style={{background:"var(--warm)",minHeight:"100vh"}} onTouchStart={ptrTouchStart} onTouchMove={ptrTouchMove} onTouchEnd={ptrTouchEnd}>
+      {/* Pull-to-refresh indicator */}
+      <div className={"ptr-indicator"+(ptrState==="ready"||ptrState==="refreshing"?" visible":"")}>
+        {ptrState==="refreshing"?"Refreshing…":"↓ Pull to refresh"}
+      </div>
       {/* Header */}
       <div style={{background:"var(--card)",borderBottom:"1px solid var(--bd)"}}>
         <div style={{maxWidth:520,margin:"0 auto",padding:"12px 20px 6px"}}>
@@ -359,11 +368,11 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           </div>
         </div>
         <div style={{maxWidth:520,margin:"0 auto",display:"flex"}}>
-          {tabs.map(t=><button key={t.id} onClick={()=>{setTab(t.id);track("tab_view",{tab:t.id})}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,padding:"8px 0 6px",fontSize:10,fontWeight:600,border:"none",borderBottom:tab===t.id?"2.5px solid var(--g)":"2.5px solid transparent",cursor:"pointer",background:"none",color:tab===t.id?"var(--g)":"var(--mt)",fontFamily:"var(--sn)",transition:"color .15s"}}><span style={{display:"flex"}}>{t.i}</span><span>{t.l}</span></button>)}
+          {tabs.map(t=><button key={t.id} onClick={()=>{setTab(t.id);track("tab_view",{tab:t.id});window.__haptic&&window.__haptic()}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,padding:"8px 0 6px",fontSize:10,fontWeight:600,border:"none",borderBottom:tab===t.id?"2.5px solid var(--g)":"2.5px solid transparent",cursor:"pointer",background:"none",color:tab===t.id?"var(--g)":"var(--mt)",fontFamily:"var(--sn)",transition:"color .15s"}}><span style={{display:"flex"}}>{t.i}</span><span>{t.l}</span></button>)}
         </div>
       </div>
 
-      <div style={{maxWidth:520,margin:"0 auto",padding:"16px 20px",paddingBottom:100}}>
+      <div key={tab} className="tab-content" style={{maxWidth:520,margin:"0 auto",padding:"16px 20px",paddingBottom:100}}>
 
       {/* ONBOARDING NUDGE */}
       {clubs.length===0&&kids.length===0&&<div style={{background:"var(--accl)",border:"1px solid #f0d078",borderRadius:16,padding:20,marginBottom:16,textAlign:"center"}}>
@@ -1246,15 +1255,15 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           </button>)}
         </div>
       </div>}
-      <button onClick={()=>setShowFab(!showFab)} style={{position:"fixed",bottom:"calc(20px + env(safe-area-inset-bottom, 0px))",right:20,width:52,height:52,borderRadius:"50%",background:showFab?"var(--mt)":"var(--g)",color:"#fff",border:"none",fontSize:24,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(26,42,58,.25)",zIndex:72,transition:"transform .15s,background .15s",transform:showFab?"rotate(45deg)":"none"}}>+</button>
+      <button onClick={()=>{setShowFab(!showFab);window.__hapticMedium&&window.__hapticMedium()}} className="fab-btn" style={{position:"fixed",bottom:"calc(20px + env(safe-area-inset-bottom, 0px))",right:20,width:56,height:56,borderRadius:"50%",background:showFab?"var(--mt)":"linear-gradient(135deg,var(--g),var(--gl))",color:"#fff",border:"none",fontSize:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 20px rgba(26,42,58,.3)",zIndex:72,transition:"transform .2s cubic-bezier(.4,0,.2,1),background .15s",transform:showFab?"rotate(45deg) scale(.9)":"none"}}>+</button>
 
       {/* Modals */}
-      {showAddEv&&<AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddEv(false)} onSaved={()=>{setShowAddEv(false);load()}}/>}
-      {showAddPay&&<AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddPay(false)} onSaved={()=>{setShowAddPay(false);load()}}/>}
+      {showAddEv&&<AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddEv(false)} onSaved={()=>{setShowAddEv(false);window.__hapticSuccess&&window.__hapticSuccess();load()}}/>}
+      {showAddPay&&<AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={()=>setShowAddPay(false)} onSaved={()=>{setShowAddPay(false);window.__hapticSuccess&&window.__hapticSuccess();load()}}/>}
 
       {showSupport&&<SupportModal userId={user.id} userEmail={user.email} onClose={()=>setShowSupport(false)}/>}
-      {showAddActivity&&<AddActivityModal userId={user.id} userLoc={userLoc} profile={profile} kids={kids} onClose={()=>setShowAddActivity(false)} onSaved={()=>{track("add_activity");setShowAddActivity(false);load()}}/>}
-      {showAddPlaydate&&<AddPlaydateModal userId={user.id} profile={profile} kids={kids} onClose={()=>setShowAddPlaydate(false)} onSaved={()=>{track("add_playdate");setShowAddPlaydate(false);load()}}/>}
+      {showAddActivity&&<AddActivityModal userId={user.id} userLoc={userLoc} profile={profile} kids={kids} onClose={()=>setShowAddActivity(false)} onSaved={()=>{track("add_activity");setShowAddActivity(false);window.__hapticSuccess&&window.__hapticSuccess();load()}}/>}
+      {showAddPlaydate&&<AddPlaydateModal userId={user.id} profile={profile} kids={kids} onClose={()=>setShowAddPlaydate(false)} onSaved={()=>{track("add_playdate");setShowAddPlaydate(false);window.__hapticSuccess&&window.__hapticSuccess();load()}}/>}
       <EventDetailModal event={tapEvent} open={!!tapEvent} onClose={()=>setTapEvent(null)}
         adults={[...new Set([profile?.first_name||"Me",...familyMembers.filter(m=>m.id!==user.id&&!kids.find(k=>k.first_name===m.first_name)).map(m=>m.first_name)].filter(Boolean))]}
         familyAll={[...new Set([profile?.first_name||"Me",...kids.map(k=>k.first_name),...familyMembers.filter(m=>m.id!==user.id).map(m=>m.first_name)].filter(Boolean))]}
