@@ -207,6 +207,8 @@ function Landing({ onGo, onLogin }) {
           .ocv-social-proof{flex-wrap:wrap;justify-content:center;gap:8px 16px !important;font-size:11px !important}
           .ocv-hero-btns{flex-direction:column;gap:8px !important}
           .ocv-hero-btns button{width:100%}
+          .ocv-screenshots{justify-content:flex-start !important;padding:0 20px 16px !important}
+          .ocv-screenshots>div>div:first-child{width:180px !important}
         }
         @media(max-width:360px){
           .ocv-feature-grid{grid-template-columns:1fr !important}
@@ -412,6 +414,30 @@ function Landing({ onGo, onLogin }) {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+      {/* REAL SCREENSHOTS */}
+      <section style={{ padding: '56px 24px', background: 'var(--warm)', overflow: 'hidden' }}>
+        <div style={{ maxWidth: 520, margin: '0 auto', textAlign: 'center' }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#e85d4a', textTransform: 'uppercase', letterSpacing: 1 }}>See it in action</span>
+          <h2 style={{ fontFamily: "var(--sr)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--g)', margin: '8px 0 32px' }}>
+            Built for real family life
+          </h2>
+          <div className="ocv-screenshots" style={{ display: 'flex', gap: 16, justifyContent: 'center', overflowX: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 0 16px', scrollSnapType: 'x mandatory' }}>
+            {[
+              { src: '/images/screen-schedule.jpg', label: 'Weekly schedule' },
+              { src: '/images/screen-camps.png', label: 'Camp finder' },
+              { src: '/images/screen-discover.png', label: 'Things near you' },
+            ].map((s, i) => (
+              <div key={i} style={{ flexShrink: 0, scrollSnapAlign: 'center' }}>
+                <div style={{ width: 220, borderRadius: 24, border: '3px solid #1a1a1a', overflow: 'hidden', background: '#1a1a1a', boxShadow: '0 16px 48px rgba(0,0,0,.15)' }}>
+                  <div style={{ width: 60, height: 14, background: '#1a1a1a', borderRadius: '0 0 10px 10px', margin: '0 auto' }} />
+                  <img src={s.src} alt={s.label} style={{ width: '100%', display: 'block' }} loading="lazy" />
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--mt)', marginTop: 10 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
       {/* CLASSMATE FEATURE */}
