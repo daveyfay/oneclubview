@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { au, db, SB, SK, setTokens, restoreTokens, clearTokens, getToken, getRefreshToken } from './lib/supabase';
+import { au, db, SB, SK, setTokens, restoreTokens, clearTokens, getToken, getRefreshToken, refreshToken } from './lib/supabase';
 import { track, showToast } from './lib/utils';
+import { Capacitor } from '@capacitor/core';
 import Logo from './components/Logo';
 import { OcvInput } from './components/modals';
 import Landing from './pages/Landing';
@@ -36,12 +37,27 @@ export default function App() {
 
     restoreTokens();
     const t = getToken();
+    const rt = getRefreshToken();
+    const isNative = Capacitor.isNativePlatform();
     const urlParams = new URLSearchParams(window.location.search);
     const justSubscribed = urlParams.get("subscribed") === "true";
     if (justSubscribed) window.history.replaceState({}, "", window.location.pathname);
 
-    if (t) {
-      au("user").then(async u => {
+    // If we have any token (access or refresh), try to restore the session
+    if (t || rt) {
+      // Proactively refresh if we have a refresh token — keeps users logged in
+      // even after the access token expires (e.g. closed browser overnight)
+      const tryAuth = async () => {
+        try {
+          return await au("user");
+        } catch (e) {
+          // Access token expired but au() already retries with refresh token.
+          // If we still fail, the refresh token is also dead.
+          throw e;
+        }
+      };
+
+      tryAuth().then(async u => {
         const p = await db("profiles", "GET", { filters: ["id=eq." + u.id] });
         let pr = p && p[0] ? p[0] : null;
         // If returning from Stripe checkout, mark onboarding complete.
@@ -57,10 +73,12 @@ export default function App() {
         else { setScreen("onboard_kids"); track("onboard_kids_shown"); }
       }).catch(() => {
         clearTokens();
-        setScreen("landing");
+        // Native app: go straight to auth, not the marketing landing page
+        setScreen(isNative ? "auth_login" : "landing");
       });
     } else {
-      setScreen("landing");
+      // No tokens at all — native goes to auth, web goes to landing
+      setScreen(isNative ? "auth_login" : "landing");
     }
   }, []);
 
@@ -94,7 +112,7 @@ export default function App() {
     clearTokens();
     setUser(null);
     setProfile(null);
-    setScreen("landing");
+    setScreen(Capacitor.isNativePlatform() ? "auth_login" : "landing");
   }
 
   // ── Screen routing ──
