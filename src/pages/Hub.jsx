@@ -18,6 +18,7 @@ import AddHolidayModal from '../components/modals/AddHolidayModal';
 import PasteScheduleModal from '../components/modals/PasteScheduleModal';
 import SupportModal from '../components/modals/SupportModal';
 import AddActivityModal from '../components/modals/AddActivityModal';
+import AddPlaydateModal from '../components/modals/AddPlaydateModal';
 import EventDetailModal from '../components/modals/EventDetailModal';
 import WeekGrid from '../components/hub/WeekGrid';
 
@@ -29,7 +30,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
   const[schoolLocs,setSchoolLocs]=useState([]);
   const[familyLocs,setFamilyLocs]=useState([]);const[showLocations,setShowLocations]=useState(false);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
-  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("grid");const[selectedDay,setSelectedDay]=useState(null);const[calMonth,setCalMonth]=useState(new Date().getMonth());const[calYear,setCalYear]=useState(new Date().getFullYear());const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);const[showAddActivity,setShowAddActivity]=useState(false);const[tapEvent,setTapEvent]=useState(null);
+  const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("grid");const[selectedDay,setSelectedDay]=useState(null);const[calMonth,setCalMonth]=useState(new Date().getMonth());const[calYear,setCalYear]=useState(new Date().getFullYear());const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);const[showAddActivity,setShowAddActivity]=useState(false);const[showAddPlaydate,setShowAddPlaydate]=useState(false);const[tapEvent,setTapEvent]=useState(null);
   const[showChangePw,setShowChangePw]=useState(false);const[showDeleteAcct,setShowDeleteAcct]=useState(false);
   const[showSaveLocModal,setShowSaveLocModal]=useState(false);const[showAddLocModal,setShowAddLocModal]=useState(false);
   const[campLoc,setCampLoc]=useState("all");
@@ -1200,7 +1201,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             <span style={{fontSize:11,fontWeight:700,color:"var(--g)",display:"block"}}>Club</span>
             <span style={{fontSize:9,fontWeight:500,color:"var(--mt)",display:"block",marginTop:2}}>Regular activity</span>
           </div>
-          <div onClick={()=>{setShowFab(false);setShowAddEv(true)}} style={{padding:"14px 8px",borderRadius:14,border:"2px solid var(--bd)",background:"#fff",cursor:"pointer",textAlign:"center",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--g)";e.currentTarget.style.background="var(--gxl)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--bd)";e.currentTarget.style.background="#fff"}}>
+          <div onClick={()=>{setShowFab(false);setShowAddPlaydate(true)}} style={{padding:"14px 8px",borderRadius:14,border:"2px solid var(--bd)",background:"#fff",cursor:"pointer",textAlign:"center",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--g)";e.currentTarget.style.background="var(--gxl)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--bd)";e.currentTarget.style.background="#fff"}}>
             <span style={{fontSize:22,display:"block",marginBottom:4}}>🤝</span>
             <span style={{fontSize:11,fontWeight:700,color:"var(--g)",display:"block"}}>Playdate</span>
             <span style={{fontSize:9,fontWeight:500,color:"var(--mt)",display:"block",marginTop:2}}>One-off meetup</span>
@@ -1234,6 +1235,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
 
       {showSupport&&<SupportModal userId={user.id} userEmail={user.email} onClose={()=>setShowSupport(false)}/>}
       {showAddActivity&&<AddActivityModal userId={user.id} userLoc={userLoc} profile={profile} kids={kids} onClose={()=>setShowAddActivity(false)} onSaved={()=>{track("add_activity");setShowAddActivity(false);load()}}/>}
+      {showAddPlaydate&&<AddPlaydateModal userId={user.id} profile={profile} kids={kids} onClose={()=>setShowAddPlaydate(false)} onSaved={()=>{track("add_playdate");setShowAddPlaydate(false);load()}}/>}
       <EventDetailModal event={tapEvent} open={!!tapEvent} onClose={()=>setTapEvent(null)}
         adults={[...new Set([profile?.first_name||"Me",...familyMembers.filter(m=>m.id!==user.id&&!kids.find(k=>k.first_name===m.first_name)).map(m=>m.first_name)].filter(Boolean))]}
         familyAll={[...new Set([profile?.first_name||"Me",...kids.map(k=>k.first_name),...familyMembers.filter(m=>m.id!==user.id).map(m=>m.first_name)].filter(Boolean))]}
