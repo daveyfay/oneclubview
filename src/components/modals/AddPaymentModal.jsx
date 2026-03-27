@@ -20,6 +20,7 @@ function AddPaymentModal({ clubs, userId, kids, profile, onClose, onSaved }) {
         dependant_id: mid === "self" ? null : mid,
         description: desc.trim(),
         amount: parseFloat(amt),
+        currency: "EUR",
         due_date: due,
       },
     });
