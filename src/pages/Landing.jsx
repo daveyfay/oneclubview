@@ -416,27 +416,244 @@ function Landing({ onGo, onLogin }) {
           ))}
         </div>
       </section>
-      {/* REAL SCREENSHOTS */}
+      {/* APP MOCKUPS */}
       <section style={{ padding: '56px 24px', background: 'var(--warm)', overflow: 'hidden' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto', textAlign: 'center' }}>
+        <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center' }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: '#e85d4a', textTransform: 'uppercase', letterSpacing: 1 }}>See it in action</span>
           <h2 style={{ fontFamily: "var(--sr)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--g)', margin: '8px 0 32px' }}>
             Built for real family life
           </h2>
-          <div className="ocv-screenshots" style={{ display: 'flex', gap: 16, justifyContent: 'center', overflowX: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 0 16px', scrollSnapType: 'x mandatory' }}>
-            {[
-              { src: '/images/screen-schedule.jpg', label: 'Weekly schedule' },
-              { src: '/images/screen-camps.png', label: 'Camp finder' },
-              { src: '/images/screen-discover.png', label: 'Things near you' },
-            ].map((s, i) => (
-              <div key={i} style={{ flexShrink: 0, scrollSnapAlign: 'center' }}>
-                <div style={{ width: 220, borderRadius: 24, border: '3px solid #1a1a1a', overflow: 'hidden', background: '#1a1a1a', boxShadow: '0 16px 48px rgba(0,0,0,.15)' }}>
-                  <div style={{ width: 60, height: 14, background: '#1a1a1a', borderRadius: '0 0 10px 10px', margin: '0 auto' }} />
-                  <img src={s.src} alt={s.label} style={{ width: '100%', display: 'block' }} loading="lazy" />
+          <div className="ocv-screenshots" style={{ display: 'flex', gap: 20, justifyContent: 'center', overflowX: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 0 16px', scrollSnapType: 'x mandatory' }}>
+
+            {/* MOCKUP 1: Weekly Schedule Grid */}
+            <div style={{ flexShrink: 0, scrollSnapAlign: 'center' }}>
+              <div style={{ width: 220, borderRadius: 24, border: '3px solid #1a1a1a', overflow: 'hidden', background: '#f8f6f3', boxShadow: '0 16px 48px rgba(0,0,0,.15)' }}>
+                <div style={{ width: 60, height: 14, background: '#1a1a1a', borderRadius: '0 0 10px 10px', margin: '0 auto' }} />
+                <div style={{ padding: '8px 10px 12px' }}>
+                  {/* Mini header */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontFamily: 'var(--sr)', fontSize: 9, fontWeight: 800, color: 'var(--g)' }}>OneClubView</span>
+                    <div style={{ width: 16, height: 16, borderRadius: 5, background: 'var(--g)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 7, fontWeight: 700 }}>D</div>
+                  </div>
+                  {/* Pills */}
+                  <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>
+                    <span style={{ fontSize: 7, fontWeight: 700, padding: '2px 6px', borderRadius: 6, background: 'var(--g)', color: '#fff' }}>Everyone</span>
+                    <span style={{ fontSize: 7, fontWeight: 600, padding: '2px 6px', borderRadius: 6, background: '#fff', color: 'var(--mt)', border: '1px solid var(--bd)' }}>Penny (8)</span>
+                    <span style={{ fontSize: 7, fontWeight: 600, padding: '2px 6px', borderRadius: 6, background: '#fff', color: 'var(--mt)', border: '1px solid var(--bd)' }}>Cooper (5)</span>
+                  </div>
+                  {/* Tabs */}
+                  <div style={{ display: 'flex', borderBottom: '1px solid var(--bd)', marginBottom: 6 }}>
+                    {['Overview', 'Schedule', 'Money', 'Explore'].map((t, i) => (
+                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 1 ? 'var(--g)' : 'var(--mt)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 1 ? '1.5px solid var(--g)' : 'none' }}>{t}</span>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                    <span style={{ fontFamily: 'var(--sr)', fontSize: 10, fontWeight: 800, color: 'var(--g)' }}>This week</span>
+                    <div style={{ display: 'flex', gap: 2 }}>
+                      <span style={{ fontSize: 6, fontWeight: 600, padding: '1px 4px', borderRadius: 3, background: 'var(--accl)', color: 'var(--acc)' }}>Grid</span>
+                      <span style={{ fontSize: 6, fontWeight: 600, padding: '1px 4px', borderRadius: 3, color: 'var(--mt)' }}>List</span>
+                    </div>
+                  </div>
+                  {/* Grid header */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 3, marginBottom: 3 }}>
+                    {[{ d: 'MON', n: '24' }, { d: 'TUE', n: '25' }, { d: 'WED', n: '26', today: true }, { d: 'THU', n: '27' }].map(day => (
+                      <div key={day.d} style={{ textAlign: 'center', padding: '2px 0', borderRadius: 5, background: day.today ? 'var(--g)' : 'transparent' }}>
+                        <div style={{ fontSize: 5, fontWeight: 700, color: day.today ? 'rgba(255,255,255,.6)' : 'var(--mt)' }}>{day.d}</div>
+                        <div style={{ fontSize: 9, fontWeight: 800, color: day.today ? '#fff' : 'var(--tx)' }}>{day.n}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Event blocks */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 3 }}>
+                    {/* Mon */}
+                    <div>
+                      <div style={{ background: '#fff', borderRadius: 5, padding: 3, borderLeft: '2px solid #2d5a3f', marginBottom: 2 }}>
+                        <div style={{ fontSize: 5, fontWeight: 700, color: '#2d5a3f' }}>Swimming</div>
+                        <div style={{ fontSize: 4, color: 'var(--mt)' }}>Penny · 16:00</div>
+                      </div>
+                    </div>
+                    {/* Tue */}
+                    <div>
+                      <div style={{ background: '#fff', borderRadius: 5, padding: 3, borderLeft: '2px solid #2d7cb5', marginBottom: 2 }}>
+                        <div style={{ fontSize: 5, fontWeight: 700, color: '#2d7cb5' }}>GAA</div>
+                        <div style={{ fontSize: 4, color: 'var(--mt)' }}>Cooper · 16:30</div>
+                      </div>
+                      <div style={{ background: '#fef2f2', borderRadius: 5, padding: 3, borderLeft: '2px solid #dc2626' }}>
+                        <div style={{ fontSize: 5, fontWeight: 700, color: '#dc2626' }}>Gym</div>
+                        <div style={{ fontSize: 4, color: '#dc2626' }}>Penny · 16:30</div>
+                        <div style={{ fontSize: 4, color: '#dc2626', fontWeight: 700 }}>⚠️ Clash</div>
+                      </div>
+                    </div>
+                    {/* Wed */}
+                    <div>
+                      <div style={{ background: '#fff', borderRadius: 5, padding: 3, borderLeft: '2px solid #9b4dca' }}>
+                        <div style={{ fontSize: 5, fontWeight: 700, color: '#9b4dca' }}>Tennis</div>
+                        <div style={{ fontSize: 4, color: 'var(--mt)' }}>Dave · 18:00</div>
+                      </div>
+                    </div>
+                    {/* Thu */}
+                    <div>
+                      <div style={{ background: '#fff', borderRadius: 5, padding: 3, borderLeft: '2px solid #2d5a3f', marginBottom: 2 }}>
+                        <div style={{ fontSize: 5, fontWeight: 700, color: '#2d5a3f' }}>Gym</div>
+                        <div style={{ fontSize: 4, color: 'var(--mt)' }}>Penny · 15:30</div>
+                      </div>
+                      <div style={{ background: '#fff', borderRadius: 5, padding: 3, borderLeft: '2px solid #c4960c' }}>
+                        <div style={{ fontSize: 5, fontWeight: 700, color: '#c4960c' }}>Rugby</div>
+                        <div style={{ fontSize: 4, color: 'var(--mt)' }}>Cooper · 16:00</div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Forward emails banner */}
+                  <div style={{ background: 'var(--gxl)', borderRadius: 6, padding: '4px 6px', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ fontSize: 8 }}>📧</span>
+                    <span style={{ fontSize: 5, fontWeight: 600, color: 'var(--gl)' }}>Forward club emails to auto-update</span>
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--mt)', marginTop: 10 }}>{s.label}</div>
               </div>
-            ))}
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--mt)', marginTop: 10 }}>Weekly schedule</div>
+            </div>
+
+            {/* MOCKUP 2: Overview with My Clubs */}
+            <div style={{ flexShrink: 0, scrollSnapAlign: 'center' }}>
+              <div style={{ width: 220, borderRadius: 24, border: '3px solid #1a1a1a', overflow: 'hidden', background: '#f8f6f3', boxShadow: '0 16px 48px rgba(0,0,0,.15)' }}>
+                <div style={{ width: 60, height: 14, background: '#1a1a1a', borderRadius: '0 0 10px 10px', margin: '0 auto' }} />
+                <div style={{ padding: '8px 10px 12px' }}>
+                  {/* Mini header */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontFamily: 'var(--sr)', fontSize: 9, fontWeight: 800, color: 'var(--g)' }}>OneClubView</span>
+                    <div style={{ width: 16, height: 16, borderRadius: 5, background: 'var(--g)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 7, fontWeight: 700 }}>D</div>
+                  </div>
+                  {/* Tabs */}
+                  <div style={{ display: 'flex', borderBottom: '1px solid var(--bd)', marginBottom: 6 }}>
+                    {['Overview', 'Schedule', 'Money', 'Explore'].map((t, i) => (
+                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 0 ? 'var(--g)' : 'var(--mt)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 0 ? '1.5px solid var(--g)' : 'none' }}>{t}</span>
+                    ))}
+                  </div>
+                  {/* Stats card */}
+                  <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--bd)', padding: 8, marginBottom: 6 }}>
+                    <div style={{ fontFamily: 'var(--sr)', fontSize: 8, fontWeight: 700, color: 'var(--g)', marginBottom: 4 }}>This week</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+                      <div style={{ background: 'var(--gxl)', borderRadius: 6, padding: 4, textAlign: 'center' }}>
+                        <div style={{ fontFamily: 'var(--sr)', fontSize: 12, fontWeight: 800, color: 'var(--g)' }}>8</div>
+                        <div style={{ fontSize: 5, fontWeight: 600, color: 'var(--mt)' }}>Activities</div>
+                      </div>
+                      <div style={{ background: 'var(--gxl)', borderRadius: 6, padding: 4, textAlign: 'center' }}>
+                        <div style={{ fontFamily: 'var(--sr)', fontSize: 12, fontWeight: 800, color: 'var(--g)' }}>3</div>
+                        <div style={{ fontSize: 5, fontWeight: 600, color: 'var(--mt)' }}>Clubs</div>
+                      </div>
+                      <div style={{ background: 'var(--gxl)', borderRadius: 6, padding: 4, textAlign: 'center' }}>
+                        <div style={{ fontFamily: 'var(--sr)', fontSize: 12, fontWeight: 800, color: 'var(--acc)' }}>€245</div>
+                        <div style={{ fontSize: 5, fontWeight: 600, color: 'var(--mt)' }}>Due soon</div>
+                      </div>
+                      <div style={{ background: 'var(--gxl)', borderRadius: 6, padding: 4, textAlign: 'center' }}>
+                        <div style={{ fontFamily: 'var(--sr)', fontSize: 12, fontWeight: 800, color: 'var(--g)' }}>2</div>
+                        <div style={{ fontSize: 5, fontWeight: 600, color: 'var(--mt)' }}>Kids</div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* My Clubs card */}
+                  <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--bd)', padding: 8, marginBottom: 6 }}>
+                    <div style={{ fontFamily: 'var(--sr)', fontSize: 8, fontWeight: 700, color: 'var(--g)', marginBottom: 6 }}>My Clubs</div>
+                    {[
+                      { c: '#2d7cb5', ini: 'GA', name: 'GAA', who: 'Cooper', term: '11 Apr – 26 Jun' },
+                      { c: '#2d5a3f', ini: 'Tr', name: 'Gym', who: 'Penny', term: '11 Apr – 26 Jun' },
+                      { c: '#c4960c', ini: 'Te', name: 'Tennis', who: 'Dave', term: '' },
+                    ].map((cl, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', borderBottom: i < 2 ? '1px solid var(--bd)' : 'none' }}>
+                        <div style={{ width: 18, height: 18, borderRadius: 5, background: cl.c, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 6, fontWeight: 800 }}>{cl.ini}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 7, fontWeight: 600, color: 'var(--tx)' }}>{cl.name}</div>
+                          <div style={{ fontSize: 5, color: 'var(--mt)' }}>{cl.who}{cl.term ? ' · ' + cl.term : ''}</div>
+                        </div>
+                        <span style={{ fontSize: 8, color: '#ddd' }}>›</span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Alert */}
+                  <div style={{ background: '#fef2f2', borderRadius: 6, border: '1px solid #fecaca', padding: '4px 6px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ fontSize: 8 }}>⚠️</span>
+                    <span style={{ fontSize: 5, fontWeight: 600, color: '#dc2626' }}>1 clash this week: Tue 16:30</span>
+                  </div>
+                </div>
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--mt)', marginTop: 10 }}>Overview dashboard</div>
+            </div>
+
+            {/* MOCKUP 3: Camp Finder */}
+            <div style={{ flexShrink: 0, scrollSnapAlign: 'center' }}>
+              <div style={{ width: 220, borderRadius: 24, border: '3px solid #1a1a1a', overflow: 'hidden', background: '#f8f6f3', boxShadow: '0 16px 48px rgba(0,0,0,.15)' }}>
+                <div style={{ width: 60, height: 14, background: '#1a1a1a', borderRadius: '0 0 10px 10px', margin: '0 auto' }} />
+                <div style={{ padding: '8px 10px 12px' }}>
+                  {/* Mini header */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontFamily: 'var(--sr)', fontSize: 9, fontWeight: 800, color: 'var(--g)' }}>OneClubView</span>
+                    <div style={{ width: 16, height: 16, borderRadius: 5, background: 'var(--g)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 7, fontWeight: 700 }}>D</div>
+                  </div>
+                  {/* Tabs */}
+                  <div style={{ display: 'flex', borderBottom: '1px solid var(--bd)', marginBottom: 6 }}>
+                    {['Overview', 'Schedule', 'Money', 'Explore'].map((t, i) => (
+                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 3 ? 'var(--g)' : 'var(--mt)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 3 ? '1.5px solid var(--g)' : 'none' }}>{t}</span>
+                    ))}
+                  </div>
+                  {/* Sub-tabs */}
+                  <div style={{ display: 'flex', gap: 0, marginBottom: 6, borderBottom: '1px solid var(--bd)' }}>
+                    {['My Clubs', 'Camps', 'Discover'].map((t, i) => (
+                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, padding: '3px 0', textAlign: 'center', color: i === 1 ? 'var(--g)' : 'var(--mt)', borderBottom: i === 1 ? '1.5px solid var(--acc)' : 'none' }}>{t}</span>
+                    ))}
+                  </div>
+                  {/* Location filters */}
+                  <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>
+                    <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 5px', borderRadius: 5, background: 'var(--g)', color: '#fff' }}>Current</span>
+                    <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 5px', borderRadius: 5, background: '#fff', color: 'var(--mt)', border: '1px solid var(--bd)' }}>Home</span>
+                    <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 5px', borderRadius: 5, background: '#16a34a', color: '#fff' }}>Work</span>
+                  </div>
+                  {/* Holiday coverage */}
+                  <div style={{ background: '#fff', borderRadius: 6, border: '1px solid var(--bd)', padding: 6, marginBottom: 6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <span style={{ fontSize: 6, fontWeight: 700, color: 'var(--g)' }}>Holiday coverage</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 6, fontWeight: 600, color: 'var(--tx)' }}>Easter Break</span>
+                      <span style={{ fontSize: 5, fontWeight: 700, color: 'var(--acc)', background: 'var(--accl)', padding: '1px 5px', borderRadius: 4 }}>Not covered</span>
+                    </div>
+                  </div>
+                  {/* Easter Break header */}
+                  <div style={{ marginBottom: 6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--g)' }}>🐣 Easter Break</span>
+                      <span style={{ fontSize: 5, fontWeight: 600, color: 'var(--acc)' }}>Edit dates</span>
+                    </div>
+                    <div style={{ fontSize: 5, color: 'var(--mt)', marginTop: 1 }}>27 Mar – 10 Apr · 52 camps found</div>
+                  </div>
+                  {/* Camp card */}
+                  <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--bd)', padding: 6, marginBottom: 4 }}>
+                    <div style={{ fontSize: 7, fontWeight: 700, color: 'var(--g)', marginBottom: 2 }}>STARCAMP Easter – Blackrock</div>
+                    <div style={{ fontSize: 5, color: 'var(--mt)', marginBottom: 2 }}>Willow Park · 30 Mar – 2 Apr · 09:00–14:00</div>
+                    <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 5, fontWeight: 700, color: 'var(--acc)' }}>€117</span>
+                      <span style={{ fontSize: 5, color: 'var(--mt)' }}>Ages 4-12</span>
+                      <span style={{ fontSize: 5, fontWeight: 600, color: '#16a34a', background: '#f0fdf4', padding: '1px 4px', borderRadius: 3 }}>Suits Penny, Cooper</span>
+                    </div>
+                    <div style={{ fontSize: 5, color: 'var(--mt)', marginTop: 3, fontStyle: 'italic' }}>🏫 2 families from 2nd Class booked this</div>
+                    <div style={{ display: 'flex', gap: 3, marginTop: 4 }}>
+                      <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 6px', borderRadius: 4, border: '1px solid var(--bd)', color: 'var(--mt)' }}>❤️ Interested</span>
+                      <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 6px', borderRadius: 4, border: '1px solid var(--g)', color: 'var(--g)' }}>Mark booked</span>
+                    </div>
+                  </div>
+                  {/* Second camp */}
+                  <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--bd)', padding: 6 }}>
+                    <div style={{ fontSize: 7, fontWeight: 700, color: 'var(--g)', marginBottom: 2 }}>Multi-Sport Easter Camp</div>
+                    <div style={{ fontSize: 5, color: 'var(--mt)', marginBottom: 2 }}>Bull Island · 31 Mar – 3 Apr · 09:30–15:00</div>
+                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                      <span style={{ fontSize: 5, fontWeight: 700, color: 'var(--acc)' }}>€140</span>
+                      <span style={{ fontSize: 5, fontWeight: 600, color: '#16a34a', background: '#f0fdf4', padding: '1px 4px', borderRadius: 3 }}>Covers work day</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--mt)', marginTop: 10 }}>Camp finder</div>
+            </div>
+
           </div>
         </div>
       </section>
