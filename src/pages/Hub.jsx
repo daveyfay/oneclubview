@@ -186,8 +186,18 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:mTime,endTime:mEnd,club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
       }
     });
+    // Payment reminders — show on due date
+    (pays||[]).filter(p=>!p.paid&&p.status!=="not_renewing"&&p.due_date).forEach(p=>{
+      const d=new Date(p.due_date+"T00:00:00");
+      const end=new Date(wd[6]);end.setDate(end.getDate()+1);
+      if(d>=wd[0]&&d<end){
+        const cl=clubMap.get(p.club_id);
+        const kid=p.dependant_id?kidMap.get(p.dependant_id):null;
+        evts.push({id:"pay-"+p.id,source_id:p.id,source_type:"payment",title:"💳 "+p.description+" — €"+parseFloat(p.amount).toFixed(2),date:d,time:"",endTime:"",club:cl?.nickname||cl?.club_name||"Payment due",colour:"#c4960c",member:kid?.first_name||(profile?.first_name||"You"),memberId:p.dependant_id||"self",isPayment:true});
+      }
+    });
     return evts.sort((a,b)=>a.date-b.date||(a.time||"").localeCompare(b.time||""));
-  },[recs,mans,clubMap,clubTermMap,kidMap,profile,wd]);
+  },[recs,mans,pays,clubMap,clubTermMap,kidMap,profile,wd]);
 
   const activeWeekEvts=weekEvts.filter(e=>!e.skipped);
   const filtEvts=filter==="all"?activeWeekEvts:activeWeekEvts.filter(e=>e.memberId===filter);
@@ -541,6 +551,15 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             if(cellDate>=cs&&cellDate<=ce&&cellDate.getDay()!==0&&cellDate.getDay()!==6){
               const kid=b.dependant_id?kidMap.get(b.dependant_id):null;
               evts.push({id:"camp-"+b.id+"-"+day,source_id:b.id,source_type:"camp",title:camp.title,date:cellDate,time:camp.daily_start_time?.slice(0,5)||"09:00",endTime:camp.daily_end_time?.slice(0,5)||"15:00",club:camp.title,colour:"#e85d4a",member:kid?.first_name||(profile?.first_name||"You"),memberId:b.dependant_id||"self"});
+            }
+          });
+          // Payment reminders on due date
+          (pays||[]).filter(p=>!p.paid&&p.status!=="not_renewing"&&p.due_date).forEach(p=>{
+            const pd=new Date(p.due_date+"T00:00:00");
+            if(pd.getDate()===day&&pd.getMonth()===month&&pd.getFullYear()===year){
+              const cl=clubMap.get(p.club_id);
+              const kid=p.dependant_id?kidMap.get(p.dependant_id):null;
+              evts.push({id:"pay-"+p.id,source_id:p.id,source_type:"payment",title:"💳 "+p.description+" — €"+parseFloat(p.amount).toFixed(2),date:cellDate,time:"",endTime:"",club:cl?.nickname||cl?.club_name||"Payment due",colour:"#c4960c",member:kid?.first_name||(profile?.first_name||"You"),memberId:p.dependant_id||"self",isPayment:true});
             }
           });
           monthEvtsMap[day]=evts.sort((a,b)=>(a.time||"").localeCompare(b.time||""));
