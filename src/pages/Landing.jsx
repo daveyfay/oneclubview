@@ -720,7 +720,7 @@ function Landing({ onGo, onLogin }) {
                   transition: 'transform .15s,box-shadow .15s'
                 }}
               >
-                Start free trial
+                Start free — 14 days
               </button>
             </div>
             {/* Family+ */}
@@ -760,11 +760,23 @@ function Landing({ onGo, onLogin }) {
                   fontFamily: "var(--sn)"
                 }}
               >
-                Start free trial
+                Start free — 14 days
               </button>
             </div>
           </div>
         </div>
+      </section>
+      <section style={{ padding: '48px 16px', background: 'var(--warm)', textAlign: 'center', maxWidth: 600, margin: '0 auto' }}>
+        <h2 style={{ fontFamily: "var(--sr)", fontSize: 22, color: 'var(--g)', marginBottom: 12 }}>Built by a Dublin parent</h2>
+        <p style={{ fontSize: 14, color: 'var(--tx)', lineHeight: 1.7, marginBottom: 8 }}>
+          OneClubView was built by Dave Fay — a Dublin dad juggling the same swimming terms, GAA schedules, and camp bookings as you. After one too many missed sessions and mystery fees, he decided to build the app he wished existed.
+        </p>
+        <p style={{ fontSize: 14, color: 'var(--tx)', lineHeight: 1.7, marginBottom: 8 }}>
+          Your family's data is stored securely in the EU, protected by row-level security, and never shared with third parties. You can read the full <a href="/privacy" style={{ color: 'var(--acc)', fontWeight: 600 }}>privacy policy</a> — it's written in plain English.
+        </p>
+        <p style={{ fontSize: 13, color: 'var(--mt)', lineHeight: 1.6 }}>
+          Questions? Suggestions? Reach out at <a href="mailto:hello@oneclubview.com" style={{ color: 'var(--acc)', fontWeight: 600 }}>hello@oneclubview.com</a>.
+        </p>
       </section>
       <footer style={{ padding: '24px', background: 'var(--g)', textAlign: 'center' }}>
         <Logo dark />
