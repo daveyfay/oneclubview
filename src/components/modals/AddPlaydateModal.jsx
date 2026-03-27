@@ -32,17 +32,17 @@ function AddPlaydateModal({ userId, kids, profile, onClose, onSaved }) {
     if (location.trim()) descParts.push("Where: " + location.trim());
     if (notes.trim()) descParts.push(notes.trim());
 
+    const startDt = date + "T" + time + ":00";
+    const endDt = endTime ? date + "T" + endTime + ":00" : null;
+
     const result = await db("manual_events", "POST", {
       body: {
         user_id: userId,
         dependant_id: dep,
         title: "Playdate with " + friendName.trim(),
-        event_date: date + "T" + time + ":00",
-        duration_minutes: endTime
-          ? Math.max(30, Math.round(
-              (new Date("2000-01-01T" + endTime) - new Date("2000-01-01T" + time)) / 60000
-            ))
-          : 120,
+        event_date: startDt,
+        end_date: endDt,
+        location: location.trim() || null,
         description: descParts.join(" · "),
       },
     });
