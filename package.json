@@ -3,9 +3,13 @@
     "@babel/core": "^7.29.0",
     "@babel/plugin-transform-react-jsx": "^7.28.6",
     "@babel/preset-react": "^7.28.5",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@vitejs/plugin-react": "^6.0.1",
+    "jsdom": "^29.0.1",
     "typescript": "^6.0.2",
-    "vite": "^8.0.3"
+    "vite": "^8.0.3",
+    "vitest": "^4.1.2"
   },
   "name": "oneclubview",
   "version": "1.0.0",
@@ -15,6 +19,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "cap:sync": "npx cap sync",
     "cap:ios": "vite build && npx cap sync ios && npx cap open ios",
     "cap:android": "vite build && npx cap sync android && npx cap open android"
