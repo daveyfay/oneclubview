@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useHubData } from '../../hooks/useHubData';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import { COLS } from '../../lib/constants';
