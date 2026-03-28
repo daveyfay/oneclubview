@@ -8,16 +8,27 @@ export default function AdminDashboard({user,onBack}){
   const[allSubs,setAllSubs]=useState([]);const[allKids,setAllKids]=useState([]);
 
   useEffect(()=>{
-    (async()=>{
+    async function loadAdmin(){
+      // Verify admin role server-side (don't trust client profile)
+      const profileCheck=await db("profiles","GET",{filters:["id=eq."+user.id],select:"family_role"});
+      if(!profileCheck?.[0]||profileCheck[0].family_role!=="admin"){
+        showToast("Access denied","err");
+        onBack();
+        return;
+      }
       try{
         const s=await rpc("admin_dashboard_stats");
         setStats(s);
+        // Relies on RLS policies — admin can read all support tickets
         const t=await db("support_tickets","GET",{order:"created_at.desc"});
         setTickets(t||[]);
+        // Relies on RLS policies — admin can read all profiles
         const u=await db("profiles","GET",{order:"created_at.desc"});
         setUsers(u||[]);
+        // Relies on RLS policies — admin can read all subscriptions
         const subs=await db("hub_subscriptions","GET",{select:"id,user_id,club_id,dependant_id,clubs(name)"});
         setAllSubs(subs||[]);
+        // Relies on RLS policies — admin can read all dependants
         const kids=await db("dependants","GET",{});
         setAllKids(kids||[]);
       }catch(e){
@@ -25,7 +36,8 @@ export default function AdminDashboard({user,onBack}){
         showToast("Failed to load dashboard data.","err");
       }
       setLoading(false);
-    })();
+    }
+    loadAdmin();
   },[]);
 
   if(loading)return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--bg)"}}><p>Loading dashboard...</p></div>;

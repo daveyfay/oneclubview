@@ -127,7 +127,7 @@ export default function App() {
   if (screen === "auth_login") return <Auth onAuth={onAuth} mode="login" />;
   if (screen === "onboard_kids") return <OnboardKids userId={user.id} onDone={afterKids} onLogout={logout} />;
   if (screen === "onboard_clubs") return <OnboardClubs userId={user.id} kids={kids} email={user?.email || profile?.email} onDone={() => setScreen("hub")} onLogout={logout} />;
-  if (screen === "hub" && user?.email === "hello@oneclubview.com") {
+  if (screen === "hub" && user?.email === "hello@oneclubview.com" && profile?.family_role === "admin") {
     return <AdminDashboard user={user} profile={profile} onBack={() => setScreen("hub_force")} onLogout={logout} />;
   }
   if (screen === "hub" || screen === "hub_force") return <ErrorBoundary><Hub user={user} profile={profile} onRefresh={(s) => { if (s === "clubs") setScreen("onboard_clubs"); }} onLogout={logout} /></ErrorBoundary>;
