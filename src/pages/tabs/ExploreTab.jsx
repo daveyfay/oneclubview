@@ -110,7 +110,7 @@ export default function ExploreTab({ filter, onRefresh }) {
             </div>
             <button onClick={() => setShowLocations(true)} style={{ fontSize: 11, fontWeight: 600, color: "var(--color-accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-sans)", whiteSpace: "nowrap" }}>Manage</button>
           </div>}
-          {allLocs.length === 0 && <button onClick={() => setShowLocations(true)} style={{ width: "100%", padding: "10px 14px", marginBottom: 12, borderRadius: 12, border: "2px dashed var(--color-border)", background: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-primary-light)", fontFamily: "var(--font-sans)", display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F4CD}"} Add your locations to see nearby camps</button>}
+          {allLocs.length === 0 && <button onClick={() => setShowLocations(true)} style={{ width: "100%", padding: "10px 14px", marginBottom: 12, borderRadius: 12, border: "2px dashed var(--color-border)", background: "var(--color-card)", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-primary-light)", fontFamily: "var(--font-sans)", display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F4CD}"} Add your locations to see nearby camps</button>}
           {kids.length > 0 && (() => {
             const now = new Date();
             const futureHols = (holidays || []).filter(h => new Date(h.end_date) >= now).slice(0, 1);
@@ -199,13 +199,13 @@ export default function ExploreTab({ filter, onRefresh }) {
         {/* Discover sub-tab */}
         {exploreTab === "discover" && <div>
           {userLoc && <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontSize: 12, color: "var(--color-muted)" }}><span>{"\u{1F4CD}"}</span> Showing things to do near you</div>}
-          {!userLoc && <button onClick={() => { navigator.geolocation?.getCurrentPosition(pos => { const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude }; db("profiles", "PATCH", { filters: ["id=eq." + user.id], body: { latitude: loc.lat, longitude: loc.lng } }) }, () => {}, { timeout: 5000 }) }} style={{ width: "100%", padding: "10px 14px", marginBottom: 12, borderRadius: 12, border: "2px dashed var(--color-border)", background: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-primary-light)", fontFamily: "var(--font-sans)", display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F4CD}"} Enable location to see things to do near you</button>}
+          {!userLoc && <button onClick={() => { navigator.geolocation?.getCurrentPosition(pos => { const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude }; db("profiles", "PATCH", { filters: ["id=eq." + user.id], body: { latitude: loc.lat, longitude: loc.lng } }) }, () => {}, { timeout: 5000 }) }} style={{ width: "100%", padding: "10px 14px", marginBottom: 12, borderRadius: 12, border: "2px dashed var(--color-border)", background: "var(--color-card)", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-primary-light)", fontFamily: "var(--font-sans)", display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F4CD}"} Enable location to see things to do near you</button>}
           <ThingsToDoSection allLocs={allLocs} kids={kids} userLoc={userLoc} userId={user.id} onEventAdded={() => load()} />
         </div>}
 
         {/* Manage Locations Modal */}
         {showLocations && <div onClick={() => setShowLocations(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(10,15,20,.4)", zIndex: 70 }} />}
-        {showLocations && <div style={{ position: "fixed", top: "5vh", left: 12, right: 12, zIndex: 71, background: "#fff", borderRadius: 20, boxShadow: "0 12px 40px rgba(0,0,0,.15)", padding: 20, maxHeight: "85vh", overflowY: "auto", maxWidth: 440, margin: "0 auto" }}>
+        {showLocations && <div style={{ position: "fixed", top: "5vh", left: 12, right: 12, zIndex: 71, background: "var(--color-card)", borderRadius: 20, boxShadow: "0 12px 40px rgba(0,0,0,.15)", padding: 20, maxHeight: "85vh", overflowY: "auto", maxWidth: 440, margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
             <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 18, fontWeight: 700, color: "var(--color-primary)" }}>Your locations</h3>
             <button onClick={() => setShowLocations(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--color-muted)" }}>{"\u2715"}</button>

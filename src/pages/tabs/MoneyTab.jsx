@@ -102,11 +102,11 @@ export default function MoneyTab({ filter }) {
           const overdue = filtPays.filter(p => !p.paid && new Date(p.due_date) < new Date());
           if (overdue.length === 0) return null;
           const total = overdue.reduce((s, p) => s + parseFloat(p.amount), 0);
-          return <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 14, padding: 14, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
+          return <div style={{ background: "var(--color-danger-bg, #fef2f2)", border: "1px solid var(--color-danger-border, #fecaca)", borderRadius: 14, padding: 14, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 24 }}>{"\u{1F6A8}"}</span>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#dc2626" }}>{"\u20AC"}{total.toFixed(0)} overdue</div>
-              <div style={{ fontSize: 12, color: "#991b1b" }}>{overdue.length} payment{overdue.length > 1 ? "s" : ""} past due date</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-danger)" }}>{"\u20AC"}{total.toFixed(0)} overdue</div>
+              <div style={{ fontSize: 12, color: "var(--color-danger)" }}>{overdue.length} payment{overdue.length > 1 ? "s" : ""} past due date</div>
             </div>
           </div>;
         })()}
@@ -128,14 +128,14 @@ export default function MoneyTab({ filter }) {
           return <div key={p.id} style={{ background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", boxShadow: "var(--shadow)", padding: 16, marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div><div style={{ fontSize: 14, fontWeight: 600 }}>{kid?.first_name || profile?.first_name || "You"} {"\u2014"} {p.description}</div><div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 2 }}>{cl?.club_name || ""} {"\u2022"} Due {new Date(p.due_date).toLocaleDateString("en-IE", { day: "numeric", month: "short" })}</div></div>
-              <div style={{ textAlign: "right" }}><div style={{ fontSize: 18, fontWeight: 800, color: p.paid ? "var(--color-primary-light)" : p.status === "not_renewing" ? "#888" : overdue ? "#dc2626" : "var(--color-text)", fontFamily: "var(--font-serif)", textDecoration: p.status === "not_renewing" ? "line-through" : "none" }}>{"\u20AC"}{parseFloat(p.amount).toFixed(0)}</div>
+              <div style={{ textAlign: "right" }}><div style={{ fontSize: 18, fontWeight: 800, color: p.paid ? "var(--color-primary-light)" : p.status === "not_renewing" ? "var(--color-muted)" : overdue ? "var(--color-danger)" : "var(--color-text)", fontFamily: "var(--font-serif)", textDecoration: p.status === "not_renewing" ? "line-through" : "none" }}>{"\u20AC"}{parseFloat(p.amount).toFixed(0)}</div>
                 {isAdmin && !p.paid && p.status !== "not_renewing" && <div style={{ display: "flex", gap: 4, marginTop: 4, justifyContent: "flex-end" }}>
                   <button onClick={async () => { try { await db("payment_reminders", "PATCH", { body: { paid: true }, filters: ["id=eq." + p.id] }); showToast("Marked as paid"); await load() } catch (e) { showToast("Failed to update. Try again.", "err") } }} style={{ fontSize: 11, fontWeight: 700, color: "var(--color-primary-light)", background: "var(--color-primary-bg)", border: "none", borderRadius: 8, padding: "3px 10px", cursor: "pointer" }}>Paid</button>
-                  <button onClick={async () => { try { await db("payment_reminders", "PATCH", { body: { status: "not_renewing" }, filters: ["id=eq." + p.id] }); await load() } catch (e) { showToast("Failed to update. Try again.", "err") } }} style={{ fontSize: 11, fontWeight: 700, color: "#888", background: "#f3f3f3", border: "none", borderRadius: 8, padding: "3px 10px", cursor: "pointer" }}>Not renewing</button>
+                  <button onClick={async () => { try { await db("payment_reminders", "PATCH", { body: { status: "not_renewing" }, filters: ["id=eq." + p.id] }); await load() } catch (e) { showToast("Failed to update. Try again.", "err") } }} style={{ fontSize: 11, fontWeight: 700, color: "var(--color-muted)", background: "var(--color-primary-bg)", border: "none", borderRadius: 8, padding: "3px 10px", cursor: "pointer" }}>Not renewing</button>
                 </div>}
                 {p.status === "not_renewing" && <div style={{ display: "flex", gap: 4, marginTop: 4, justifyContent: "flex-end", alignItems: "center" }}>
-                  <span style={{ fontSize: 11, color: "#888", fontWeight: 600 }}>Not renewing</span>
-                  <button onClick={async () => { try { await db("payment_reminders", "DELETE", { filters: ["id=eq." + p.id] }); await load() } catch (e) { showToast("Failed to remove. Try again.", "err") } }} style={{ fontSize: 10, fontWeight: 600, color: "#dc2626", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Remove</button>
+                  <span style={{ fontSize: 11, color: "var(--color-muted)", fontWeight: 600 }}>Not renewing</span>
+                  <button onClick={async () => { try { await db("payment_reminders", "DELETE", { filters: ["id=eq." + p.id] }); await load() } catch (e) { showToast("Failed to remove. Try again.", "err") } }} style={{ fontSize: 10, fontWeight: 600, color: "var(--color-danger)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Remove</button>
                 </div>}
                 {p.paid && <span style={{ fontSize: 11, color: "var(--color-primary-light)", fontWeight: 700 }}>{"\u2713"} Paid</span>}
               </div>

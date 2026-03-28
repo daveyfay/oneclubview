@@ -24,21 +24,21 @@ export default class ErrorBoundary extends React.Component {
           alignItems: 'center',
           justifyContent: 'center',
           padding: '24px',
-          background: 'var(--warm, #f8f6f3)',
-          fontFamily: 'var(--sn, "Plus Jakarta Sans", sans-serif)',
+          background: 'var(--color-warm)',
+          fontFamily: 'var(--font-sans)',
           textAlign: 'center',
         }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>😵</div>
           <h2 style={{
-            fontFamily: 'var(--sr, "Fraunces", serif)',
+            fontFamily: 'var(--font-serif)',
             fontSize: '22px',
-            color: 'var(--tx, #1a1a1a)',
+            color: 'var(--color-text)',
             marginBottom: '8px',
           }}>
             Something went wrong
           </h2>
           <p style={{
-            color: 'var(--mt, #7c8590)',
+            color: 'var(--color-muted)',
             fontSize: '14px',
             marginBottom: '24px',
             maxWidth: '320px',
@@ -56,11 +56,11 @@ export default class ErrorBoundary extends React.Component {
               padding: '14px 32px',
               borderRadius: '16px',
               border: 'none',
-              background: 'var(--g, #1a2a3a)',
+              background: 'var(--color-primary)',
               color: '#fff',
               fontSize: '14px',
               fontWeight: 700,
-              fontFamily: 'var(--sn, "Plus Jakarta Sans", sans-serif)',
+              fontFamily: 'var(--font-sans)',
               cursor: 'pointer',
             }}
           >

@@ -45,7 +45,7 @@ export default function ScheduleTab({ filter }) {
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
           <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 20, fontWeight: 800, color: "var(--color-primary)" }}>This week</h2>
           <div style={{ display: "flex", gap: 6 }}>
-            {["grid", "list", "calendar"].map(v => <button key={v} onClick={() => { track("view_toggle", { view: v }); setWeekView(v); setSelectedDay(null) }} style={{ fontSize: 11, fontWeight: 600, color: weekView === v ? "var(--color-accent)" : "var(--color-muted)", background: weekView === v ? "var(--color-accent-bg)" : "none", border: weekView === v ? "1px solid #f8c4bc" : "1px solid transparent", borderRadius: 8, padding: "3px 8px", cursor: "pointer", fontFamily: "var(--font-sans)", textTransform: "capitalize" }}>{v}</button>)}
+            {["grid", "list", "calendar"].map(v => <button key={v} onClick={() => { track("view_toggle", { view: v }); setWeekView(v); setSelectedDay(null) }} style={{ fontSize: 11, fontWeight: 600, color: weekView === v ? "var(--color-accent)" : "var(--color-muted)", background: weekView === v ? "var(--color-accent-bg)" : "none", border: weekView === v ? "1px solid var(--color-accent)" : "1px solid transparent", borderRadius: 8, padding: "3px 8px", cursor: "pointer", fontFamily: "var(--font-sans)", textTransform: "capitalize" }}>{v}</button>)}
           </div>
         </div>
 
@@ -107,7 +107,7 @@ export default function ScheduleTab({ filter }) {
                       <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)", fontVariantNumeric: "tabular-nums" }}>{e.time || ""}{e.endTime ? "\u2013" + e.endTime : ""}</div>
                       {e.driver && <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 1, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}><span style={{ color: "var(--color-muted)" }}>{ICN.car}</span> {e.driver}</div>}
                     </div>
-                    <span style={{ color: "#ddd" }}>{ICN.chevron}</span>
+                    <span style={{ color: "var(--color-border)" }}>{ICN.chevron}</span>
                   </div>
                 </div>
                 </div>
@@ -203,7 +203,7 @@ export default function ScheduleTab({ filter }) {
                 const dayEvts = monthEvts(day);
                 const isHoliday = (holidays || []).some(h => { const s = new Date(h.start_date), e = new Date(h.end_date); return cellDate >= s && cellDate <= e });
                 const isSelected = selectedDay && selectedDay.getDate() === day && selectedDay.getMonth() === month && selectedDay.getFullYear() === year;
-                return <div key={i} style={{ textAlign: "center", padding: "6px 2px", borderRadius: 10, background: isToday2 ? "var(--color-primary)" : isSelected ? "var(--color-primary-bg)" : isHoliday ? "#fef3e2" : "transparent", cursor: "pointer", position: "relative", border: isSelected ? "1.5px solid var(--color-primary)" : "1.5px solid transparent" }} onClick={() => setSelectedDay(cellDate)}>
+                return <div key={i} style={{ textAlign: "center", padding: "6px 2px", borderRadius: 10, background: isToday2 ? "var(--color-primary)" : isSelected ? "var(--color-primary-bg)" : isHoliday ? "var(--color-accent-bg)" : "transparent", cursor: "pointer", position: "relative", border: isSelected ? "1.5px solid var(--color-primary)" : "1.5px solid transparent" }} onClick={() => setSelectedDay(cellDate)}>
                   <span style={{ fontSize: 13, fontWeight: isToday2 || isSelected ? 800 : 500, color: isToday2 ? "#fff" : isHoliday ? "#b8860b" : "var(--color-text)" }}>{day}</span>
                   {dayEvts.length > 0 && <div style={{ display: "flex", gap: 2, justifyContent: "center", marginTop: 2 }}>
                     {dayEvts.slice(0, 3).map((e, j) => <div key={j} style={{ width: 4, height: 4, borderRadius: "50%", background: isToday2 ? "rgba(255,255,255,.6)" : getMemberCol(e.memberId, e.colour) }} />)}
@@ -239,7 +239,7 @@ export default function ScheduleTab({ filter }) {
                           <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)", fontVariantNumeric: "tabular-nums" }}>{e.time || ""}{e.endTime ? "\u2013" + e.endTime : ""}</div>
                           {e.driver && <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 1, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}><span style={{ color: "var(--color-muted)" }}>{ICN.car}</span> {e.driver}</div>}
                         </div>
-                        <span style={{ color: "#ddd" }}>{ICN.chevron}</span>
+                        <span style={{ color: "var(--color-border)" }}>{ICN.chevron}</span>
                       </div>
                     </div>
                   </div>)}
@@ -278,7 +278,7 @@ export default function ScheduleTab({ filter }) {
                 {lanes.map((lane, li) => lane.events.map((e, ei) => {
                   const kidIdx = kids.findIndex(k => k.id === e.memberId);
                   const memberCol = kidIdx >= 0 ? COLS[kidIdx % COLS.length] : (e.colour || COLS[li % COLS.length]);
-                  return <div key={e.id || li + "-" + ei} className="stagger-card" style={{ animationDelay: (li * 50 + ei * 50) + "ms", display: "flex", alignItems: "stretch", gap: 0, borderRadius: 14, overflow: "hidden", background: e.skipped ? "#f9f9f9" : "var(--color-card)", border: "1px solid var(--color-border)", boxShadow: e.skipped ? "none" : "var(--shadow)", cursor: "pointer", opacity: e.skipped ? .5 : 1 }} onClick={() => handleTapEvent(e)}>
+                  return <div key={e.id || li + "-" + ei} className="stagger-card" style={{ animationDelay: (li * 50 + ei * 50) + "ms", display: "flex", alignItems: "stretch", gap: 0, borderRadius: 14, overflow: "hidden", background: e.skipped ? "var(--color-primary-bg)" : "var(--color-card)", border: "1px solid var(--color-border)", boxShadow: e.skipped ? "none" : "var(--shadow)", cursor: "pointer", opacity: e.skipped ? .5 : 1 }} onClick={() => handleTapEvent(e)}>
                     <div style={{ width: 5, background: e.skipped ? "var(--color-border)" : memberCol, flexShrink: 0 }} />
                     <div style={{ flex: 1, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                       <div style={{ minWidth: 0 }}>
@@ -290,7 +290,7 @@ export default function ScheduleTab({ filter }) {
                           <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)", fontVariantNumeric: "tabular-nums" }}>{e.time || ""}{e.endTime ? "\u2013" + e.endTime : ""}</div>
                           {e.driver && <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 1, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}><span style={{ color: "var(--color-muted)" }}>{ICN.car}</span> {e.driver}</div>}
                         </div>
-                        <span style={{ color: "#ddd" }}>{ICN.chevron}</span>
+                        <span style={{ color: "var(--color-border)" }}>{ICN.chevron}</span>
                       </div>
                     </div>
                   </div>

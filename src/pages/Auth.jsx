@@ -186,7 +186,7 @@ function Auth({ onAuth, mode: im }) {
           <div
             style={{
               display: 'flex',
-              background: '#f5f3ef',
+              background: 'var(--color-warm)',
               borderRadius: 12,
               padding: 4,
               marginBottom: 24,
@@ -208,7 +208,7 @@ function Auth({ onAuth, mode: im }) {
                   fontSize: 13,
                   fontWeight: 700,
                   fontFamily: 'var(--font-sans)',
-                  background: mode === m ? '#fff' : 'transparent',
+                  background: mode === m ? 'var(--color-card)' : 'transparent',
                   color: mode === m ? 'var(--color-primary)' : 'var(--color-muted)',
                 }}
               >
@@ -223,8 +223,8 @@ function Auth({ onAuth, mode: im }) {
                 marginBottom: 16,
                 padding: 12,
                 borderRadius: 12,
-                background: '#fef2f2',
-                color: '#b91c1c',
+                background: 'var(--color-danger-bg, #fef2f2)',
+                color: 'var(--color-danger)',
                 fontSize: 13,
               }}
             >
@@ -273,7 +273,7 @@ function Auth({ onAuth, mode: im }) {
                       flex: 1,
                       height: 4,
                       borderRadius: 2,
-                      background: '#eee',
+                      background: 'var(--color-border)',
                     }}
                   >
                     <div

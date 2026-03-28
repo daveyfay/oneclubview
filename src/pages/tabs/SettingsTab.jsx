@@ -26,7 +26,7 @@ export default function SettingsTab({ onLogout, darkMode, setDarkMode, onClose, 
       <>
         {/* Profile Menu */}
         <div onClick={onClose} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(10,15,20,.3)", zIndex: 60 }} />
-        <div style={{ position: "fixed", top: 56, right: 12, zIndex: 61, background: "#fff", borderRadius: 16, border: "1px solid var(--color-border)", boxShadow: "0 8px 30px rgba(0,0,0,.12)", padding: 8, minWidth: 200 }}>
+        <div style={{ position: "fixed", top: 56, right: 12, zIndex: 61, background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", boxShadow: "0 8px 30px rgba(0,0,0,.12)", padding: 8, minWidth: 200 }}>
           <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--color-border)" }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)" }}>{profile?.first_name || "Me"}</div>
             <div style={{ fontSize: 12, color: "var(--color-muted)" }}>{user?.email}</div>
@@ -45,8 +45,8 @@ export default function SettingsTab({ onLogout, darkMode, setDarkMode, onClose, 
             </div>
           </div>
           <div style={{ borderTop: "1px solid var(--color-border)", marginTop: 4, paddingTop: 4 }}>
-            <button onClick={() => setShowDeleteAcct(true)} style={{ width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#dc2626", fontFamily: "var(--font-sans)", textAlign: "left", borderRadius: 8, display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F5D1}\uFE0F"} Delete Account</button>
-            <button onClick={() => { onClose(); onLogout() }} style={{ width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#dc2626", fontFamily: "var(--font-sans)", textAlign: "left", borderRadius: 8, display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F6AA}"} Log out</button>
+            <button onClick={() => setShowDeleteAcct(true)} style={{ width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-danger)", fontFamily: "var(--font-sans)", textAlign: "left", borderRadius: 8, display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F5D1}\uFE0F"} Delete Account</button>
+            <button onClick={() => { onClose(); onLogout() }} style={{ width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-danger)", fontFamily: "var(--font-sans)", textAlign: "left", borderRadius: 8, display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F6AA}"} Log out</button>
           </div>
         </div>
 
@@ -97,7 +97,7 @@ export default function SettingsTab({ onLogout, darkMode, setDarkMode, onClose, 
                     <div style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text)" }}>{k.first_name}{age != null && <span style={{ color: "var(--color-muted)", fontWeight: 400, marginLeft: 4 }}>({age})</span>}</div>
                     {k.school_name && <div style={{ fontSize: 11, color: "var(--color-muted)" }}>{k.school_name}{k.school_class ? " \u00B7 " + k.school_class : ""}</div>}
                   </div>
-                  {isAdmin && <button onClick={() => { setShowFamily(false); setShowAddKid(k) }} style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--color-border)", background: "#fff", fontSize: 12, fontWeight: 600, color: "var(--color-text)", cursor: "pointer", fontFamily: "var(--font-sans)" }}>Edit</button>}
+                  {isAdmin && <button onClick={() => { setShowFamily(false); setShowAddKid(k) }} style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--color-border)", background: "var(--color-card)", fontSize: 12, fontWeight: 600, color: "var(--color-text)", cursor: "pointer", fontFamily: "var(--font-sans)" }}>Edit</button>}
                 </div>;
               })}
               {isAdmin && <button onClick={() => { setShowFamily(false); setShowAddKid(true) }} style={{ width: "100%", marginTop: 8, padding: 10, borderRadius: 10, border: "2px dashed var(--color-border)", background: "none", fontSize: 13, fontWeight: 600, color: "var(--color-muted)", cursor: "pointer", fontFamily: "var(--font-sans)" }}>+ Add kid</button>}

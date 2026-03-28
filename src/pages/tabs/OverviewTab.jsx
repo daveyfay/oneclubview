@@ -121,7 +121,7 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
 
         if (alerts.length === 0) return null;
 
-        const colors = { urgent: { bg: "#fef2f2", border: "#fecaca", text: "#dc2626" }, warn: { bg: "var(--color-accent-bg)", border: "#f8c4bc", text: "var(--color-accent)" }, info: { bg: "var(--color-primary-bg)", border: "#c8dce8", text: "var(--color-primary-light)" } };
+        const colors = { urgent: { bg: "var(--color-danger-bg, #fef2f2)", border: "var(--color-danger-border, #fecaca)", text: "var(--color-danger)" }, warn: { bg: "var(--color-accent-bg)", border: "#f8c4bc", text: "var(--color-accent)" }, info: { bg: "var(--color-primary-bg)", border: "#c8dce8", text: "var(--color-primary-light)" } };
         return <div style={{ marginBottom: 14 }}>
           {alerts.slice(0, 5).map((a, i) => {
             const col = colors[a.type] || colors.info;
@@ -148,9 +148,9 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
             }
           });
           if (clashes.length === 0) return null;
-          return <div style={{ background: "#fef2f2", border: "1.5px solid #fecaca", borderRadius: 16, padding: 14, marginBottom: 14, boxShadow: "var(--shadow)" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#dc2626", marginBottom: 6 }}>{"\u26A0\uFE0F"} {clashes.length} clash{clashes.length > 1 ? "es" : ""} this week</div>
-            {clashes.map((cl, i) => <div key={i} onClick={() => { onChangeTab("week"); window.scrollTo(0, 0) }} style={{ fontSize: 12, color: "#991b1b", marginBottom: 2, cursor: "pointer", padding: "4px 0", borderRadius: 6 }}>
+          return <div style={{ background: "var(--color-danger-bg, #fef2f2)", border: "1.5px solid var(--color-danger-border, #fecaca)", borderRadius: 16, padding: 14, marginBottom: 14, boxShadow: "var(--shadow)" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-danger)", marginBottom: 6 }}>{"\u26A0\uFE0F"} {clashes.length} clash{clashes.length > 1 ? "es" : ""} this week</div>
+            {clashes.map((cl, i) => <div key={i} onClick={() => { onChangeTab("week"); window.scrollTo(0, 0) }} style={{ fontSize: 12, color: "var(--color-danger)", marginBottom: 2, cursor: "pointer", padding: "4px 0", borderRadius: 6 }}>
               {fmtDate(cl.day)}: {cl.a.member} ({cl.a.title} {cl.a.time}) overlaps {cl.b.member} ({cl.b.title} {cl.b.time}) {"\u2192"}
             </div>)}
           </div>;
@@ -252,7 +252,7 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
                   <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text)" }}>{c.nickname || c.club_name}</div>
                   <div style={{ fontSize: 11, color: "var(--color-muted)" }}>{c.members.join(", ")}{termLabel ? " \u00B7 " + termLabel : ""}</div>
                 </div>
-                <span style={{ color: "#ddd", flexShrink: 0, fontSize: 14 }}>{"\u203A"}</span>
+                <span style={{ color: "var(--color-border)", flexShrink: 0, fontSize: 14 }}>{"\u203A"}</span>
               </div>;
             });
           })()}
