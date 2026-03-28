@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../lib/supabase';
+import { COLS } from '../../lib/constants';
 
 function EditClubModal({
   club,
@@ -10,8 +11,10 @@ function EditClubModal({
   onSaved,
   onDelete,
 }) {
+  const COLOUR_OPTIONS = ["#2d7cb5","#2d5a3f","#c4960c","#9b4dca","#d64545","#1a8a7d","#e67e22","#e84393","#3b82f6","#22c55e","#ef4444","#1a2a3a"];
   const [who, setWho] = useState([]);
   const [nickname, setNickname] = useState("");
+  const [clubColour, setClubColour] = useState(club.colour || "#2d5a3f");
   const [sv, setSv] = useState(false);
   const [clubUrl, setClubUrl] = useState("");
   const [clubFb, setClubFb] = useState("");
@@ -47,6 +50,7 @@ function EditClubModal({
       });
       const ids = (subs || []).map((s) => s.dependant_id || "self");
       if (subs && subs[0] && subs[0].nickname) setNickname(subs[0].nickname);
+      if (subs && subs[0] && subs[0].colour) setClubColour(subs[0].colour);
       setWho(ids);
       setAllSubs(subs || []);
       setLoaded(true);
@@ -69,10 +73,10 @@ function EditClubModal({
       },
       filters: ["id=eq." + club.club_id],
     });
-    // Update nickname on all existing subs
+    // Update nickname and colour on all existing subs
     for (const s of allSubs) {
       await db("hub_subscriptions", "PATCH", {
-        body: { nickname: nickname.trim() || null },
+        body: { nickname: nickname.trim() || null, colour: clubColour },
         filters: ["id=eq." + s.id],
       });
     }
@@ -187,6 +191,27 @@ function EditClubModal({
             This is what you'll see on the weekly schedule instead of the full
             club name
           </span>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <span className="lbl">Schedule colour</span>
+          <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+            {COLOUR_OPTIONS.map((col) => (
+              <button
+                key={col}
+                onClick={() => setClubColour(col)}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  background: col,
+                  border: clubColour === col ? "3px solid #1a2a3a" : "1px solid rgba(0,0,0,.1)",
+                  cursor: "pointer",
+                  padding: 0,
+                  transition: "border .15s"
+                }}
+              />
+            ))}
+          </div>
         </div>
         <div style={{ marginBottom: 16 }}>
           <span className="lbl">Who goes to this club?</span>

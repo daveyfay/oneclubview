@@ -30,11 +30,17 @@ export default function Hub({user,profile,onRefresh,onLogout}){
   const[schoolLocs,setSchoolLocs]=useState([]);
   const[familyLocs,setFamilyLocs]=useState([]);const[showLocations,setShowLocations]=useState(false);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
+  const[darkMode,setDarkMode]=useState(()=>localStorage.getItem("ocv-dark")==="1");
   const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("grid");const[selectedDay,setSelectedDay]=useState(null);const[calMonth,setCalMonth]=useState(new Date().getMonth());const[calYear,setCalYear]=useState(new Date().getFullYear());const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);const[showAddActivity,setShowAddActivity]=useState(false);const[showAddPlaydate,setShowAddPlaydate]=useState(false);const[tapEvent,setTapEvent]=useState(null);
   const[showChangePw,setShowChangePw]=useState(false);const[showDeleteAcct,setShowDeleteAcct]=useState(false);
   const[ptrState,setPtrState]=useState("");const ptrStart=useRef(0);const ptrDist=useRef(0);
   const[showSaveLocModal,setShowSaveLocModal]=useState(false);const[showAddLocModal,setShowAddLocModal]=useState(false);
   const[campLoc,setCampLoc]=useState("all");
+
+  useEffect(()=>{
+    document.documentElement.setAttribute("data-theme",darkMode?"dark":"light");
+    localStorage.setItem("ocv-dark",darkMode?"1":"0")
+  },[darkMode]);
 
   async function load(){
     try{
@@ -1277,6 +1283,12 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         :profile?.subscription_status!=="active"&&<button onClick={()=>{setShowProfile(false);startCheckout("standard")}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>⭐ Subscribe — €7.99/mo</button>}
         <button onClick={()=>{setShowProfile(false);setShowFamily(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>👨‍👩‍👧‍👦 Family Members</button>
         <a href="/privacy" style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>🔒 Privacy & Data</a>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderTop:"1px solid var(--bd)"}}>
+          <span style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>Dark mode</span>
+          <div onClick={()=>setDarkMode(!darkMode)} style={{width:48,height:28,borderRadius:14,background:darkMode?"var(--acc)":"var(--bd)",cursor:"pointer",position:"relative",transition:"background .2s"}}>
+            <div style={{width:22,height:22,borderRadius:11,background:"#fff",position:"absolute",top:3,left:darkMode?23:3,transition:"left .2s",boxShadow:"0 1px 3px rgba(0,0,0,.2)"}}/>
+          </div>
+        </div>
         <div style={{borderTop:"1px solid var(--bd)",marginTop:4,paddingTop:4}}>
           <button onClick={()=>setShowDeleteAcct(true)} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🗑️ Delete Account</button>
           <button onClick={()=>{setShowProfile(false);onLogout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🚪 Log out</button>
