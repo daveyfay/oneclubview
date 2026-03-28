@@ -57,15 +57,23 @@ export default function SettingsTab({ onLogout, darkMode, setDarkMode, onClose, 
         }} />
 
         {/* Delete Account Confirm */}
-        <OcvConfirm open={showDeleteAcct} onClose={() => setShowDeleteAcct(false)} title="Delete account?" message={"We'll email you confirmation and delete all your data within 30 days. You can also email hello@oneclubview.com."} confirmText="Delete my account" confirmColor="#dc2626" onConfirm={async () => {
-          const _t = getToken();
-          const safeEmail = (user.email || "").replace(/[<>&"']/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "\"": "&quot;", "'": "&#39;" }[c]));
-          const safeId = (user.id || "").replace(/[<>&"']/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "\"": "&quot;", "'": "&#39;" }[c]));
+        <OcvConfirm open={showDeleteAcct} onClose={() => setShowDeleteAcct(false)} title="Delete account?" message={"This will permanently delete your account and all associated data. This action cannot be undone."} confirmText="Delete my account" confirmColor="#dc2626" onConfirm={async () => {
           try {
-            await fetch(SB + "/functions/v1/send-invite", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + _t }, body: JSON.stringify({ type: "notification", to: "hello@oneclubview.com", subject: "Account deletion request: " + user.email, html: "<p>User " + safeEmail + " (id: " + safeId + ") has requested account deletion.</p>" }) });
-            await fetch(SB + "/functions/v1/send-invite", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + _t }, body: JSON.stringify({ type: "notification", to: user.email, subject: "Account deletion request received", html: "<p>We've received your request to delete your OneClubView account. All your data will be removed within 30 days.</p>" }) });
-            showToast("Deletion request submitted. Check your email."); onLogout()
-          } catch (e) { showToast("Error. Please email hello@oneclubview.com", "err") }
+            const token = getToken();
+            const res = await fetch(SB + "/functions/v1/delete-account", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            });
+            const data = await res.json();
+            if (data.status === "deleted") {
+              showToast("Account deleted. Goodbye!");
+              onLogout();
+            } else {
+              showToast("Something went wrong. Please email hello@oneclubview.com", "err");
+            }
+          } catch (e) {
+            showToast("Something went wrong. Please email hello@oneclubview.com", "err");
+          }
         }} />
 
         {/* Support Modal */}
