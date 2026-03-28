@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import ICN from '../../lib/icons';
 import { COLS } from '../../lib/constants';
 import OcvModal from './OcvModal';
+import { db } from '../../lib/supabase';
+import { showToast } from '../../lib/utils';
 
 const COLOUR_OPTIONS = [...COLS, "#999", "#1a2a3a", "#dc2626", "#c4960c"];
 
-export default function EventDetailModal({event,open,onClose,onDelete,onDriverChange,onAttendeesChange,onMarkPaid,onColourChange,adults,familyAll}){
+export default function EventDetailModal({event,open,onClose,onDelete,onDriverChange,onAttendeesChange,onMarkPaid,onColourChange,adults,familyAll,load}){
   const[going,setGoing]=useState([]);
   const[marking,setMarking]=useState(false);
   const[showColours,setShowColours]=useState(false);
@@ -98,7 +100,29 @@ export default function EventDetailModal({event,open,onClose,onDelete,onDriverCh
     footer={
       <div style={{display:"flex",gap:10}}>
         <button onClick={onClose} className="btn btn-primary" style={{flex:1}}>Done</button>
-        {(isManual||isRecurring)&&<button onClick={()=>{onDelete(event);onClose()}} style={{flex:0,padding:"14px 20px",borderRadius:"var(--radius)",border:"1.5px solid #dc2626",background:"none",color:"#dc2626",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--font-sans)",minHeight:48,whiteSpace:"nowrap"}}>{isRecurring?"Skip this week":"Remove"}</button>}
+        {event.skipped && event.source_type === "recurring" && (
+          <button
+            className="btn btn-primary"
+            style={{flex:0,whiteSpace:"nowrap"}}
+            onClick={async () => {
+              const dateStr = event.date.toISOString().split("T")[0];
+              const rec = await db("recurring_events", "GET", { filters: ["id=eq." + event.source_id] });
+              if (rec && rec[0]) {
+                const updated = (rec[0].excluded_dates || []).filter(d => d !== dateStr);
+                await db("recurring_events", "PATCH", {
+                  filters: ["id=eq." + event.source_id],
+                  body: { excluded_dates: updated },
+                });
+                showToast("Week restored!");
+                if (load) load();
+                onClose();
+              }
+            }}
+          >
+            Restore this week
+          </button>
+        )}
+        {(isManual||(isRecurring&&!event.skipped))&&<button onClick={()=>{onDelete(event);onClose()}} style={{flex:0,padding:"14px 20px",borderRadius:"var(--radius)",border:"1.5px solid #dc2626",background:"none",color:"#dc2626",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--font-sans)",minHeight:48,whiteSpace:"nowrap"}}>{isRecurring?"Skip this week":"Remove"}</button>}
       </div>
     }
   >
