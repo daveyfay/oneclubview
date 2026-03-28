@@ -172,7 +172,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           const kid=re.dependant_id?kidMap.get(re.dependant_id):null;
           evts.push({id:re.id+d.toISOString(),source_id:re.id,source_type:"recurring",title:re.title,date:d,time:re.start_time?.slice(0,5)||"",
             endTime:re.start_time&&re.duration_minutes?((h,m)=>{const t=parseInt(re.start_time.slice(0,2))*60+parseInt(re.start_time.slice(3,5))+re.duration_minutes;return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()||"":"",
-            club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null,skipped:isSkipped});
+            club:cl?.nickname||cl?.club_name||"",colour:re.colour||cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null,skipped:isSkipped,location:re.location||cl?.club_addr||null});
         }
       });
     });
@@ -184,7 +184,8 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         const kid=me.dependant_id?kidMap.get(me.dependant_id):null;
         const mTime=d.toTimeString().slice(0,5);
         const mEnd=me.duration_minutes&&mTime?((()=>{const t=parseInt(mTime.slice(0,2))*60+parseInt(mTime.slice(3,5))+(me.duration_minutes||60);return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()):"";
-        evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:mTime,endTime:mEnd,club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
+        const mAtt=me.description&&me.description.startsWith("Going: ")?me.description.replace("Going: ","").split(", ").filter(Boolean):[];
+        evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:mTime,endTime:mEnd,club:cl?.nickname||cl?.club_name||"",colour:me.colour||cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self",attendees:mAtt,location:me.location||null});
       }
     });
     // Payment reminders — show on due date
@@ -194,7 +195,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       if(d>=wd[0]&&d<end){
         const cl=clubMap.get(p.club_id);
         const kid=p.dependant_id?kidMap.get(p.dependant_id):null;
-        evts.push({id:"pay-"+p.id,source_id:p.id,source_type:"payment",title:"💳 "+p.description+" — €"+parseFloat(p.amount).toFixed(2),date:d,time:"",endTime:"",club:cl?.nickname||cl?.club_name||"Payment due",colour:"#c4960c",member:kid?.first_name||(profile?.first_name||"You"),memberId:p.dependant_id||"self",isPayment:true});
+        evts.push({id:"pay-"+p.id,source_id:p.id,source_type:"payment",title:"💳 "+p.description+" — €"+parseFloat(p.amount).toFixed(2),date:d,time:"",endTime:"",club:cl?.nickname||cl?.club_name||"Payment due",colour:"#c4960c",member:kid?.first_name||(profile?.first_name||"You"),memberId:p.dependant_id||"self",isPayment:true,payAmount:parseFloat(p.amount),payDescription:p.description,payDueDate:p.due_date,payClub:cl?.nickname||cl?.club_name||""});
       }
     });
     return evts.sort((a,b)=>a.date-b.date||(a.time||"").localeCompare(b.time||""));
@@ -608,7 +609,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             const kid=re.dependant_id?kidMap.get(re.dependant_id):null;
             evts.push({id:re.id+cellDate.toISOString(),source_id:re.id,source_type:"recurring",title:re.title,date:cellDate,time:re.start_time?.slice(0,5)||"",
               endTime:re.start_time&&re.duration_minutes?((()=>{const t=parseInt(re.start_time.slice(0,2))*60+parseInt(re.start_time.slice(3,5))+re.duration_minutes;return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()):"",
-              club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null});
+              club:cl?.nickname||cl?.club_name||"",colour:re.colour||cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null});
           });
           (mans||[]).forEach(me=>{
             const d=new Date(me.event_date);
@@ -617,7 +618,8 @@ export default function Hub({user,profile,onRefresh,onLogout}){
               const kid=me.dependant_id?kidMap.get(me.dependant_id):null;
               const mTime=d.toTimeString().slice(0,5);
               const mEnd=me.duration_minutes&&mTime?((()=>{const t=parseInt(mTime.slice(0,2))*60+parseInt(mTime.slice(3,5))+(me.duration_minutes||60);return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()):"";
-              evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:mTime,endTime:mEnd,club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
+              const mAtt=me.description&&me.description.startsWith("Going: ")?me.description.replace("Going: ","").split(", ").filter(Boolean):[];
+        evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:mTime,endTime:mEnd,club:cl?.nickname||cl?.club_name||"",colour:me.colour||cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self",attendees:mAtt,location:me.location||null});
             }
           });
           // Camp bookings — show on each day within camp date range
@@ -637,7 +639,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             if(pd.getDate()===day&&pd.getMonth()===month&&pd.getFullYear()===year){
               const cl=clubMap.get(p.club_id);
               const kid=p.dependant_id?kidMap.get(p.dependant_id):null;
-              evts.push({id:"pay-"+p.id,source_id:p.id,source_type:"payment",title:"💳 "+p.description+" — €"+parseFloat(p.amount).toFixed(2),date:cellDate,time:"",endTime:"",club:cl?.nickname||cl?.club_name||"Payment due",colour:"#c4960c",member:kid?.first_name||(profile?.first_name||"You"),memberId:p.dependant_id||"self",isPayment:true});
+              evts.push({id:"pay-"+p.id,source_id:p.id,source_type:"payment",title:"💳 "+p.description+" — €"+parseFloat(p.amount).toFixed(2),date:cellDate,time:"",endTime:"",club:cl?.nickname||cl?.club_name||"Payment due",colour:"#c4960c",member:kid?.first_name||(profile?.first_name||"You"),memberId:p.dependant_id||"self",isPayment:true,payAmount:parseFloat(p.amount),payDescription:p.description,payDueDate:p.due_date,payClub:cl?.nickname||cl?.club_name||""});
             }
           });
           monthEvtsMap[day]=evts.sort((a,b)=>(a.time||"").localeCompare(b.time||""));
@@ -1360,6 +1362,17 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             await db("recurring_events","PATCH",{filters:["id=eq."+ev.source_id],body:{excluded_dates:excluded}});
             showToast("Skipped for this week");setTapEvent(null);load();
           }
+        }}
+        onMarkPaid={async(ev)=>{
+          if(ev.source_type==="payment"&&ev.source_id){
+            await db("payment_reminders","PATCH",{filters:["id=eq."+ev.source_id],body:{paid:true,paid_at:new Date().toISOString()}});
+            showToast("Marked as paid!");setTapEvent(null);load();
+          }
+        }}
+        onColourChange={async(ev,col)=>{
+          const table=ev.source_type==="recurring"?"recurring_events":"manual_events";
+          await db(table,"PATCH",{filters:["id=eq."+ev.source_id],body:{colour:col}});
+          setTapEvent({...ev,colour:col});load();
         }}/>
 
       {/* Change Password Modal */}
