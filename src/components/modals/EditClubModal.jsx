@@ -129,8 +129,8 @@ function EditClubModal({
 
   if (!loaded)
     return (
-      <div className="mbg">
-        <div className="mbox" style={{ textAlign: "center", padding: 40 }}>
+      <div className="modal-backdrop">
+        <div className="modal-box" style={{ textAlign: "center", padding: 40 }}>
           <p>Loading...</p>
         </div>
       </div>
@@ -138,10 +138,10 @@ function EditClubModal({
 
   return (
     <div
-      className="mbg"
+      className="modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="mbox">
+      <div className="modal-box">
         <div
           style={{
             display: "flex",
@@ -151,10 +151,10 @@ function EditClubModal({
         >
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             {club.club_name}
@@ -166,34 +166,34 @@ function EditClubModal({
               border: "none",
               fontSize: 20,
               cursor: "pointer",
-              color: "var(--mt)",
+              color: "var(--color-muted)",
             }}
           >
             ✕
           </button>
         </div>
         {club.club_addr && (
-          <p style={{ fontSize: 12, color: "var(--mt)", marginBottom: 12 }}>
+          <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 12 }}>
             {club.club_addr}
           </p>
         )}
 
         {/* Who attends - multi-select */}
         <div style={{ marginBottom: 12 }}>
-          <span className="lbl">Nickname (shows on schedule)</span>
+          <span className="label">Nickname (shows on schedule)</span>
           <input
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder={"e.g. Gym, Swimming, GAA"}
             style={{ marginBottom: 4 }}
           />
-          <span style={{ fontSize: 11, color: "var(--mt)" }}>
+          <span style={{ fontSize: 11, color: "var(--color-muted)" }}>
             This is what you'll see on the weekly schedule instead of the full
             club name
           </span>
         </div>
         <div style={{ marginBottom: 16 }}>
-          <span className="lbl">Schedule colour</span>
+          <span className="label">Schedule colour</span>
           <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
             {COLOUR_OPTIONS.map((col) => (
               <button
@@ -214,7 +214,7 @@ function EditClubModal({
           </div>
         </div>
         <div style={{ marginBottom: 16 }}>
-          <span className="lbl">Who goes to this club?</span>
+          <span className="label">Who goes to this club?</span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}>
             <button
               onClick={() => toggleMember("self")}
@@ -222,16 +222,16 @@ function EditClubModal({
                 padding: "8px 16px",
                 borderRadius: 10,
                 border: who.includes("self")
-                  ? "2px solid var(--g)"
-                  : "2px solid var(--bd)",
+                  ? "2px solid var(--color-primary)"
+                  : "2px solid var(--color-border)",
                 background: who.includes("self")
-                  ? "var(--gxl)"
-                  : "var(--card)",
+                  ? "var(--color-primary-bg)"
+                  : "var(--color-card)",
                 cursor: "pointer",
                 fontSize: 13,
                 fontWeight: 600,
-                color: who.includes("self") ? "var(--gl)" : "var(--mt)",
-                fontFamily: "var(--sn)",
+                color: who.includes("self") ? "var(--color-primary-light)" : "var(--color-muted)",
+                fontFamily: "var(--font-sans)",
               }}
             >
               👤 {profile?.first_name || "Me"}
@@ -244,16 +244,16 @@ function EditClubModal({
                   padding: "8px 16px",
                   borderRadius: 10,
                   border: who.includes(k.id)
-                    ? "2px solid var(--g)"
-                    : "2px solid var(--bd)",
+                    ? "2px solid var(--color-primary)"
+                    : "2px solid var(--color-border)",
                   background: who.includes(k.id)
-                    ? "var(--gxl)"
-                    : "var(--card)",
+                    ? "var(--color-primary-bg)"
+                    : "var(--color-card)",
                   cursor: "pointer",
                   fontSize: 13,
                   fontWeight: 600,
-                  color: who.includes(k.id) ? "var(--gl)" : "var(--mt)",
-                  fontFamily: "var(--sn)",
+                  color: who.includes(k.id) ? "var(--color-primary-light)" : "var(--color-muted)",
+                  fontFamily: "var(--font-sans)",
                 }}
               >
                 👧 {k.first_name}
@@ -269,13 +269,13 @@ function EditClubModal({
             width: "100%",
             padding: 12,
             borderRadius: 12,
-            border: "1px solid var(--bd)",
-            background: "var(--card)",
+            border: "1px solid var(--color-border)",
+            background: "var(--color-card)",
             cursor: "pointer",
             fontSize: 13,
             fontWeight: 600,
-            color: "var(--mt)",
-            fontFamily: "var(--sn)",
+            color: "var(--color-muted)",
+            fontFamily: "var(--font-sans)",
             marginBottom: 12,
             textAlign: "left",
             display: "flex",
@@ -298,11 +298,11 @@ function EditClubModal({
               background: "#f8f7f4",
               borderRadius: 14,
               padding: 14,
-              border: "1px solid var(--bd)",
+              border: "1px solid var(--color-border)",
             }}
           >
             <div>
-              <span className="lbl">Website</span>
+              <span className="label">Website</span>
               <input
                 value={clubUrl}
                 onChange={(e) => setClubUrl(e.target.value)}
@@ -310,7 +310,7 @@ function EditClubModal({
               />
             </div>
             <div>
-              <span className="lbl">Facebook page</span>
+              <span className="label">Facebook page</span>
               <input
                 value={clubFb}
                 onChange={(e) => setClubFb(e.target.value)}
@@ -319,7 +319,7 @@ function EditClubModal({
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <div style={{ flex: 1 }}>
-                <span className="lbl">Phone</span>
+                <span className="label">Phone</span>
                 <input
                   value={clubPhone}
                   onChange={(e) => setClubPhone(e.target.value)}
@@ -327,7 +327,7 @@ function EditClubModal({
                 />
               </div>
               <div style={{ flex: 1 }}>
-                <span className="lbl">Email</span>
+                <span className="label">Email</span>
                 <input
                   value={clubEmail}
                   onChange={(e) => setClubEmail(e.target.value)}
@@ -336,7 +336,7 @@ function EditClubModal({
               </div>
             </div>
             <div>
-              <span className="lbl">Eircode</span>
+              <span className="label">Eircode</span>
               <input
                 value={clubEircode}
                 onChange={(e) => setClubEircode(e.target.value)}
@@ -346,7 +346,7 @@ function EditClubModal({
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <div style={{ flex: 1 }}>
-                <span className="lbl">Term starts</span>
+                <span className="label">Term starts</span>
                 <input
                   type="date"
                   value={termStart}
@@ -354,7 +354,7 @@ function EditClubModal({
                 />
               </div>
               <div style={{ flex: 1 }}>
-                <span className="lbl">Term ends</span>
+                <span className="label">Term ends</span>
                 <input
                   type="date"
                   value={termEnd}
@@ -363,7 +363,7 @@ function EditClubModal({
               </div>
             </div>
             <div>
-              <span className="lbl">Notes</span>
+              <span className="label">Notes</span>
               <textarea
                 value={clubNotes}
                 onChange={(e) => setClubNotes(e.target.value)}
@@ -373,9 +373,9 @@ function EditClubModal({
                   width: "100%",
                   padding: 10,
                   borderRadius: 10,
-                  border: "1px solid var(--bd)",
+                  border: "1px solid var(--color-border)",
                   fontSize: 13,
-                  fontFamily: "var(--sn)",
+                  fontFamily: "var(--font-sans)",
                   resize: "vertical",
                 }}
               />
@@ -396,7 +396,7 @@ function EditClubModal({
                   textAlign: "center",
                   padding: 8,
                   borderRadius: 10,
-                  background: "var(--g)",
+                  background: "var(--color-primary)",
                   color: "#fff",
                   fontSize: 12,
                   fontWeight: 700,
@@ -434,9 +434,9 @@ function EditClubModal({
           <div
             style={{
               fontSize: 12,
-              color: "var(--mt)",
+              color: "var(--color-muted)",
               marginBottom: 12,
-              background: "var(--sage)",
+              background: "var(--color-sage)",
               padding: "8px 12px",
               borderRadius: 10,
             }}
@@ -457,7 +457,7 @@ function EditClubModal({
         <button
           onClick={save}
           disabled={sv}
-          className="btn bp"
+          className="btn btn-primary"
           style={{ marginBottom: 8 }}
         >
           {sv ? "Saving..." : "Save changes"}
@@ -475,7 +475,7 @@ function EditClubModal({
             fontSize: 13,
             fontWeight: 600,
             color: "#dc2626",
-            fontFamily: "var(--sn)",
+            fontFamily: "var(--font-sans)",
           }}
         >
           Remove club

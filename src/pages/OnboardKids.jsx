@@ -78,19 +78,19 @@ export default function OnboardKids({ userId, onDone, onLogout }) {
   }
 
   return (
-    <div className="fi" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "var(--warm)" }}>
+    <div className="anim-fade" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "var(--color-warm)" }}>
       <div style={{ width: "100%", maxWidth: 420, textAlign: "center" }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>👋</div>
-        <h2 style={{ fontFamily: "var(--sr)", fontSize: 24, fontWeight: 800, color: "var(--g)" }}>Who's in your family?</h2>
-        <p style={{ fontSize: 14, color: "var(--mt)", marginTop: 6 }}>Add your kids so we can match clubs and camps to them</p>
+        <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 24, fontWeight: 800, color: "var(--color-primary)" }}>Who's in your family?</h2>
+        <p style={{ fontSize: 14, color: "var(--color-muted)", marginTop: 6 }}>Add your kids so we can match clubs and camps to them</p>
         {kids.length > 0 && (
           <div style={{ margin: "20px 0", display: "flex", flexDirection: "column", gap: 8 }}>
             {kids.map(k => (
-              <div key={k.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--gxl)", borderRadius: 14, padding: "10px 16px", border: "1px solid #c8e6c9" }}>
+              <div key={k.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--color-primary-bg)", borderRadius: 14, padding: "10px 16px", border: "1px solid #c8e6c9" }}>
                 <span>👧</span>
-                <span style={{ fontSize: 14, fontWeight: 600, color: "var(--g)" }}>{k.name}</span>
-                {k.dob && <span style={{ fontSize: 12, color: "var(--gl)" }}>age {getAge(k.dob)}</span>}
-                {k.school && <span style={{ fontSize: 11, color: "var(--mt)", marginLeft: "auto" }}>🏫 {k.school}</span>}
+                <span style={{ fontSize: 14, fontWeight: 600, color: "var(--color-primary)" }}>{k.name}</span>
+                {k.dob && <span style={{ fontSize: 12, color: "var(--color-primary-light)" }}>age {getAge(k.dob)}</span>}
+                {k.school && <span style={{ fontSize: 11, color: "var(--color-muted)", marginLeft: "auto" }}>🏫 {k.school}</span>}
               </div>
             ))}
           </div>
@@ -121,7 +121,7 @@ export default function OnboardKids({ userId, onDone, onLogout }) {
                 left: 0,
                 right: 0,
                 background: "#fff",
-                border: "1px solid var(--bd)",
+                border: "1px solid var(--color-border)",
                 borderRadius: 12,
                 boxShadow: "0 8px 24px rgba(0,0,0,.1)",
                 zIndex: 20,
@@ -142,10 +142,10 @@ export default function OnboardKids({ userId, onDone, onLogout }) {
                       background: "none",
                       cursor: "pointer",
                       textAlign: "left",
-                      fontFamily: "var(--sn)"
+                      fontFamily: "var(--font-sans)"
                     }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--tx)" }}>{s.name}</div>
-                    {s.address && <div style={{ fontSize: 11, color: "var(--mt)" }}>{s.address}</div>}
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text)" }}>{s.name}</div>
+                    {s.address && <div style={{ fontSize: 11, color: "var(--color-muted)" }}>{s.address}</div>}
                   </button>
                 ))}
               </div>
@@ -154,7 +154,7 @@ export default function OnboardKids({ userId, onDone, onLogout }) {
           <select
             value={cls}
             onChange={e => setCls(e.target.value)}
-            style={{ color: cls ? "var(--tx)" : "var(--mt)" }}>
+            style={{ color: cls ? "var(--color-text)" : "var(--color-muted)" }}>
             <option value="">Class (optional)</option>
             {CC.classes.map(c => (
               <option key={c} value={c}>{c}</option>
@@ -163,7 +163,7 @@ export default function OnboardKids({ userId, onDone, onLogout }) {
           <button
             onClick={add}
             disabled={sv || !name.trim()}
-            className="btn bp"
+            className="btn btn-primary"
             style={{ opacity: (!name.trim() || sv) ? .4 : 1 }}>
             Add child
           </button>
@@ -173,7 +173,7 @@ export default function OnboardKids({ userId, onDone, onLogout }) {
             if (kids.length) db("profiles", "PATCH", { body: { onboarding_step: "kids_done" }, filters: ["id=eq." + userId] });
             onDone();
           }}
-          className={"btn " + (kids.length ? "bp" : "bs")}
+          className={"btn " + (kids.length ? "btn-primary" : "btn-secondary")}
           style={{ marginTop: 24 }}>
           {kids.length ? "Next — add clubs →" : "Skip — just me"}
         </button>
@@ -185,9 +185,9 @@ export default function OnboardKids({ userId, onDone, onLogout }) {
               background: "none",
               border: "none",
               fontSize: 12,
-              color: "var(--mt)",
+              color: "var(--color-muted)",
               cursor: "pointer",
-              fontFamily: "var(--sn)"
+              fontFamily: "var(--font-sans)"
             }}>
             Log out
           </button>

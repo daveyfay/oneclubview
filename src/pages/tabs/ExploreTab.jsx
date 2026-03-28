@@ -60,8 +60,8 @@ export default function ExploreTab({ filter, onRefresh }) {
     <ErrorBoundary label="Explore">
       <div>
         {/* Sub-tabs */}
-        <div style={{ display: "flex", gap: 0, marginBottom: 12, borderBottom: "1px solid var(--bd)" }}>
-          {["clubs", "camps", "discover"].map(st => <button key={st} onClick={() => setExploreTab(st)} style={{ padding: "8px 14px", fontSize: 12, fontWeight: 600, color: exploreTab === st ? "var(--g)" : "var(--mt)", border: "none", background: "none", cursor: "pointer", fontFamily: "var(--sn)", borderBottom: exploreTab === st ? "2px solid var(--acc)" : "2px solid transparent", textTransform: "capitalize" }}>{st === "clubs" ? "My Clubs" : st === "camps" ? "Camps" : "Discover"}</button>)}
+        <div style={{ display: "flex", gap: 0, marginBottom: 12, borderBottom: "1px solid var(--color-border)" }}>
+          {["clubs", "camps", "discover"].map(st => <button key={st} onClick={() => setExploreTab(st)} style={{ padding: "8px 14px", fontSize: 12, fontWeight: 600, color: exploreTab === st ? "var(--color-primary)" : "var(--color-muted)", border: "none", background: "none", cursor: "pointer", fontFamily: "var(--font-sans)", borderBottom: exploreTab === st ? "2px solid var(--color-accent)" : "2px solid transparent", textTransform: "capitalize" }}>{st === "clubs" ? "My Clubs" : st === "camps" ? "Camps" : "Discover"}</button>)}
         </div>
 
         {/* My Clubs sub-tab */}
@@ -74,38 +74,38 @@ export default function ExploreTab({ filter, onRefresh }) {
               grouped[c.club_id].members.push(kid ? kid.first_name : (profile?.first_name || "You"));
             });
             return Object.values(grouped).map((c, i) =>
-              <div key={c.club_id} onClick={() => setEditClub(c)} style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--bd)", boxShadow: "var(--shadow)", padding: 16, marginBottom: 8, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+              <div key={c.club_id} onClick={() => setEditClub(c)} style={{ background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", boxShadow: "var(--shadow)", padding: 16, marginBottom: 8, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
                 <div style={{ width: 40, height: 40, borderRadius: 10, background: c.colour || COLS[i % COLS.length], display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 800, flexShrink: 0 }}>{c.club_name.split(" ").map(w => w[0]).join("").substring(0, 2)}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 14, fontWeight: 600 }}>{c.club_name}</div>
-                  <div style={{ fontSize: 12, color: "var(--mt)" }}>{(c.nickname ? c.nickname + " \u2014 " : "") + c.members.join(", ")}{c.club_addr ? " \u2022 " + c.club_addr : ""}</div>
+                  <div style={{ fontSize: 12, color: "var(--color-muted)" }}>{(c.nickname ? c.nickname + " \u2014 " : "") + c.members.join(", ")}{c.club_addr ? " \u2022 " + c.club_addr : ""}</div>
                 </div>
               </div>
             );
           })()}
-          {isAdmin && <button onClick={() => onRefresh("clubs")} style={{ width: "100%", padding: 14, borderRadius: 14, border: "2px dashed var(--bd)", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--mt)", fontFamily: "var(--sn)", marginTop: 8 }}>+ Add a club</button>}
+          {isAdmin && <button onClick={() => onRefresh("clubs")} style={{ width: "100%", padding: 14, borderRadius: 14, border: "2px dashed var(--color-border)", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-muted)", fontFamily: "var(--font-sans)", marginTop: 8 }}>+ Add a club</button>}
           <NearbyClubsSection userLoc={userLoc} familyLocs={familyLocs} clubs={clubs} setEditClub={setEditClub} isAdmin={isAdmin} />
         </div>}
 
         {/* Camps sub-tab */}
         {exploreTab === "camps" && <div>
           {allLocs.length > 1 && <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 10, WebkitOverflowScrolling: "touch" }}>
-            <button onClick={() => setCampLoc("all")} className={"pill " + (campLoc === "all" ? "pon" : "poff")} style={{ flexShrink: 0 }}>All locations</button>
-            {allLocs.map(l => <button key={l.label} onClick={() => setCampLoc(campLoc === l.label ? "all" : l.label)} className={"pill " + (campLoc === l.label ? "pon" : "poff")} style={{ flexShrink: 0 }}>{l.label}</button>)}
+            <button onClick={() => setCampLoc("all")} className={"pill " + (campLoc === "all" ? "pill-active" : "pill-inactive")} style={{ flexShrink: 0 }}>All locations</button>
+            {allLocs.map(l => <button key={l.label} onClick={() => setCampLoc(campLoc === l.label ? "all" : l.label)} className={"pill " + (campLoc === l.label ? "pill-active" : "pill-inactive")} style={{ flexShrink: 0 }}>{l.label}</button>)}
           </div>}
           {allLocs.length <= 1 && allLocs.length > 0 && <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--mt)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--color-muted)" }}>
               <span>{"\u{1F4CD}"}</span> {allLocs[0]?.label?.replace(/^[^\w]*\s*/, '') || "Near you"}
             </div>
-            <button onClick={() => setShowLocations(true)} style={{ fontSize: 11, fontWeight: 600, color: "var(--acc)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--sn)", whiteSpace: "nowrap" }}>Manage</button>
+            <button onClick={() => setShowLocations(true)} style={{ fontSize: 11, fontWeight: 600, color: "var(--color-accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-sans)", whiteSpace: "nowrap" }}>Manage</button>
           </div>}
-          {allLocs.length === 0 && <button onClick={() => setShowLocations(true)} style={{ width: "100%", padding: "10px 14px", marginBottom: 12, borderRadius: 12, border: "2px dashed var(--bd)", background: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--gl)", fontFamily: "var(--sn)", display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F4CD}"} Add your locations to see nearby camps</button>}
+          {allLocs.length === 0 && <button onClick={() => setShowLocations(true)} style={{ width: "100%", padding: "10px 14px", marginBottom: 12, borderRadius: 12, border: "2px dashed var(--color-border)", background: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-primary-light)", fontFamily: "var(--font-sans)", display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F4CD}"} Add your locations to see nearby camps</button>}
           {kids.length > 0 && (() => {
             const now = new Date();
             const futureHols = (holidays || []).filter(h => new Date(h.end_date) >= now).slice(0, 1);
             if (futureHols.length === 0) return null;
-            return <div style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--bd)", padding: 14, marginBottom: 14, boxShadow: "var(--shadow)" }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--g)", marginBottom: 8 }}>Holiday coverage</div>
+            return <div style={{ background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 14, marginBottom: 14, boxShadow: "var(--shadow)" }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-primary)", marginBottom: 8 }}>Holiday coverage</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {futureHols.map(h => {
                   const booked = (campBookings || []).filter(b => {
@@ -114,8 +114,8 @@ export default function ExploreTab({ filter, onRefresh }) {
                   });
                   const covered = booked.length > 0;
                   return <div key={h.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
-                    <span style={{ color: "var(--tx)", fontWeight: 600 }}>{h.name}</span>
-                    <span style={{ fontWeight: 700, color: covered ? "#16a34a" : "var(--acc)", background: covered ? "#f0fdf4" : "var(--accl)", padding: "2px 10px", borderRadius: 8 }}>
+                    <span style={{ color: "var(--color-text)", fontWeight: 600 }}>{h.name}</span>
+                    <span style={{ fontWeight: 700, color: covered ? "#16a34a" : "var(--color-accent)", background: covered ? "#f0fdf4" : "var(--color-accent-bg)", padding: "2px 10px", borderRadius: 8 }}>
                       {covered ? booked.length + " booked" : "Not covered"}
                     </span>
                   </div>;
@@ -140,7 +140,7 @@ export default function ExploreTab({ filter, onRefresh }) {
             const kidName = filter !== "all" && filter !== "self" ? kids.find(k => k.id === filter)?.first_name : null;
             const kidAge = filter !== "all" && filter !== "self" ? getAge(kids.find(k => k.id === filter)?.date_of_birth) : null;
 
-            if (futureHols.length === 0) return <p style={{ color: "var(--mt)", padding: 20, textAlign: "center" }}>No upcoming school holidays found</p>;
+            if (futureHols.length === 0) return <p style={{ color: "var(--color-muted)", padding: 20, textAlign: "center" }}>No upcoming school holidays found</p>;
 
             return futureHols.map(hol => {
               const hs = new Date(hol.start_date + "T00:00:00"), he = new Date(hol.end_date + "T23:59:59");
@@ -163,32 +163,32 @@ export default function ExploreTab({ filter, onRefresh }) {
               return <div key={hol.id} style={{ marginBottom: 24 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 20 }}>{holEmoji}</span>
-                  <h3 style={{ fontFamily: "var(--sr)", fontSize: 17, fontWeight: 700, color: "var(--g)", flex: 1 }}>{hol.name}</h3>
-                  <button onClick={(e) => { e.stopPropagation(); setEditHol(hol) }} style={{ background: "var(--gxl)", border: "none", borderRadius: 8, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "var(--gl)", cursor: "pointer", fontFamily: "var(--sn)" }}>{"\u270E"} Edit dates</button>
+                  <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 17, fontWeight: 700, color: "var(--color-primary)", flex: 1 }}>{hol.name}</h3>
+                  <button onClick={(e) => { e.stopPropagation(); setEditHol(hol) }} style={{ background: "var(--color-primary-bg)", border: "none", borderRadius: 8, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "var(--color-primary-light)", cursor: "pointer", fontFamily: "var(--font-sans)" }}>{"\u270E"} Edit dates</button>
                 </div>
-                <p style={{ fontSize: 12, color: "var(--mt)", marginBottom: 12 }}>
+                <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 12 }}>
                   {new Date(hol.start_date).toLocaleDateString("en-IE", { day: "numeric", month: "short" })} {"\u2013"} {new Date(hol.end_date).toLocaleDateString("en-IE", { day: "numeric", month: "short" })} ({weeks} week{weeks > 1 ? "s" : ""}){hol.is_user_override ? " \u2022 customised" : ""}
                   {kidName && kidAge != null ? " \u00B7 Showing camps for " + kidName + " (age " + kidAge + ")" : ""}
                   {" \u00B7 " + holCamps.length + " camp" + (holCamps.length !== 1 ? "s" : "") + " found"}
                 </p>
 
                 {holCamps.length === 0 ?
-                  <div style={{ padding: 20, borderRadius: 14, border: "2px dashed var(--bd)", textAlign: "center", marginBottom: 8 }}>
+                  <div style={{ padding: 20, borderRadius: 14, border: "2px dashed var(--color-border)", textAlign: "center", marginBottom: 8 }}>
                     <div style={{ fontSize: 28, marginBottom: 6 }}>{"\u{1F50D}"}</div>
-                    <p style={{ fontSize: 13, color: "var(--mt)" }}>No camps listed yet for this break</p>
-                    <p style={{ fontSize: 12, color: "var(--mt)", marginTop: 2 }}>We'll alert you when camps appear</p>
+                    <p style={{ fontSize: 13, color: "var(--color-muted)" }}>No camps listed yet for this break</p>
+                    <p style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 2 }}>We'll alert you when camps appear</p>
                   </div>
                 : holCamps.map(camp => <CampCard key={camp.id} camp={camp} userLoc={userLoc} allLocs={allLocs} user={user} kids={kids} filter={filter} campBookings={campBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load} isAdmin={isAdmin} />)}
               </div>
             });
           })()}
-          <button onClick={() => setShowAddHol(true)} style={{ width: "100%", padding: 14, borderRadius: 14, border: "2px dashed var(--bd)", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--mt)", fontFamily: "var(--sn)", marginTop: 8 }}>+ Add a school holiday or closure day</button>
+          <button onClick={() => setShowAddHol(true)} style={{ width: "100%", padding: 14, borderRadius: 14, border: "2px dashed var(--color-border)", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-muted)", fontFamily: "var(--font-sans)", marginTop: 8 }}>+ Add a school holiday or closure day</button>
         </div>}
 
         {/* Discover sub-tab */}
         {exploreTab === "discover" && <div>
-          {userLoc && <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontSize: 12, color: "var(--mt)" }}><span>{"\u{1F4CD}"}</span> Showing things to do near you</div>}
-          {!userLoc && <button onClick={() => { navigator.geolocation?.getCurrentPosition(pos => { const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude }; db("profiles", "PATCH", { filters: ["id=eq." + user.id], body: { latitude: loc.lat, longitude: loc.lng } }) }, () => {}, { timeout: 5000 }) }} style={{ width: "100%", padding: "10px 14px", marginBottom: 12, borderRadius: 12, border: "2px dashed var(--bd)", background: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--gl)", fontFamily: "var(--sn)", display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F4CD}"} Enable location to see things to do near you</button>}
+          {userLoc && <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontSize: 12, color: "var(--color-muted)" }}><span>{"\u{1F4CD}"}</span> Showing things to do near you</div>}
+          {!userLoc && <button onClick={() => { navigator.geolocation?.getCurrentPosition(pos => { const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude }; db("profiles", "PATCH", { filters: ["id=eq." + user.id], body: { latitude: loc.lat, longitude: loc.lng } }) }, () => {}, { timeout: 5000 }) }} style={{ width: "100%", padding: "10px 14px", marginBottom: 12, borderRadius: 12, border: "2px dashed var(--color-border)", background: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-primary-light)", fontFamily: "var(--font-sans)", display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F4CD}"} Enable location to see things to do near you</button>}
           <ThingsToDoSection allLocs={allLocs} kids={kids} userLoc={userLoc} userId={user.id} onEventAdded={() => load()} />
         </div>}
 
@@ -196,29 +196,29 @@ export default function ExploreTab({ filter, onRefresh }) {
         {showLocations && <div onClick={() => setShowLocations(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(10,15,20,.4)", zIndex: 70 }} />}
         {showLocations && <div style={{ position: "fixed", top: "5vh", left: 12, right: 12, zIndex: 71, background: "#fff", borderRadius: 20, boxShadow: "0 12px 40px rgba(0,0,0,.15)", padding: 20, maxHeight: "85vh", overflowY: "auto", maxWidth: 440, margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <h3 style={{ fontFamily: "var(--sr)", fontSize: 18, fontWeight: 700, color: "var(--g)" }}>Your locations</h3>
-            <button onClick={() => setShowLocations(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--mt)" }}>{"\u2715"}</button>
+            <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 18, fontWeight: 700, color: "var(--color-primary)" }}>Your locations</h3>
+            <button onClick={() => setShowLocations(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--color-muted)" }}>{"\u2715"}</button>
           </div>
-          <p style={{ fontSize: 12, color: "var(--mt)", marginBottom: 16 }}>Camps, clubs, and activities are shown near all your active locations.</p>
-          {familyLocs.map(fl => <div key={fl.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 0", borderBottom: "1px solid var(--bd)" }}>
+          <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 16 }}>Camps, clubs, and activities are shown near all your active locations.</p>
+          {familyLocs.map(fl => <div key={fl.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 0", borderBottom: "1px solid var(--color-border)" }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--tx)" }}>{fl.label}</div>
-              {fl.address && <div style={{ fontSize: 12, color: "var(--mt)" }}>{fl.address}</div>}
-              <div style={{ fontSize: 11, color: "var(--mt)" }}>Within {fl.radius_km}km</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text)" }}>{fl.label}</div>
+              {fl.address && <div style={{ fontSize: 12, color: "var(--color-muted)" }}>{fl.address}</div>}
+              <div style={{ fontSize: 11, color: "var(--color-muted)" }}>Within {fl.radius_km}km</div>
             </div>
-            <button onClick={async () => { try { await db("family_locations", "DELETE", { filters: ["id=eq." + fl.id] }); setFamilyLocs(prev => prev.filter(f => f.id !== fl.id)) } catch (e) { showToast("Failed to remove location.", "err") } }} style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid #e5e5e5", background: "none", fontSize: 11, color: "var(--mt)", cursor: "pointer", fontFamily: "var(--sn)" }}>Remove</button>
+            <button onClick={async () => { try { await db("family_locations", "DELETE", { filters: ["id=eq." + fl.id] }); setFamilyLocs(prev => prev.filter(f => f.id !== fl.id)) } catch (e) { showToast("Failed to remove location.", "err") } }} style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid #e5e5e5", background: "none", fontSize: 11, color: "var(--color-muted)", cursor: "pointer", fontFamily: "var(--font-sans)" }}>Remove</button>
           </div>)}
-          {userLoc && !familyLocs.find(fl => Math.abs(Number(fl.latitude) - userLoc.lat) < 0.01 && Math.abs(Number(fl.longitude) - userLoc.lng) < 0.01) && <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 0", borderBottom: "1px solid var(--bd)" }}>
+          {userLoc && !familyLocs.find(fl => Math.abs(Number(fl.latitude) - userLoc.lat) < 0.01 && Math.abs(Number(fl.longitude) - userLoc.lng) < 0.01) && <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 0", borderBottom: "1px solid var(--color-border)" }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--tx)" }}>{"\u{1F4CD}"} Current location</div>
-              <div style={{ fontSize: 11, color: "var(--mt)" }}>Detected via GPS</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text)" }}>{"\u{1F4CD}"} Current location</div>
+              <div style={{ fontSize: 11, color: "var(--color-muted)" }}>Detected via GPS</div>
             </div>
-            <button onClick={() => setShowSaveLocModal(true)} style={{ padding: "4px 10px", borderRadius: 8, border: "1.5px solid var(--g)", background: "none", fontSize: 11, color: "var(--g)", cursor: "pointer", fontWeight: 600, fontFamily: "var(--sn)" }}>+ Save</button>
+            <button onClick={() => setShowSaveLocModal(true)} style={{ padding: "4px 10px", borderRadius: 8, border: "1.5px solid var(--color-primary)", background: "none", fontSize: 11, color: "var(--color-primary)", cursor: "pointer", fontWeight: 600, fontFamily: "var(--font-sans)" }}>+ Save</button>
           </div>}
           <div style={{ marginTop: 16 }}>
-            <button onClick={() => setShowAddLocModal(true)} style={{ width: "100%", padding: 12, borderRadius: 12, border: "2px dashed var(--bd)", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--gl)", fontFamily: "var(--sn)" }}>+ Add a location</button>
+            <button onClick={() => setShowAddLocModal(true)} style={{ width: "100%", padding: 12, borderRadius: 12, border: "2px dashed var(--color-border)", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-primary-light)", fontFamily: "var(--font-sans)" }}>+ Add a location</button>
           </div>
-          <p style={{ fontSize: 11, color: "var(--mt)", marginTop: 12, textAlign: "center" }}>Add home, work, grandparents {"\u2014"} see camps and clubs near all of them</p>
+          <p style={{ fontSize: 11, color: "var(--color-muted)", marginTop: 12, textAlign: "center" }}>Add home, work, grandparents {"\u2014"} see camps and clubs near all of them</p>
         </div>}
 
         {/* Save GPS Location Modal */}
@@ -244,14 +244,14 @@ export default function ExploreTab({ filter, onRefresh }) {
             } catch (e) { showToast("Location search failed.", "err") }
           }} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--g)", marginBottom: 4, display: "block" }}>Name</label>
+              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-primary)", marginBottom: 4, display: "block" }}>Name</label>
               <input name="locName" placeholder="e.g. Work, Grandparents, Holiday home" autoFocus />
             </div>
             <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--g)", marginBottom: 4, display: "block" }}>Town or address</label>
+              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-primary)", marginBottom: 4, display: "block" }}>Town or address</label>
               <input name="locAddr" placeholder="e.g. Stillorgan, Co. Dublin" />
             </div>
-            <button type="submit" className="btn bp">Add location</button>
+            <button type="submit" className="btn btn-primary">Add location</button>
           </form>
         </OcvModal>}
 

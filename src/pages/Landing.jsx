@@ -232,23 +232,23 @@ function Landing({ onGo, onLogin }) {
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: 'pointer',
-                fontFamily: "var(--sn)"
+                fontFamily: "var(--font-sans)"
               }}
             >
               Log in
             </button>
           </div>
-          <div className="r" style={{ marginBottom: 12 }}>
+          <div className="anim-rise" style={{ marginBottom: 12 }}>
             <span style={{ display: 'inline-block', padding: '5px 14px', borderRadius: 100, background: 'rgba(232,93,74,.15)', color: '#e85d4a', fontSize: 12, fontWeight: 700, letterSpacing: 0.5 }}>
               FOR BUSY PARENTS
             </span>
           </div>
-          <h1 className="r2" style={{ fontFamily: "var(--sr)", fontSize: 'clamp(32px,6vw,48px)', fontWeight: 800, color: '#fff', lineHeight: 1.1, marginBottom: 16 }}>
+          <h1 className="anim-rise-2" style={{ fontFamily: "var(--font-serif)", fontSize: 'clamp(32px,6vw,48px)', fontWeight: 800, color: '#fff', lineHeight: 1.1, marginBottom: 16 }}>
             All your kids' activities.
             <br />
             <span style={{ color: '#e85d4a' }}>One calm view.</span>
           </h1>
-          <p className="r3" style={{ fontSize: 16, color: 'rgba(255,255,255,.65)', lineHeight: 1.6, marginBottom: 32, maxWidth: 380 }}>
+          <p className="anim-rise-3" style={{ fontSize: 16, color: 'rgba(255,255,255,.65)', lineHeight: 1.6, marginBottom: 32, maxWidth: 380 }}>
             Schedule clashes, forgotten fees, full camps. OneClubView takes the chaos out of extracurricular life — for both parents.
           </p>
           <div className="r4 ocv-hero-btns" style={{ display: 'flex', gap: 10 }}>
@@ -263,7 +263,7 @@ function Landing({ onGo, onLogin }) {
                 fontSize: 15,
                 fontWeight: 700,
                 cursor: 'pointer',
-                fontFamily: "var(--sn)",
+                fontFamily: "var(--font-sans)",
                 boxShadow: '0 4px 16px rgba(232,93,74,.35)'
               }}
             >
@@ -280,7 +280,7 @@ function Landing({ onGo, onLogin }) {
                 fontSize: 14,
                 fontWeight: 600,
                 cursor: 'pointer',
-                fontFamily: "var(--sn)"
+                fontFamily: "var(--font-sans)"
               }}
             >
               I have an account
@@ -289,28 +289,28 @@ function Landing({ onGo, onLogin }) {
         </div>
       </div>
       {/* SOCIAL PROOF */}
-      <div style={{ background: '#fff', padding: '20px 24px', borderBottom: '1px solid var(--bd)' }}>
-        <div className="ocv-social-proof" style={{ maxWidth: 520, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, fontSize: 12, color: 'var(--mt)' }}>
+      <div style={{ background: '#fff', padding: '20px 24px', borderBottom: '1px solid var(--color-border)' }}>
+        <div className="ocv-social-proof" style={{ maxWidth: 520, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, fontSize: 12, color: 'var(--color-muted)' }}>
           <span>
-            <strong style={{ color: 'var(--tx)' }}>Schedule</strong> every club
+            <strong style={{ color: 'var(--color-text)' }}>Schedule</strong> every club
           </span>
-          <span style={{ width: 4, height: 4, borderRadius: 2, background: 'var(--bd)' }} />
+          <span style={{ width: 4, height: 4, borderRadius: 2, background: 'var(--color-border)' }} />
           <span>
-            <strong style={{ color: 'var(--tx)' }}>Track</strong> every fee
+            <strong style={{ color: 'var(--color-text)' }}>Track</strong> every fee
           </span>
-          <span style={{ width: 4, height: 4, borderRadius: 2, background: 'var(--bd)' }} />
+          <span style={{ width: 4, height: 4, borderRadius: 2, background: 'var(--color-border)' }} />
           <span>
-            <strong style={{ color: 'var(--tx)' }}>Both parents</strong> in the loop
+            <strong style={{ color: 'var(--color-text)' }}>Both parents</strong> in the loop
           </span>
         </div>
       </div>
       {/* PROBLEM */}
       <section style={{ padding: '56px 24px' }}>
         <div style={{ maxWidth: 520, margin: '0 auto' }}>
-          <h2 style={{ fontFamily: "var(--sr)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--g)', marginBottom: 8 }}>
+          <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 8 }}>
             Sound familiar?
           </h2>
-          <p style={{ fontSize: 14, color: 'var(--mt)', marginBottom: 24 }}>The mental load of managing activities is real.</p>
+          <p style={{ fontSize: 14, color: 'var(--color-muted)', marginBottom: 24 }}>The mental load of managing activities is real.</p>
           {(USER_COUNTRY === 'US'
             ? [
               { e: 'msg', t: '4 group texts for 4 activities', d: 'and you still miss things' },
@@ -335,37 +335,37 @@ function Landing({ onGo, onLogin }) {
                 { e: 'shrug', t: `"What's on today?"`, d: 'partner asks — you check 4 places to answer' }
               ]
           ).map((p, i) => (
-            <div key={i} className={'r' + (i + 1 > 4 ? '4' : i + 1)} style={{ display: 'flex', gap: 14, padding: '14px 0', borderBottom: i < 4 ? '1px solid var(--bd)' : 'none' }}>
+            <div key={i} className={'r' + (i + 1 > 4 ? '4' : i + 1)} style={{ display: 'flex', gap: 14, padding: '14px 0', borderBottom: i < 4 ? '1px solid var(--color-border)' : 'none' }}>
               {(() => {
                 const ic = {
                   msg: (
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
                       <line x1="8" y1="8" x2="16" y2="8" />
                       <line x1="8" y1="12" x2="13" y2="12" />
                     </svg>
                   ),
                   pay: (
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="12" y1="1" x2="12" y2="23" />
                       <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
                     </svg>
                   ),
                   clash: (
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                       <line x1="12" y1="9" x2="12" y2="13" />
                       <line x1="12" y1="17" x2="12.01" y2="17" />
                     </svg>
                   ),
                   camp: (
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 2L2 22h20L12 2z" />
                       <path d="M12 2v20" />
                     </svg>
                   ),
                   shrug: (
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10" />
                       <path d="M8 15h8" />
                       <line x1="9" y1="9" x2="9.01" y2="9" />
@@ -376,7 +376,7 @@ function Landing({ onGo, onLogin }) {
                 return <span style={{ flexShrink: 0, marginTop: 2 }}>{ic[p.e] || <span style={{ fontSize: 22 }}>{p.e}</span>}</span>;
               })()}
               <div>
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--tx)' }}>{p.t}</span> <span style={{ fontSize: 14, color: 'var(--mt)' }}>— {p.d}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>{p.t}</span> <span style={{ fontSize: 14, color: 'var(--color-muted)' }}>— {p.d}</span>
               </div>
             </div>
           ))}
@@ -386,7 +386,7 @@ function Landing({ onGo, onLogin }) {
       <section style={{ background: 'linear-gradient(135deg, #1a2a3a 0%, #2d4a5f 100%)', padding: '56px 24px' }}>
         <div style={{ maxWidth: 520, margin: '0 auto' }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: '#e85d4a', textTransform: 'uppercase', letterSpacing: 1 }}>The fix</span>
-          <h2 style={{ fontFamily: "var(--sr)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: '#fff', margin: '8px 0 32px' }}>
+          <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: '#fff', margin: '8px 0 32px' }}>
             One screen. Whole family.
           </h2>
           <FeatureTiles />
@@ -395,7 +395,7 @@ function Landing({ onGo, onLogin }) {
       {/* HOW IT WORKS */}
       <section style={{ padding: '56px 24px' }}>
         <div style={{ maxWidth: 520, margin: '0 auto' }}>
-          <h2 style={{ fontFamily: "var(--sr)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--g)', marginBottom: 32 }}>
+          <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 32 }}>
             Up and running in 2 minutes
           </h2>
           {[
@@ -405,22 +405,22 @@ function Landing({ onGo, onLogin }) {
             { n: '4', t: 'Invite your partner', d: 'They see everything. Mental load: shared.' }
           ].map((s, i) => (
             <div key={i} style={{ display: 'flex', gap: 16, marginBottom: i < 3 ? 28 : 0 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: i === 3 ? '#e85d4a' : 'var(--g)', color: '#fff', fontFamily: "var(--sr)", fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: i === 3 ? '#e85d4a' : 'var(--color-primary)', color: '#fff', fontFamily: "var(--font-serif)", fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {s.n}
               </div>
               <div style={{ paddingTop: 2 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--tx)' }}>{s.t}</div>
-                <div style={{ fontSize: 13, color: 'var(--mt)', marginTop: 2 }}>{s.d}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text)' }}>{s.t}</div>
+                <div style={{ fontSize: 13, color: 'var(--color-muted)', marginTop: 2 }}>{s.d}</div>
               </div>
             </div>
           ))}
         </div>
       </section>
       {/* APP MOCKUPS */}
-      <section style={{ padding: '56px 24px', background: 'var(--warm)', overflow: 'hidden' }}>
+      <section style={{ padding: '56px 24px', background: 'var(--color-warm)', overflow: 'hidden' }}>
         <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center' }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: '#e85d4a', textTransform: 'uppercase', letterSpacing: 1 }}>See it in action</span>
-          <h2 style={{ fontFamily: "var(--sr)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--g)', margin: '8px 0 32px' }}>
+          <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--color-primary)', margin: '8px 0 32px' }}>
             Built for real family life
           </h2>
           <div className="ocv-screenshots" style={{ display: 'flex', gap: 20, justifyContent: 'center', overflowX: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 0 16px', scrollSnapType: 'x mandatory' }}>
@@ -432,34 +432,34 @@ function Landing({ onGo, onLogin }) {
                 <div style={{ padding: '8px 10px 12px' }}>
                   {/* Mini header */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <span style={{ fontFamily: 'var(--sr)', fontSize: 9, fontWeight: 800, color: 'var(--g)' }}>OneClubView</span>
-                    <div style={{ width: 16, height: 16, borderRadius: 5, background: 'var(--g)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 7, fontWeight: 700 }}>D</div>
+                    <span style={{ fontFamily: 'var(--font-serif)', fontSize: 9, fontWeight: 800, color: 'var(--color-primary)' }}>OneClubView</span>
+                    <div style={{ width: 16, height: 16, borderRadius: 5, background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 7, fontWeight: 700 }}>D</div>
                   </div>
                   {/* Pills */}
                   <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>
-                    <span style={{ fontSize: 7, fontWeight: 700, padding: '2px 6px', borderRadius: 6, background: 'var(--g)', color: '#fff' }}>Everyone</span>
-                    <span style={{ fontSize: 7, fontWeight: 600, padding: '2px 6px', borderRadius: 6, background: '#fff', color: 'var(--mt)', border: '1px solid var(--bd)' }}>Penny (8)</span>
-                    <span style={{ fontSize: 7, fontWeight: 600, padding: '2px 6px', borderRadius: 6, background: '#fff', color: 'var(--mt)', border: '1px solid var(--bd)' }}>Cooper (5)</span>
+                    <span style={{ fontSize: 7, fontWeight: 700, padding: '2px 6px', borderRadius: 6, background: 'var(--color-primary)', color: '#fff' }}>Everyone</span>
+                    <span style={{ fontSize: 7, fontWeight: 600, padding: '2px 6px', borderRadius: 6, background: '#fff', color: 'var(--color-muted)', border: '1px solid var(--color-border)' }}>Penny (8)</span>
+                    <span style={{ fontSize: 7, fontWeight: 600, padding: '2px 6px', borderRadius: 6, background: '#fff', color: 'var(--color-muted)', border: '1px solid var(--color-border)' }}>Cooper (5)</span>
                   </div>
                   {/* Tabs */}
-                  <div style={{ display: 'flex', borderBottom: '1px solid var(--bd)', marginBottom: 6 }}>
+                  <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', marginBottom: 6 }}>
                     {['Overview', 'Schedule', 'Money', 'Explore'].map((t, i) => (
-                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 1 ? 'var(--g)' : 'var(--mt)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 1 ? '1.5px solid var(--g)' : 'none' }}>{t}</span>
+                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 1 ? 'var(--color-primary)' : 'var(--color-muted)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 1 ? '1.5px solid var(--color-primary)' : 'none' }}>{t}</span>
                     ))}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                    <span style={{ fontFamily: 'var(--sr)', fontSize: 10, fontWeight: 800, color: 'var(--g)' }}>This week</span>
+                    <span style={{ fontFamily: 'var(--font-serif)', fontSize: 10, fontWeight: 800, color: 'var(--color-primary)' }}>This week</span>
                     <div style={{ display: 'flex', gap: 2 }}>
-                      <span style={{ fontSize: 6, fontWeight: 600, padding: '1px 4px', borderRadius: 3, background: 'var(--accl)', color: 'var(--acc)' }}>Grid</span>
-                      <span style={{ fontSize: 6, fontWeight: 600, padding: '1px 4px', borderRadius: 3, color: 'var(--mt)' }}>List</span>
+                      <span style={{ fontSize: 6, fontWeight: 600, padding: '1px 4px', borderRadius: 3, background: 'var(--color-accent-bg)', color: 'var(--color-accent)' }}>Grid</span>
+                      <span style={{ fontSize: 6, fontWeight: 600, padding: '1px 4px', borderRadius: 3, color: 'var(--color-muted)' }}>List</span>
                     </div>
                   </div>
                   {/* Grid header */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 3, marginBottom: 3 }}>
                     {[{ d: 'MON', n: '24' }, { d: 'TUE', n: '25' }, { d: 'WED', n: '26', today: true }, { d: 'THU', n: '27' }].map(day => (
-                      <div key={day.d} style={{ textAlign: 'center', padding: '2px 0', borderRadius: 5, background: day.today ? 'var(--g)' : 'transparent' }}>
-                        <div style={{ fontSize: 5, fontWeight: 700, color: day.today ? 'rgba(255,255,255,.6)' : 'var(--mt)' }}>{day.d}</div>
-                        <div style={{ fontSize: 9, fontWeight: 800, color: day.today ? '#fff' : 'var(--tx)' }}>{day.n}</div>
+                      <div key={day.d} style={{ textAlign: 'center', padding: '2px 0', borderRadius: 5, background: day.today ? 'var(--color-primary)' : 'transparent' }}>
+                        <div style={{ fontSize: 5, fontWeight: 700, color: day.today ? 'rgba(255,255,255,.6)' : 'var(--color-muted)' }}>{day.d}</div>
+                        <div style={{ fontSize: 9, fontWeight: 800, color: day.today ? '#fff' : 'var(--color-text)' }}>{day.n}</div>
                       </div>
                     ))}
                   </div>
@@ -469,14 +469,14 @@ function Landing({ onGo, onLogin }) {
                     <div>
                       <div style={{ background: '#fff', borderRadius: 5, padding: 3, borderLeft: '2px solid #2d5a3f', marginBottom: 2 }}>
                         <div style={{ fontSize: 5, fontWeight: 700, color: '#2d5a3f' }}>Swimming</div>
-                        <div style={{ fontSize: 4, color: 'var(--mt)' }}>Penny · 16:00</div>
+                        <div style={{ fontSize: 4, color: 'var(--color-muted)' }}>Penny · 16:00</div>
                       </div>
                     </div>
                     {/* Tue */}
                     <div>
                       <div style={{ background: '#fff', borderRadius: 5, padding: 3, borderLeft: '2px solid #2d7cb5', marginBottom: 2 }}>
                         <div style={{ fontSize: 5, fontWeight: 700, color: '#2d7cb5' }}>GAA</div>
-                        <div style={{ fontSize: 4, color: 'var(--mt)' }}>Cooper · 16:30</div>
+                        <div style={{ fontSize: 4, color: 'var(--color-muted)' }}>Cooper · 16:30</div>
                       </div>
                       <div style={{ background: '#fef2f2', borderRadius: 5, padding: 3, borderLeft: '2px solid #dc2626' }}>
                         <div style={{ fontSize: 5, fontWeight: 700, color: '#dc2626' }}>Gym</div>
@@ -488,29 +488,29 @@ function Landing({ onGo, onLogin }) {
                     <div>
                       <div style={{ background: '#fff', borderRadius: 5, padding: 3, borderLeft: '2px solid #9b4dca' }}>
                         <div style={{ fontSize: 5, fontWeight: 700, color: '#9b4dca' }}>Tennis</div>
-                        <div style={{ fontSize: 4, color: 'var(--mt)' }}>Dave · 18:00</div>
+                        <div style={{ fontSize: 4, color: 'var(--color-muted)' }}>Dave · 18:00</div>
                       </div>
                     </div>
                     {/* Thu */}
                     <div>
                       <div style={{ background: '#fff', borderRadius: 5, padding: 3, borderLeft: '2px solid #2d5a3f', marginBottom: 2 }}>
                         <div style={{ fontSize: 5, fontWeight: 700, color: '#2d5a3f' }}>Gym</div>
-                        <div style={{ fontSize: 4, color: 'var(--mt)' }}>Penny · 15:30</div>
+                        <div style={{ fontSize: 4, color: 'var(--color-muted)' }}>Penny · 15:30</div>
                       </div>
                       <div style={{ background: '#fff', borderRadius: 5, padding: 3, borderLeft: '2px solid #c4960c' }}>
                         <div style={{ fontSize: 5, fontWeight: 700, color: '#c4960c' }}>Rugby</div>
-                        <div style={{ fontSize: 4, color: 'var(--mt)' }}>Cooper · 16:00</div>
+                        <div style={{ fontSize: 4, color: 'var(--color-muted)' }}>Cooper · 16:00</div>
                       </div>
                     </div>
                   </div>
                   {/* Forward emails banner */}
-                  <div style={{ background: 'var(--gxl)', borderRadius: 6, padding: '4px 6px', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ background: 'var(--color-primary-bg)', borderRadius: 6, padding: '4px 6px', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span style={{ fontSize: 8 }}>📧</span>
-                    <span style={{ fontSize: 5, fontWeight: 600, color: 'var(--gl)' }}>Forward club emails to auto-update</span>
+                    <span style={{ fontSize: 5, fontWeight: 600, color: 'var(--color-primary-light)' }}>Forward club emails to auto-update</span>
                   </div>
                 </div>
               </div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--mt)', marginTop: 10 }}>Weekly schedule</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-muted)', marginTop: 10 }}>Weekly schedule</div>
             </div>
 
             {/* MOCKUP 2: Overview with My Clubs */}
@@ -520,50 +520,50 @@ function Landing({ onGo, onLogin }) {
                 <div style={{ padding: '8px 10px 12px' }}>
                   {/* Mini header */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <span style={{ fontFamily: 'var(--sr)', fontSize: 9, fontWeight: 800, color: 'var(--g)' }}>OneClubView</span>
-                    <div style={{ width: 16, height: 16, borderRadius: 5, background: 'var(--g)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 7, fontWeight: 700 }}>D</div>
+                    <span style={{ fontFamily: 'var(--font-serif)', fontSize: 9, fontWeight: 800, color: 'var(--color-primary)' }}>OneClubView</span>
+                    <div style={{ width: 16, height: 16, borderRadius: 5, background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 7, fontWeight: 700 }}>D</div>
                   </div>
                   {/* Tabs */}
-                  <div style={{ display: 'flex', borderBottom: '1px solid var(--bd)', marginBottom: 6 }}>
+                  <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', marginBottom: 6 }}>
                     {['Overview', 'Schedule', 'Money', 'Explore'].map((t, i) => (
-                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 0 ? 'var(--g)' : 'var(--mt)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 0 ? '1.5px solid var(--g)' : 'none' }}>{t}</span>
+                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 0 ? 'var(--color-primary)' : 'var(--color-muted)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 0 ? '1.5px solid var(--color-primary)' : 'none' }}>{t}</span>
                     ))}
                   </div>
                   {/* Stats card */}
-                  <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--bd)', padding: 8, marginBottom: 6 }}>
-                    <div style={{ fontFamily: 'var(--sr)', fontSize: 8, fontWeight: 700, color: 'var(--g)', marginBottom: 4 }}>This week</div>
+                  <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--color-border)', padding: 8, marginBottom: 6 }}>
+                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 8, fontWeight: 700, color: 'var(--color-primary)', marginBottom: 4 }}>This week</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-                      <div style={{ background: 'var(--gxl)', borderRadius: 6, padding: 4, textAlign: 'center' }}>
-                        <div style={{ fontFamily: 'var(--sr)', fontSize: 12, fontWeight: 800, color: 'var(--g)' }}>8</div>
-                        <div style={{ fontSize: 5, fontWeight: 600, color: 'var(--mt)' }}>Activities</div>
+                      <div style={{ background: 'var(--color-primary-bg)', borderRadius: 6, padding: 4, textAlign: 'center' }}>
+                        <div style={{ fontFamily: 'var(--font-serif)', fontSize: 12, fontWeight: 800, color: 'var(--color-primary)' }}>8</div>
+                        <div style={{ fontSize: 5, fontWeight: 600, color: 'var(--color-muted)' }}>Activities</div>
                       </div>
-                      <div style={{ background: 'var(--gxl)', borderRadius: 6, padding: 4, textAlign: 'center' }}>
-                        <div style={{ fontFamily: 'var(--sr)', fontSize: 12, fontWeight: 800, color: 'var(--g)' }}>3</div>
-                        <div style={{ fontSize: 5, fontWeight: 600, color: 'var(--mt)' }}>Clubs</div>
+                      <div style={{ background: 'var(--color-primary-bg)', borderRadius: 6, padding: 4, textAlign: 'center' }}>
+                        <div style={{ fontFamily: 'var(--font-serif)', fontSize: 12, fontWeight: 800, color: 'var(--color-primary)' }}>3</div>
+                        <div style={{ fontSize: 5, fontWeight: 600, color: 'var(--color-muted)' }}>Clubs</div>
                       </div>
-                      <div style={{ background: 'var(--gxl)', borderRadius: 6, padding: 4, textAlign: 'center' }}>
-                        <div style={{ fontFamily: 'var(--sr)', fontSize: 12, fontWeight: 800, color: 'var(--acc)' }}>€245</div>
-                        <div style={{ fontSize: 5, fontWeight: 600, color: 'var(--mt)' }}>Due soon</div>
+                      <div style={{ background: 'var(--color-primary-bg)', borderRadius: 6, padding: 4, textAlign: 'center' }}>
+                        <div style={{ fontFamily: 'var(--font-serif)', fontSize: 12, fontWeight: 800, color: 'var(--color-accent)' }}>€245</div>
+                        <div style={{ fontSize: 5, fontWeight: 600, color: 'var(--color-muted)' }}>Due soon</div>
                       </div>
-                      <div style={{ background: 'var(--gxl)', borderRadius: 6, padding: 4, textAlign: 'center' }}>
-                        <div style={{ fontFamily: 'var(--sr)', fontSize: 12, fontWeight: 800, color: 'var(--g)' }}>2</div>
-                        <div style={{ fontSize: 5, fontWeight: 600, color: 'var(--mt)' }}>Kids</div>
+                      <div style={{ background: 'var(--color-primary-bg)', borderRadius: 6, padding: 4, textAlign: 'center' }}>
+                        <div style={{ fontFamily: 'var(--font-serif)', fontSize: 12, fontWeight: 800, color: 'var(--color-primary)' }}>2</div>
+                        <div style={{ fontSize: 5, fontWeight: 600, color: 'var(--color-muted)' }}>Kids</div>
                       </div>
                     </div>
                   </div>
                   {/* My Clubs card */}
-                  <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--bd)', padding: 8, marginBottom: 6 }}>
-                    <div style={{ fontFamily: 'var(--sr)', fontSize: 8, fontWeight: 700, color: 'var(--g)', marginBottom: 6 }}>My Clubs</div>
+                  <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--color-border)', padding: 8, marginBottom: 6 }}>
+                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 8, fontWeight: 700, color: 'var(--color-primary)', marginBottom: 6 }}>My Clubs</div>
                     {[
                       { c: '#2d7cb5', ini: 'GA', name: 'GAA', who: 'Cooper', term: '11 Apr – 26 Jun' },
                       { c: '#2d5a3f', ini: 'Tr', name: 'Gym', who: 'Penny', term: '11 Apr – 26 Jun' },
                       { c: '#c4960c', ini: 'Te', name: 'Tennis', who: 'Dave', term: '' },
                     ].map((cl, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', borderBottom: i < 2 ? '1px solid var(--bd)' : 'none' }}>
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', borderBottom: i < 2 ? '1px solid var(--color-border)' : 'none' }}>
                         <div style={{ width: 18, height: 18, borderRadius: 5, background: cl.c, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 6, fontWeight: 800 }}>{cl.ini}</div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 7, fontWeight: 600, color: 'var(--tx)' }}>{cl.name}</div>
-                          <div style={{ fontSize: 5, color: 'var(--mt)' }}>{cl.who}{cl.term ? ' · ' + cl.term : ''}</div>
+                          <div style={{ fontSize: 7, fontWeight: 600, color: 'var(--color-text)' }}>{cl.name}</div>
+                          <div style={{ fontSize: 5, color: 'var(--color-muted)' }}>{cl.who}{cl.term ? ' · ' + cl.term : ''}</div>
                         </div>
                         <span style={{ fontSize: 8, color: '#ddd' }}>›</span>
                       </div>
@@ -576,7 +576,7 @@ function Landing({ onGo, onLogin }) {
                   </div>
                 </div>
               </div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--mt)', marginTop: 10 }}>Overview dashboard</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-muted)', marginTop: 10 }}>Overview dashboard</div>
             </div>
 
             {/* MOCKUP 3: Camp Finder */}
@@ -586,72 +586,72 @@ function Landing({ onGo, onLogin }) {
                 <div style={{ padding: '8px 10px 12px' }}>
                   {/* Mini header */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <span style={{ fontFamily: 'var(--sr)', fontSize: 9, fontWeight: 800, color: 'var(--g)' }}>OneClubView</span>
-                    <div style={{ width: 16, height: 16, borderRadius: 5, background: 'var(--g)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 7, fontWeight: 700 }}>D</div>
+                    <span style={{ fontFamily: 'var(--font-serif)', fontSize: 9, fontWeight: 800, color: 'var(--color-primary)' }}>OneClubView</span>
+                    <div style={{ width: 16, height: 16, borderRadius: 5, background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 7, fontWeight: 700 }}>D</div>
                   </div>
                   {/* Tabs */}
-                  <div style={{ display: 'flex', borderBottom: '1px solid var(--bd)', marginBottom: 6 }}>
+                  <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', marginBottom: 6 }}>
                     {['Overview', 'Schedule', 'Money', 'Explore'].map((t, i) => (
-                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 3 ? 'var(--g)' : 'var(--mt)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 3 ? '1.5px solid var(--g)' : 'none' }}>{t}</span>
+                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 3 ? 'var(--color-primary)' : 'var(--color-muted)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 3 ? '1.5px solid var(--color-primary)' : 'none' }}>{t}</span>
                     ))}
                   </div>
                   {/* Sub-tabs */}
-                  <div style={{ display: 'flex', gap: 0, marginBottom: 6, borderBottom: '1px solid var(--bd)' }}>
+                  <div style={{ display: 'flex', gap: 0, marginBottom: 6, borderBottom: '1px solid var(--color-border)' }}>
                     {['My Clubs', 'Camps', 'Discover'].map((t, i) => (
-                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, padding: '3px 0', textAlign: 'center', color: i === 1 ? 'var(--g)' : 'var(--mt)', borderBottom: i === 1 ? '1.5px solid var(--acc)' : 'none' }}>{t}</span>
+                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, padding: '3px 0', textAlign: 'center', color: i === 1 ? 'var(--color-primary)' : 'var(--color-muted)', borderBottom: i === 1 ? '1.5px solid var(--color-accent)' : 'none' }}>{t}</span>
                     ))}
                   </div>
                   {/* Location filters */}
                   <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>
-                    <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 5px', borderRadius: 5, background: 'var(--g)', color: '#fff' }}>Current</span>
-                    <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 5px', borderRadius: 5, background: '#fff', color: 'var(--mt)', border: '1px solid var(--bd)' }}>Home</span>
+                    <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 5px', borderRadius: 5, background: 'var(--color-primary)', color: '#fff' }}>Current</span>
+                    <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 5px', borderRadius: 5, background: '#fff', color: 'var(--color-muted)', border: '1px solid var(--color-border)' }}>Home</span>
                     <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 5px', borderRadius: 5, background: '#16a34a', color: '#fff' }}>Work</span>
                   </div>
                   {/* Holiday coverage */}
-                  <div style={{ background: '#fff', borderRadius: 6, border: '1px solid var(--bd)', padding: 6, marginBottom: 6 }}>
+                  <div style={{ background: '#fff', borderRadius: 6, border: '1px solid var(--color-border)', padding: 6, marginBottom: 6 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                      <span style={{ fontSize: 6, fontWeight: 700, color: 'var(--g)' }}>Holiday coverage</span>
+                      <span style={{ fontSize: 6, fontWeight: 700, color: 'var(--color-primary)' }}>Holiday coverage</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 6, fontWeight: 600, color: 'var(--tx)' }}>Easter Break</span>
-                      <span style={{ fontSize: 5, fontWeight: 700, color: 'var(--acc)', background: 'var(--accl)', padding: '1px 5px', borderRadius: 4 }}>Not covered</span>
+                      <span style={{ fontSize: 6, fontWeight: 600, color: 'var(--color-text)' }}>Easter Break</span>
+                      <span style={{ fontSize: 5, fontWeight: 700, color: 'var(--color-accent)', background: 'var(--color-accent-bg)', padding: '1px 5px', borderRadius: 4 }}>Not covered</span>
                     </div>
                   </div>
                   {/* Easter Break header */}
                   <div style={{ marginBottom: 6 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--g)' }}>🐣 Easter Break</span>
-                      <span style={{ fontSize: 5, fontWeight: 600, color: 'var(--acc)' }}>Edit dates</span>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--color-primary)' }}>🐣 Easter Break</span>
+                      <span style={{ fontSize: 5, fontWeight: 600, color: 'var(--color-accent)' }}>Edit dates</span>
                     </div>
-                    <div style={{ fontSize: 5, color: 'var(--mt)', marginTop: 1 }}>27 Mar – 10 Apr · 52 camps found</div>
+                    <div style={{ fontSize: 5, color: 'var(--color-muted)', marginTop: 1 }}>27 Mar – 10 Apr · 52 camps found</div>
                   </div>
                   {/* Camp card */}
-                  <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--bd)', padding: 6, marginBottom: 4 }}>
-                    <div style={{ fontSize: 7, fontWeight: 700, color: 'var(--g)', marginBottom: 2 }}>STARCAMP Easter – Blackrock</div>
-                    <div style={{ fontSize: 5, color: 'var(--mt)', marginBottom: 2 }}>Willow Park · 30 Mar – 2 Apr · 09:00–14:00</div>
+                  <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--color-border)', padding: 6, marginBottom: 4 }}>
+                    <div style={{ fontSize: 7, fontWeight: 700, color: 'var(--color-primary)', marginBottom: 2 }}>STARCAMP Easter – Blackrock</div>
+                    <div style={{ fontSize: 5, color: 'var(--color-muted)', marginBottom: 2 }}>Willow Park · 30 Mar – 2 Apr · 09:00–14:00</div>
                     <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 5, fontWeight: 700, color: 'var(--acc)' }}>€117</span>
-                      <span style={{ fontSize: 5, color: 'var(--mt)' }}>Ages 4-12</span>
+                      <span style={{ fontSize: 5, fontWeight: 700, color: 'var(--color-accent)' }}>€117</span>
+                      <span style={{ fontSize: 5, color: 'var(--color-muted)' }}>Ages 4-12</span>
                       <span style={{ fontSize: 5, fontWeight: 600, color: '#16a34a', background: '#f0fdf4', padding: '1px 4px', borderRadius: 3 }}>Suits Penny, Cooper</span>
                     </div>
-                    <div style={{ fontSize: 5, color: 'var(--mt)', marginTop: 3, fontStyle: 'italic' }}>🏫 2 families from 2nd Class booked this</div>
+                    <div style={{ fontSize: 5, color: 'var(--color-muted)', marginTop: 3, fontStyle: 'italic' }}>🏫 2 families from 2nd Class booked this</div>
                     <div style={{ display: 'flex', gap: 3, marginTop: 4 }}>
-                      <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 6px', borderRadius: 4, border: '1px solid var(--bd)', color: 'var(--mt)' }}>❤️ Interested</span>
-                      <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 6px', borderRadius: 4, border: '1px solid var(--g)', color: 'var(--g)' }}>Mark booked</span>
+                      <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 6px', borderRadius: 4, border: '1px solid var(--color-border)', color: 'var(--color-muted)' }}>❤️ Interested</span>
+                      <span style={{ fontSize: 5, fontWeight: 600, padding: '2px 6px', borderRadius: 4, border: '1px solid var(--color-primary)', color: 'var(--color-primary)' }}>Mark booked</span>
                     </div>
                   </div>
                   {/* Second camp */}
-                  <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--bd)', padding: 6 }}>
-                    <div style={{ fontSize: 7, fontWeight: 700, color: 'var(--g)', marginBottom: 2 }}>Multi-Sport Easter Camp</div>
-                    <div style={{ fontSize: 5, color: 'var(--mt)', marginBottom: 2 }}>Bull Island · 31 Mar – 3 Apr · 09:30–15:00</div>
+                  <div style={{ background: '#fff', borderRadius: 8, border: '1px solid var(--color-border)', padding: 6 }}>
+                    <div style={{ fontSize: 7, fontWeight: 700, color: 'var(--color-primary)', marginBottom: 2 }}>Multi-Sport Easter Camp</div>
+                    <div style={{ fontSize: 5, color: 'var(--color-muted)', marginBottom: 2 }}>Bull Island · 31 Mar – 3 Apr · 09:30–15:00</div>
                     <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                      <span style={{ fontSize: 5, fontWeight: 700, color: 'var(--acc)' }}>€140</span>
+                      <span style={{ fontSize: 5, fontWeight: 700, color: 'var(--color-accent)' }}>€140</span>
                       <span style={{ fontSize: 5, fontWeight: 600, color: '#16a34a', background: '#f0fdf4', padding: '1px 4px', borderRadius: 3 }}>Covers work day</span>
                     </div>
                   </div>
                 </div>
               </div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--mt)', marginTop: 10 }}>Camp finder</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-muted)', marginTop: 10 }}>Camp finder</div>
             </div>
 
           </div>
@@ -661,7 +661,7 @@ function Landing({ onGo, onLogin }) {
       <section style={{ background: 'linear-gradient(135deg, #1a2a3a, #2d4a5f)', padding: '56px 24px', color: '#fff' }}>
         <div style={{ maxWidth: 520, margin: '0 auto', textAlign: 'center' }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>🏫</div>
-          <h2 style={{ fontFamily: "var(--sr)", fontSize: 24, fontWeight: 800, marginBottom: 12 }}>The classmate feature</h2>
+          <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 24, fontWeight: 800, marginBottom: 12 }}>The classmate feature</h2>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,.6)', marginBottom: 20, lineHeight: 1.6 }}>
             Add your child's school and class. When families from the same class book a camp, you see an anonymous nudge — no names, just the count.
           </p>
@@ -678,36 +678,36 @@ function Landing({ onGo, onLogin }) {
         <div style={{ maxWidth: 520, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: '#e85d4a', textTransform: 'uppercase', letterSpacing: 1 }}>Simple pricing</span>
-            <h2 style={{ fontFamily: "var(--sr)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--g)', margin: '8px 0 4px' }}>
+            <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--color-primary)', margin: '8px 0 4px' }}>
               14 days free. Then pick your plan.
             </h2>
-            <p style={{ fontSize: 14, color: 'var(--mt)' }}>Cancel anytime. No lock-in.</p>
+            <p style={{ fontSize: 14, color: 'var(--color-muted)' }}>Cancel anytime. No lock-in.</p>
           </div>
           <div className="ocv-pricing-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {/* Standard */}
-            <div style={{ background: 'var(--warm)', borderRadius: 20, padding: 24, border: '2px solid var(--bd)' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--mt)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+            <div style={{ background: 'var(--color-warm)', borderRadius: 20, padding: 24, border: '2px solid var(--color-border)' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
                 Standard
               </div>
-              <div style={{ fontFamily: "var(--sr)", fontSize: 28, fontWeight: 800, color: 'var(--g)' }}>
+              <div style={{ fontFamily: "var(--font-serif)", fontSize: 28, fontWeight: 800, color: 'var(--color-primary)' }}>
                 €7.99
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--mt)' }}>/mo</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-muted)' }}>/mo</span>
               </div>
-              <div style={{ fontSize: 12, color: 'var(--mt)', margin: '12px 0 16px', lineHeight: 1.5 }}>Perfect for most families</div>
+              <div style={{ fontSize: 12, color: 'var(--color-muted)', margin: '12px 0 16px', lineHeight: 1.5 }}>Perfect for most families</div>
               {['2 adults', '3 kids', 'All clubs & events', 'Fee tracking', 'Camp finder', 'Email forwarding', 'Clash detection'].map(f => (
-                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--tx)', marginBottom: 6 }}>
+                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--color-text)', marginBottom: 6 }}>
                   <span style={{ color: '#16a34a', fontWeight: 700, fontSize: 13 }}>✓</span>
                   {f}
                 </div>
               ))}
               <button
                 onClick={onGo}
-                className="btn bp"
+                className="btn btn-primary"
                 style={{
                   width: '100%',
                   marginTop: 16,
                   fontSize: 13,
-                  background: 'var(--g)',
+                  background: 'var(--color-primary)',
                   color: '#fff',
                   boxShadow: '0 4px 12px rgba(26,42,58,.2)',
                   padding: '16px',
@@ -716,7 +716,7 @@ function Landing({ onGo, onLogin }) {
                   border: 'none',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  fontFamily: "var(--sn)",
+                  fontFamily: "var(--font-sans)",
                   transition: 'transform .15s,box-shadow .15s'
                 }}
               >
@@ -724,14 +724,14 @@ function Landing({ onGo, onLogin }) {
               </button>
             </div>
             {/* Family+ */}
-            <div style={{ background: 'var(--g)', borderRadius: 20, padding: 24, border: '2px solid var(--g)', color: '#fff', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: -10, right: 16, background: 'var(--acc)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 100 }}>
+            <div style={{ background: 'var(--color-primary)', borderRadius: 20, padding: 24, border: '2px solid var(--color-primary)', color: '#fff', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: -10, right: 16, background: 'var(--color-accent)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 100 }}>
                 BEST VALUE
               </div>
               <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.6)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
                 Family+
               </div>
-              <div style={{ fontFamily: "var(--sr)", fontSize: 28, fontWeight: 800 }}>
+              <div style={{ fontFamily: "var(--font-serif)", fontSize: 28, fontWeight: 800 }}>
                 €14.99
                 <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,.6)' }}>/mo</span>
               </div>
@@ -757,7 +757,7 @@ function Landing({ onGo, onLogin }) {
                   fontSize: 13,
                   fontWeight: 700,
                   cursor: 'pointer',
-                  fontFamily: "var(--sn)"
+                  fontFamily: "var(--font-sans)"
                 }}
               >
                 Start free — 14 days
@@ -766,19 +766,19 @@ function Landing({ onGo, onLogin }) {
           </div>
         </div>
       </section>
-      <section style={{ padding: '48px 16px', background: 'var(--warm)', textAlign: 'center', maxWidth: 600, margin: '0 auto' }}>
-        <h2 style={{ fontFamily: "var(--sr)", fontSize: 22, color: 'var(--g)', marginBottom: 12 }}>Built by a Dublin parent</h2>
-        <p style={{ fontSize: 14, color: 'var(--tx)', lineHeight: 1.7, marginBottom: 8 }}>
+      <section style={{ padding: '48px 16px', background: 'var(--color-warm)', textAlign: 'center', maxWidth: 600, margin: '0 auto' }}>
+        <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 22, color: 'var(--color-primary)', marginBottom: 12 }}>Built by a Dublin parent</h2>
+        <p style={{ fontSize: 14, color: 'var(--color-text)', lineHeight: 1.7, marginBottom: 8 }}>
           OneClubView was built by Dave Fay — a Dublin dad juggling the same swimming terms, GAA schedules, and camp bookings as you. After one too many missed sessions and mystery fees, he decided to build the app he wished existed.
         </p>
-        <p style={{ fontSize: 14, color: 'var(--tx)', lineHeight: 1.7, marginBottom: 8 }}>
-          Your family's data is stored securely in the EU, protected by row-level security, and never shared with third parties. You can read the full <a href="/privacy" style={{ color: 'var(--acc)', fontWeight: 600 }}>privacy policy</a> — it's written in plain English.
+        <p style={{ fontSize: 14, color: 'var(--color-text)', lineHeight: 1.7, marginBottom: 8 }}>
+          Your family's data is stored securely in the EU, protected by row-level security, and never shared with third parties. You can read the full <a href="/privacy" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>privacy policy</a> — it's written in plain English.
         </p>
-        <p style={{ fontSize: 13, color: 'var(--mt)', lineHeight: 1.6 }}>
-          Questions? Suggestions? Reach out at <a href="mailto:hello@oneclubview.com" style={{ color: 'var(--acc)', fontWeight: 600 }}>hello@oneclubview.com</a>.
+        <p style={{ fontSize: 13, color: 'var(--color-muted)', lineHeight: 1.6 }}>
+          Questions? Suggestions? Reach out at <a href="mailto:hello@oneclubview.com" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>hello@oneclubview.com</a>.
         </p>
       </section>
-      <footer style={{ padding: '24px', background: 'var(--g)', textAlign: 'center' }}>
+      <footer style={{ padding: '24px', background: 'var(--color-primary)', textAlign: 'center' }}>
         <Logo dark />
         <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
           <a href="/blog/manage-kids-clubs" style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', textDecoration: 'none' }}>

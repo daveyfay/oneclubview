@@ -65,22 +65,22 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
   if (done)
     return (
       <div
-        className="mbg"
+        className="modal-backdrop"
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
-        <div className="mbox" style={{ textAlign: "center", padding: 32 }}>
+        <div className="modal-box" style={{ textAlign: "center", padding: 32 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             Invite sent!
           </h3>
-          <p style={{ fontSize: 14, color: "var(--mt)", margin: "8px 0 12px" }}>
+          <p style={{ fontSize: 14, color: "var(--color-muted)", margin: "8px 0 12px" }}>
             We've emailed {name || email} with an invite. You can also share this
             link directly:
           </p>
@@ -100,7 +100,7 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
                 flex: 1,
                 fontSize: 13,
                 fontWeight: 600,
-                color: "var(--tx)",
+                color: "var(--color-text)",
                 wordBreak: "break-all",
               }}
             >
@@ -114,23 +114,23 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
                 padding: "6px 12px",
                 borderRadius: 8,
                 border: "none",
-                background: "var(--g)",
+                background: "var(--color-primary)",
                 color: "#fff",
                 fontSize: 12,
                 fontWeight: 700,
                 cursor: "pointer",
-                fontFamily: "var(--sn)",
+                fontFamily: "var(--font-sans)",
                 whiteSpace: "nowrap",
               }}
             >
               Copy link
             </button>
           </div>
-          <p style={{ fontSize: 12, color: "var(--mt)", marginBottom: 16 }}>
+          <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 16 }}>
             Once they create an account, they'll see your shared family calendar
             with all clubs, events, and camps.
           </p>
-          <button onClick={onClose} className="btn bp">
+          <button onClick={onClose} className="btn btn-primary">
             Done
           </button>
         </div>
@@ -139,10 +139,10 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
 
   return (
     <div
-      className="mbg"
+      className="modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="mbox">
+      <div className="modal-box">
         <div
           style={{
             display: "flex",
@@ -152,10 +152,10 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
         >
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             Invite a family member
@@ -167,19 +167,19 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
               border: "none",
               fontSize: 20,
               cursor: "pointer",
-              color: "var(--mt)",
+              color: "var(--color-muted)",
             }}
           >
             ✕
           </button>
         </div>
-        <p style={{ fontSize: 13, color: "var(--mt)", marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 16 }}>
           Add your partner or another adult. They'll get their own login and see
           the same family calendar.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <span className="lbl">Their name</span>
+            <span className="label">Their name</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -187,7 +187,7 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
             />
           </div>
           <div>
-            <span className="lbl">Their email</span>
+            <span className="label">Their email</span>
             <input
               type="email"
               value={email}
@@ -196,7 +196,7 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
             />
           </div>
           <div>
-            <span className="lbl">Their role</span>
+            <span className="label">Their role</span>
             <div style={{ display: "flex", gap: 6 }}>
               {[
                 { v: "admin", l: "👨‍👩‍👧 Parent" },
@@ -212,16 +212,16 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
                     borderRadius: 10,
                     border:
                       role === r.v
-                        ? "2px solid var(--g)"
-                        : "2px solid var(--bd)",
+                        ? "2px solid var(--color-primary)"
+                        : "2px solid var(--color-border)",
                     background:
-                      role === r.v ? "var(--gxl)" : "var(--card)",
+                      role === r.v ? "var(--color-primary-bg)" : "var(--color-card)",
                     fontSize: 11,
                     fontWeight: 700,
                     color:
-                      role === r.v ? "var(--g)" : "var(--mt)",
+                      role === r.v ? "var(--color-primary)" : "var(--color-muted)",
                     cursor: "pointer",
-                    fontFamily: "var(--sn)",
+                    fontFamily: "var(--font-sans)",
                   }}
                 >
                   {r.l}
@@ -232,7 +232,7 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
           <button
             onClick={send}
             disabled={sv || !email.trim()}
-            className="btn bp"
+            className="btn btn-primary"
           >
             {sv ? "Sending..." : "Send invite"}
           </button>

@@ -78,10 +78,10 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
 
   return (
     <div
-      className="mbg"
+      className="modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="mbox">
+      <div className="modal-box">
         <div
           style={{
             display: "flex",
@@ -91,10 +91,10 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
         >
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             Add Event
@@ -106,7 +106,7 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
               border: "none",
               fontSize: 20,
               cursor: "pointer",
-              color: "var(--mt)",
+              color: "var(--color-muted)",
             }}
           >
             ✕
@@ -114,7 +114,7 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <span className="lbl">Club</span>
+            <span className="label">Club</span>
             {clubs.length === 0 ? (
               <p style={{ fontSize: 13, color: "#dc2626", padding: 8 }}>
                 No clubs added yet. Add a club first.
@@ -130,7 +130,7 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
             )}
           </div>
           <div>
-            <span className="lbl">Who is this for?</span>
+            <span className="label">Who is this for?</span>
             <select value={mid} onChange={(e) => setMid(e.target.value)}>
               <option value="self">{profile?.first_name || "Me"}</option>
               {kids.map((k) => (
@@ -141,7 +141,7 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
             </select>
           </div>
           <div>
-            <span className="lbl">What</span>
+            <span className="label">What</span>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -159,14 +159,14 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
           >
             <button
               onClick={() => setType("recurring")}
-              className={"pill " + (type === "recurring" ? "pon" : "poff")}
+              className={"pill " + (type === "recurring" ? "pill-active" : "pill-inactive")}
               style={{ flex: 1, padding: 8 }}
             >
               Every week
             </button>
             <button
               onClick={() => setType("oneoff")}
-              className={"pill " + (type === "oneoff" ? "pon" : "poff")}
+              className={"pill " + (type === "oneoff" ? "pill-active" : "pill-inactive")}
               style={{ flex: 1, padding: 8 }}
             >
               One-off
@@ -175,7 +175,7 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
           {type === "recurring" ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <div>
-                <span className="lbl">Day</span>
+                <span className="label">Day</span>
                 <select value={dow} onChange={(e) => setDow(e.target.value)}>
                   {DAYF.map((d, i) => (
                     <option key={i} value={i}>
@@ -186,7 +186,7 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <div style={{ flex: 1 }}>
-                  <span className="lbl">Start time</span>
+                  <span className="label">Start time</span>
                   <input
                     type="time"
                     value={time}
@@ -194,7 +194,7 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <span className="lbl">End time</span>
+                  <span className="label">End time</span>
                   <input
                     type="time"
                     value={endTime}
@@ -206,7 +206,7 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <div>
-                <span className="lbl">Date</span>
+                <span className="label">Date</span>
                 <input
                   type="date"
                   value={date}
@@ -215,7 +215,7 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <div style={{ flex: 1 }}>
-                  <span className="lbl">Start time</span>
+                  <span className="label">Start time</span>
                   <input
                     type="time"
                     value={time}
@@ -223,7 +223,7 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <span className="lbl">End time</span>
+                  <span className="label">End time</span>
                   <input
                     type="time"
                     value={endTime}
@@ -234,7 +234,7 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
             </div>
           )}
           <div>
-            <span className="lbl">Who's driving? (optional)</span>
+            <span className="label">Who's driving? (optional)</span>
             <div
               style={{
                 display: "flex",
@@ -256,16 +256,16 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
                     borderRadius: 10,
                     border:
                       driver === d
-                        ? "2px solid var(--g)"
-                        : "1.5px solid var(--bd)",
+                        ? "2px solid var(--color-primary)"
+                        : "1.5px solid var(--color-border)",
                     background:
-                      driver === d ? "var(--gxl)" : "var(--card)",
+                      driver === d ? "var(--color-primary-bg)" : "var(--color-card)",
                     fontSize: 12,
                     fontWeight: 600,
                     color:
-                      driver === d ? "var(--gl)" : "var(--mt)",
+                      driver === d ? "var(--color-primary-light)" : "var(--color-muted)",
                     cursor: "pointer",
-                    fontFamily: "var(--sn)",
+                    fontFamily: "var(--font-sans)",
                   }}
                 >
                   <span style={{ display: "flex" }}>{ICN.car}</span> {d}
@@ -276,7 +276,7 @@ function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
           <button
             onClick={save}
             disabled={sv || !title.trim() || !cid}
-            className="btn bp"
+            className="btn btn-primary"
           >
             {sv
               ? "Saving..."

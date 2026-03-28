@@ -142,7 +142,7 @@ export function HubDataProvider({ user, profile, children }) {
   function getMemberCol(memberId,fallback){
     const kidIdx=kids.findIndex(k=>k.id===memberId);
     if(kidIdx>=0)return COLS[kidIdx%COLS.length];
-    if(memberId==="self")return "var(--g)";
+    if(memberId==="self")return "var(--color-primary)";
     return fallback||"#999";
   }
 

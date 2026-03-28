@@ -168,10 +168,10 @@ function PasteScheduleModal({
 
   return (
     <div
-      className="mbg"
+      className="modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="mbox">
+      <div className="modal-box">
         <div
           style={{
             display: "flex",
@@ -181,10 +181,10 @@ function PasteScheduleModal({
         >
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             Paste a message
@@ -196,7 +196,7 @@ function PasteScheduleModal({
               border: "none",
               fontSize: 20,
               cursor: "pointer",
-              color: "var(--mt)",
+              color: "var(--color-muted)",
             }}
           >
             ✕
@@ -208,7 +208,7 @@ function PasteScheduleModal({
             <p
               style={{
                 fontSize: 13,
-                color: "var(--mt)",
+                color: "var(--color-muted)",
                 marginBottom: 4,
                 lineHeight: 1.5,
               }}
@@ -235,7 +235,7 @@ function PasteScheduleModal({
                   style={{
                     fontSize: 11,
                     fontWeight: 600,
-                    color: "var(--mt)",
+                    color: "var(--color-muted)",
                     background: "#f0eeeb",
                     padding: "3px 8px",
                     borderRadius: 6,
@@ -256,9 +256,9 @@ function PasteScheduleModal({
                 width: "100%",
                 padding: 12,
                 borderRadius: 12,
-                border: "1.5px solid var(--bd)",
+                border: "1.5px solid var(--color-border)",
                 fontSize: 13,
-                fontFamily: "var(--sn)",
+                fontFamily: "var(--font-sans)",
                 resize: "vertical",
                 marginBottom: 12,
               }}
@@ -280,7 +280,7 @@ function PasteScheduleModal({
             <button
               onClick={parse}
               disabled={parsing || !text.trim()}
-              className="btn bp"
+              className="btn btn-primary"
             >
               {parsing ? "Reading message..." : "Read & extract"}
             </button>
@@ -290,7 +290,7 @@ function PasteScheduleModal({
             {/* Result display */}
             <div
               style={{
-                background: "var(--gxl)",
+                background: "var(--color-primary-bg)",
                 borderRadius: 14,
                 padding: 14,
                 marginBottom: 14,
@@ -311,7 +311,7 @@ function PasteScheduleModal({
                   style={{
                     fontSize: 14,
                     fontWeight: 700,
-                    color: "var(--g)",
+                    color: "var(--color-primary)",
                   }}
                 >
                   {actionLabels[result.action] || "Update"}
@@ -321,7 +321,7 @@ function PasteScheduleModal({
                 <p
                   style={{
                     fontSize: 13,
-                    color: "var(--gl)",
+                    color: "var(--color-primary-light)",
                     lineHeight: 1.5,
                   }}
                 >
@@ -337,7 +337,7 @@ function PasteScheduleModal({
                   style={{
                     fontSize: 12,
                     fontWeight: 700,
-                    color: "var(--mt)",
+                    color: "var(--color-muted)",
                     textTransform: "uppercase",
                     letterSpacing: 0.5,
                   }}
@@ -351,9 +351,9 @@ function PasteScheduleModal({
                       display: "flex",
                       alignItems: "center",
                       gap: 10,
-                      background: "var(--card)",
+                      background: "var(--color-card)",
                       borderRadius: 14,
-                      border: "1px solid var(--bd)",
+                      border: "1px solid var(--color-border)",
                       padding: "10px 14px",
                       marginTop: 6,
                       boxShadow: "var(--shadow)",
@@ -366,7 +366,7 @@ function PasteScheduleModal({
                         borderRadius: 2,
                         background: ev.cancelled
                           ? "#dc2626"
-                          : "var(--acc)",
+                          : "var(--color-accent)",
                         flexShrink: 0,
                       }}
                     />
@@ -385,7 +385,7 @@ function PasteScheduleModal({
                       <div
                         style={{
                           fontSize: 12,
-                          color: "var(--mt)",
+                          color: "var(--color-muted)",
                         }}
                       >
                         {ev.day_of_week != null
@@ -413,10 +413,10 @@ function PasteScheduleModal({
                         borderRadius: 6,
                         background: ev.cancelled
                           ? "#fef2f2"
-                          : "var(--gxl)",
+                          : "var(--color-primary-bg)",
                         color: ev.cancelled
                           ? "#dc2626"
-                          : "var(--gl)",
+                          : "var(--color-primary-light)",
                       }}
                     >
                       {ev.cancelled
@@ -434,7 +434,7 @@ function PasteScheduleModal({
             {result.fee && (
               <div
                 style={{
-                  background: "var(--accl)",
+                  background: "var(--color-accent-bg)",
                   borderRadius: 14,
                   padding: 14,
                   marginBottom: 14,
@@ -444,7 +444,7 @@ function PasteScheduleModal({
                   style={{
                     fontSize: 12,
                     fontWeight: 700,
-                    color: "var(--acc)",
+                    color: "var(--color-accent)",
                     textTransform: "uppercase",
                     letterSpacing: 0.5,
                   }}
@@ -455,14 +455,14 @@ function PasteScheduleModal({
                   style={{
                     fontSize: 16,
                     fontWeight: 800,
-                    color: "var(--g)",
+                    color: "var(--color-primary)",
                     marginTop: 4,
-                    fontFamily: "var(--sr)",
+                    fontFamily: "var(--font-serif)",
                   }}
                 >
                   €{result.fee.amount}
                 </div>
-                <div style={{ fontSize: 12, color: "var(--mt)" }}>
+                <div style={{ fontSize: 12, color: "var(--color-muted)" }}>
                   {result.fee.description}
                   {result.fee.due_date ? " · Due " + result.fee.due_date : ""}
                 </div>
@@ -473,7 +473,7 @@ function PasteScheduleModal({
             {result.term && (
               <div
                 style={{
-                  background: "var(--gxl)",
+                  background: "var(--color-primary-bg)",
                   borderRadius: 14,
                   padding: 14,
                   marginBottom: 14,
@@ -483,7 +483,7 @@ function PasteScheduleModal({
                   style={{
                     fontSize: 12,
                     fontWeight: 700,
-                    color: "var(--gl)",
+                    color: "var(--color-primary-light)",
                     textTransform: "uppercase",
                     letterSpacing: 0.5,
                   }}
@@ -494,7 +494,7 @@ function PasteScheduleModal({
                   style={{
                     fontSize: 13,
                     fontWeight: 600,
-                    color: "var(--g)",
+                    color: "var(--color-primary)",
                     marginTop: 4,
                   }}
                 >
@@ -541,7 +541,7 @@ function PasteScheduleModal({
             <div style={{ display: "flex", gap: 8 }}>
               <button
                 onClick={() => setResult(null)}
-                className="btn bs"
+                className="btn btn-secondary"
                 style={{ flex: 1 }}
               >
                 Edit
@@ -549,7 +549,7 @@ function PasteScheduleModal({
               <button
                 onClick={apply}
                 disabled={applying}
-                className="btn bp"
+                className="btn btn-primary"
                 style={{ flex: 2 }}
               >
                 {applying ? "Applying..." : "Apply changes"}

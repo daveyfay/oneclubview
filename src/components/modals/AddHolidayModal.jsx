@@ -25,10 +25,10 @@ function AddHolidayModal({ userId, onClose, onSaved }) {
 
   return (
     <div
-      className="mbg"
+      className="modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="mbox">
+      <div className="modal-box">
         <div
           style={{
             display: "flex",
@@ -38,10 +38,10 @@ function AddHolidayModal({ userId, onClose, onSaved }) {
         >
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             Add School Holiday
@@ -53,18 +53,18 @@ function AddHolidayModal({ userId, onClose, onSaved }) {
               border: "none",
               fontSize: 20,
               cursor: "pointer",
-              color: "var(--mt)",
+              color: "var(--color-muted)",
             }}
           >
             ✕
           </button>
         </div>
-        <p style={{ fontSize: 13, color: "var(--mt)", marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 16 }}>
           Add a holiday your school has that's not in the standard calendar
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <span className="lbl">Name</span>
+            <span className="label">Name</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -73,7 +73,7 @@ function AddHolidayModal({ userId, onClose, onSaved }) {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <div style={{ flex: 1 }}>
-              <span className="lbl">Starts</span>
+              <span className="label">Starts</span>
               <input
                 type="date"
                 value={start}
@@ -81,7 +81,7 @@ function AddHolidayModal({ userId, onClose, onSaved }) {
               />
             </div>
             <div style={{ flex: 1 }}>
-              <span className="lbl">Ends</span>
+              <span className="label">Ends</span>
               <input
                 type="date"
                 value={end}
@@ -92,7 +92,7 @@ function AddHolidayModal({ userId, onClose, onSaved }) {
           <button
             onClick={save}
             disabled={sv || !name.trim() || !start || !end}
-            className="btn bp"
+            className="btn btn-primary"
           >
             {sv ? "Saving..." : "Add holiday"}
           </button>

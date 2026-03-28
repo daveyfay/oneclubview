@@ -223,22 +223,22 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
   if (done)
     return (
       <div
-        className="mbg"
+        className="modal-backdrop"
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
-        <div className="mbox" style={{ textAlign: "center", padding: 32 }}>
+        <div className="modal-box" style={{ textAlign: "center", padding: 32 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             Invite sent!
           </h3>
-          <p style={{ fontSize: 14, color: "var(--mt)", margin: "8px 0 12px" }}>
+          <p style={{ fontSize: 14, color: "var(--color-muted)", margin: "8px 0 12px" }}>
             We've emailed {name} with an invite.
           </p>
           <div
@@ -257,7 +257,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
                 flex: 1,
                 fontSize: 13,
                 fontWeight: 600,
-                color: "var(--tx)",
+                color: "var(--color-text)",
                 wordBreak: "break-all",
               }}
             >
@@ -271,19 +271,19 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
                 padding: "6px 12px",
                 borderRadius: 8,
                 border: "none",
-                background: "var(--g)",
+                background: "var(--color-primary)",
                 color: "#fff",
                 fontSize: 12,
                 fontWeight: 700,
                 cursor: "pointer",
-                fontFamily: "var(--sn)",
+                fontFamily: "var(--font-sans)",
                 whiteSpace: "nowrap",
               }}
             >
               Copy link
             </button>
           </div>
-          <button onClick={onClose} className="btn bp">
+          <button onClick={onClose} className="btn btn-primary">
             Done
           </button>
         </div>
@@ -292,10 +292,10 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
 
   return (
     <div
-      className="mbg"
+      className="modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="mbox">
+      <div className="modal-box">
         <div
           style={{
             display: "flex",
@@ -305,10 +305,10 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
         >
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             {editKid ? "Edit " + editKid.first_name : "Add family member"}
@@ -320,7 +320,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
               border: "none",
               fontSize: 20,
               cursor: "pointer",
-              color: "var(--mt)",
+              color: "var(--color-muted)",
             }}
           >
             ✕
@@ -345,13 +345,13 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
                 borderRadius: 10,
                 border: "none",
                 background:
-                  memberType === "kid" ? "var(--g)" : "transparent",
+                  memberType === "kid" ? "var(--color-primary)" : "transparent",
                 color:
-                  memberType === "kid" ? "#fff" : "var(--mt)",
+                  memberType === "kid" ? "#fff" : "var(--color-muted)",
                 fontSize: 13,
                 fontWeight: 700,
                 cursor: "pointer",
-                fontFamily: "var(--sn)",
+                fontFamily: "var(--font-sans)",
               }}
             >
               👧 Child
@@ -364,13 +364,13 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
                 borderRadius: 10,
                 border: "none",
                 background:
-                  memberType === "adult" ? "var(--g)" : "transparent",
+                  memberType === "adult" ? "var(--color-primary)" : "transparent",
                 color:
-                  memberType === "adult" ? "#fff" : "var(--mt)",
+                  memberType === "adult" ? "#fff" : "var(--color-muted)",
                 fontSize: 13,
                 fontWeight: 700,
                 cursor: "pointer",
-                fontFamily: "var(--sn)",
+                fontFamily: "var(--font-sans)",
               }}
             >
               👤 Adult / Partner
@@ -379,7 +379,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
         )}
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <span className="lbl">Name</span>
+            <span className="label">Name</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -389,7 +389,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
           {memberType === "adult" && (
             <>
               <div>
-                <span className="lbl">Their email</span>
+                <span className="label">Their email</span>
                 <input
                   type="email"
                   value={adultEmail}
@@ -398,7 +398,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
                 />
               </div>
               <div>
-                <span className="lbl">What can they see?</span>
+                <span className="label">What can they see?</span>
                 <div
                   style={{
                     display: "flex",
@@ -432,10 +432,10 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
                         borderRadius: 10,
                         border:
                           inviteRole === r.v
-                            ? "2px solid var(--g)"
-                            : "1px solid var(--bd)",
+                            ? "2px solid var(--color-primary)"
+                            : "1px solid var(--color-border)",
                         background:
-                          inviteRole === r.v ? "var(--gxl)" : "#fff",
+                          inviteRole === r.v ? "var(--color-primary-bg)" : "#fff",
                         cursor: "pointer",
                         textAlign: "left",
                       }}
@@ -444,7 +444,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
                         style={{
                           fontSize: 13,
                           fontWeight: 600,
-                          color: "var(--tx)",
+                          color: "var(--color-text)",
                         }}
                       >
                         {r.l}
@@ -452,7 +452,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
                       <div
                         style={{
                           fontSize: 11,
-                          color: "var(--mt)",
+                          color: "var(--color-muted)",
                           marginTop: 2,
                         }}
                       >
@@ -467,7 +467,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
           {memberType === "kid" && (
             <>
               <div>
-                <span className="lbl">Date of birth</span>
+                <span className="label">Date of birth</span>
                 <input
                   type="date"
                   value={dob}
@@ -489,13 +489,13 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
                         style={{
                           padding: 10,
                           borderRadius: 12,
-                          border: "2px dashed var(--bd)",
+                          border: "2px dashed var(--color-border)",
                           background: "none",
                           cursor: "pointer",
                           fontSize: 13,
                           fontWeight: 600,
-                          color: "var(--mt)",
-                          fontFamily: "var(--sn)",
+                          color: "var(--color-muted)",
+                          fontFamily: "var(--font-sans)",
                         }}
                       >
                         + Add school info (optional)
@@ -520,7 +520,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
               !name.trim() ||
               (memberType === "adult" && !adultEmail.trim())
             }
-            className="btn bp"
+            className="btn btn-primary"
           >
             {sv
               ? "Saving..."

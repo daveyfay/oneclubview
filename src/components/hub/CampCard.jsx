@@ -31,24 +31,24 @@ export default function CampCard({camp,kids,userId,campBookings,setCampBookings,
     setCampBookings(updated||[]);
   }
 
-  return <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:10}}>
+  return <div style={{background:"var(--color-card)",borderRadius:16,border:"1px solid var(--color-border)",padding:16,marginBottom:10}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
       <div style={{flex:1}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
           <span style={{fontSize:16}}>{ct.i}</span>
           <span style={{fontSize:14,fontWeight:700}}>{camp.title}</span>
         </div>
-        <div style={{fontSize:12,color:"var(--mt)"}}>{camp.location_name}</div>
-        <div style={{fontSize:12,color:"var(--mt)",marginTop:2}}>
+        <div style={{fontSize:12,color:"var(--color-muted)"}}>{camp.location_name}</div>
+        <div style={{fontSize:12,color:"var(--color-muted)",marginTop:2}}>
           {camp.start_date&&camp.end_date?fmtDate(new Date(camp.start_date+"T00:00"))+" – "+fmtDate(new Date(camp.end_date+"T00:00")):""}
           {camp.daily_start_time&&camp.daily_end_time?" · "+camp.daily_start_time?.slice(0,5)+"–"+camp.daily_end_time?.slice(0,5):""}
         </div>
         <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
-          <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--accl)",color:"#c44030"}}>€{camp.cost_eur}</span>
-          <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--mt)"}}>Ages {camp.age_min}–{camp.age_max}</span>
+          <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:6,background:"var(--color-accent-bg)",color:"#c44030"}}>€{camp.cost_eur}</span>
+          <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#f0f0f0",color:"var(--color-muted)"}}>Ages {camp.age_min}–{camp.age_max}</span>
           {(()=>{const suited=kids.filter(k=>{const a=k.date_of_birth?Math.floor((new Date()-new Date(k.date_of_birth))/(365.25*86400000)):null;return a!==null&&a>=camp.age_min&&a<=camp.age_max});return suited.length>0?<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#e8f0fe",color:"#1a56db"}}>👧 Suits {suited.map(k=>k.first_name).join(", ")}</span>:null})()}
-          {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--gxl)",color:"var(--gl)"}}>✓ Covers work day</span>}
-          {camp.latitude&&allLocs.length>0&&(()=>{const cLat=Number(camp.latitude),cLng=Number(camp.longitude);let min=999;allLocs.forEach(loc=>{min=Math.min(min,calcKm(loc.lat,loc.lng,cLat,cLng))});return min<999?<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#e8f0f5",color:"var(--gl)"}}>📍 {fmtDist(min)}</span>:null})()}
+          {coversWork&&<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"var(--color-primary-bg)",color:"var(--color-primary-light)"}}>✓ Covers work day</span>}
+          {camp.latitude&&allLocs.length>0&&(()=>{const cLat=Number(camp.latitude),cLng=Number(camp.longitude);let min=999;allLocs.forEach(loc=>{min=Math.min(min,calcKm(loc.lat,loc.lng,cLat,cLng))});return min<999?<span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:6,background:"#e8f0f5",color:"var(--color-primary-light)"}}>📍 {fmtDist(min)}</span>:null})()}
         </div>
       </div>
     </div>
@@ -58,23 +58,23 @@ export default function CampCard({camp,kids,userId,campBookings,setCampBookings,
       <span style={{fontSize:14}}>🏫</span>
       <span style={{fontSize:12,fontWeight:600,color:"#1a5fa0"}}>{classmateCount} {classmateCount===1?"family":"families"} from {activeKid.school_class} at {activeKid.school_name} {classmateCount===1?"has":"have"} booked this camp</span>
     </div>}
-    {hasSchool&&classmateCount===0&&<div style={{marginTop:8,fontSize:11,color:"var(--mt)",fontStyle:"italic"}}>
+    {hasSchool&&classmateCount===0&&<div style={{marginTop:8,fontSize:11,color:"var(--color-muted)",fontStyle:"italic"}}>
       🏫 We'll notify you when classmates from {activeKid.school_class} book this camp
     </div>}
 
     {/* Interested / Booked buttons */}
     <div style={{display:"flex",gap:6,marginTop:10}}>
       {!myBooking?<>
-        <button onClick={()=>markCamp("interested")} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--bd)",background:"var(--card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--mt)",fontFamily:"var(--sn)"}}>❤️ Interested</button>
-        <button onClick={()=>markCamp("booked")} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--g)",background:"var(--card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--g)",fontFamily:"var(--sn)"}}>Mark booked</button>
+        <button onClick={()=>markCamp("interested")} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--color-border)",background:"var(--color-card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--color-muted)",fontFamily:"var(--font-sans)"}}>❤️ Interested</button>
+        <button onClick={()=>markCamp("booked")} style={{flex:1,padding:8,borderRadius:10,border:"1px solid var(--color-primary)",background:"var(--color-card)",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--color-primary)",fontFamily:"var(--font-sans)"}}>Mark booked</button>
       </>:
-        <div style={{flex:1,padding:8,borderRadius:10,background:myBooking.status==="booked"?"var(--gxl)":"var(--accl)",textAlign:"center",fontSize:12,fontWeight:700,color:myBooking.status==="booked"?"var(--gl)":"#8a6d00"}}>
+        <div style={{flex:1,padding:8,borderRadius:10,background:myBooking.status==="booked"?"var(--color-primary-bg)":"var(--color-accent-bg)",textAlign:"center",fontSize:12,fontWeight:700,color:myBooking.status==="booked"?"var(--color-primary-light)":"#8a6d00"}}>
           {myBooking.status==="booked"?"✓ Booked":"❤️ Interested"}
-          <button onClick={removeCamp} style={{marginLeft:8,background:"none",border:"none",fontSize:11,color:"var(--mt)",cursor:"pointer",textDecoration:"underline"}}>undo</button>
+          <button onClick={removeCamp} style={{marginLeft:8,background:"none",border:"none",fontSize:11,color:"var(--color-muted)",cursor:"pointer",textDecoration:"underline"}}>undo</button>
         </div>
       }
     </div>
 
-    {camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--g)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site →</a>}
+    {camp.booking_url&&camp.booking_url!=="#"&&<a href={camp.booking_url} target="_blank" rel="noopener" style={{display:"block",marginTop:6,textAlign:"center",padding:10,borderRadius:10,background:"var(--color-primary)",color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}}>Book on their site →</a>}
   </div>;
 }

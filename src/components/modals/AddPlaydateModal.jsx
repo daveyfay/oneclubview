@@ -56,20 +56,20 @@ function AddPlaydateModal({ userId, kids, profile, onClose, onSaved }) {
   }
 
   return (
-    <div className="mbg" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="mbox">
+    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-box">
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
-          <h3 style={{ fontFamily: "var(--sr)", fontSize: 18, fontWeight: 700, color: "var(--g)" }}>
+          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 18, fontWeight: 700, color: "var(--color-primary)" }}>
             Add Playdate
           </h3>
-          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--mt)" }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--color-muted)" }}>
             ✕
           </button>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {/* Which kid */}
           <div>
-            <span className="lbl">Who is this for?</span>
+            <span className="label">Who is this for?</span>
             <select value={mid} onChange={e => setMid(e.target.value)}>
               {kids.map(k => (
                 <option key={k.id} value={k.id}>{k.first_name}</option>
@@ -80,7 +80,7 @@ function AddPlaydateModal({ userId, kids, profile, onClose, onSaved }) {
 
           {/* Friend */}
           <div>
-            <span className="lbl">Playing with</span>
+            <span className="label">Playing with</span>
             <input
               value={friendName}
               onChange={e => setFriendName(e.target.value)}
@@ -90,11 +90,11 @@ function AddPlaydateModal({ userId, kids, profile, onClose, onSaved }) {
           </div>
 
           {/* Parent details */}
-          <div style={{ background: "#f8f7f4", borderRadius: 14, padding: 14, border: "1px solid var(--bd)" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--mt)", marginBottom: 8, textTransform: "uppercase", letterSpacing: ".5px" }}>Parent / Guardian</div>
+          <div style={{ background: "#f8f7f4", borderRadius: 14, padding: 14, border: "1px solid var(--color-border)" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--color-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: ".5px" }}>Parent / Guardian</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <div>
-                <span className="lbl">Name</span>
+                <span className="label">Name</span>
                 <input
                   value={parentName}
                   onChange={e => setParentName(e.target.value)}
@@ -102,7 +102,7 @@ function AddPlaydateModal({ userId, kids, profile, onClose, onSaved }) {
                 />
               </div>
               <div>
-                <span className="lbl">Phone / Contact</span>
+                <span className="label">Phone / Contact</span>
                 <input
                   type="tel"
                   value={parentPhone}
@@ -115,23 +115,23 @@ function AddPlaydateModal({ userId, kids, profile, onClose, onSaved }) {
 
           {/* Date & Time */}
           <div>
-            <span className="lbl">Date</span>
+            <span className="label">Date</span>
             <input type="date" value={date} onChange={e => setDate(e.target.value)} />
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <div style={{ flex: 1 }}>
-              <span className="lbl">Start time</span>
+              <span className="label">Start time</span>
               <input type="time" value={time} onChange={e => setTime(e.target.value)} />
             </div>
             <div style={{ flex: 1 }}>
-              <span className="lbl">End time</span>
+              <span className="label">End time</span>
               <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
             </div>
           </div>
 
           {/* Location */}
           <div>
-            <span className="lbl">Where (optional)</span>
+            <span className="label">Where (optional)</span>
             <input
               value={location}
               onChange={e => setLocation(e.target.value)}
@@ -141,7 +141,7 @@ function AddPlaydateModal({ userId, kids, profile, onClose, onSaved }) {
 
           {/* Notes */}
           <div>
-            <span className="lbl">Notes (optional)</span>
+            <span className="label">Notes (optional)</span>
             <input
               value={notes}
               onChange={e => setNotes(e.target.value)}
@@ -152,7 +152,7 @@ function AddPlaydateModal({ userId, kids, profile, onClose, onSaved }) {
           <button
             onClick={save}
             disabled={sv || !friendName.trim() || !date}
-            className="btn bp"
+            className="btn btn-primary"
           >
             {sv ? "Saving..." : "Save playdate"}
           </button>

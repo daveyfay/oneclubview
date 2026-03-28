@@ -34,10 +34,10 @@ function AddPaymentModal({ clubs, userId, kids, profile, onClose, onSaved }) {
 
   return (
     <div
-      className="mbg"
+      className="modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="mbox">
+      <div className="modal-box">
         <div
           style={{
             display: "flex",
@@ -47,10 +47,10 @@ function AddPaymentModal({ clubs, userId, kids, profile, onClose, onSaved }) {
         >
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             Add Payment Reminder
@@ -62,7 +62,7 @@ function AddPaymentModal({ clubs, userId, kids, profile, onClose, onSaved }) {
               border: "none",
               fontSize: 20,
               cursor: "pointer",
-              color: "var(--mt)",
+              color: "var(--color-muted)",
             }}
           >
             ✕
@@ -70,7 +70,7 @@ function AddPaymentModal({ clubs, userId, kids, profile, onClose, onSaved }) {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <span className="lbl">Club</span>
+            <span className="label">Club</span>
             {clubs.length === 0 ? (
               <p style={{ fontSize: 13, color: "#dc2626", padding: 8 }}>
                 No clubs added yet.
@@ -86,7 +86,7 @@ function AddPaymentModal({ clubs, userId, kids, profile, onClose, onSaved }) {
             )}
           </div>
           <div>
-            <span className="lbl">Who</span>
+            <span className="label">Who</span>
             <select value={mid} onChange={(e) => setMid(e.target.value)}>
               <option value="self">{profile?.first_name || "Me"}</option>
               {kids.map((k) => (
@@ -97,7 +97,7 @@ function AddPaymentModal({ clubs, userId, kids, profile, onClose, onSaved }) {
             </select>
           </div>
           <div>
-            <span className="lbl">What's it for?</span>
+            <span className="label">What's it for?</span>
             <input
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
@@ -106,7 +106,7 @@ function AddPaymentModal({ clubs, userId, kids, profile, onClose, onSaved }) {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <div style={{ flex: 1 }}>
-              <span className="lbl">Amount (€)</span>
+              <span className="label">Amount (€)</span>
               <input
                 type="number"
                 value={amt}
@@ -114,7 +114,7 @@ function AddPaymentModal({ clubs, userId, kids, profile, onClose, onSaved }) {
               />
             </div>
             <div style={{ flex: 1 }}>
-              <span className="lbl">Due date</span>
+              <span className="label">Due date</span>
               <input
                 type="date"
                 value={due}
@@ -125,7 +125,7 @@ function AddPaymentModal({ clubs, userId, kids, profile, onClose, onSaved }) {
           <button
             onClick={save}
             disabled={sv || !desc.trim() || !amt || !due || !cid}
-            className="btn bp"
+            className="btn btn-primary"
           >
             {sv
               ? "Saving..."

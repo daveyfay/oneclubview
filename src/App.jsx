@@ -118,7 +118,7 @@ export default function App() {
 
   // ── Screen routing ──
   if (screen === "loading") {
-    return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--warm)" }}><Logo /></div>;
+    return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-warm)" }}><Logo /></div>;
   }
   if (screen === "landing") {
     return <Landing onGo={() => { track("cta_signup_clicked"); setScreen("auth_signup"); }} onLogin={() => { track("cta_login_clicked"); setScreen("auth_login"); }} />;
@@ -134,7 +134,7 @@ export default function App() {
 
   // Password recovery modal — rendered on any screen
   if (showRecoveryPw) return <>
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--warm)" }}><Logo /></div>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-warm)" }}><Logo /></div>
     <OcvInput open={showRecoveryPw} onClose={() => { setShowRecoveryPw(false); window.location.reload(); }} title="Set your new password" placeholder="New password (min 8 characters)" inputType="password" onSubmit={async (np) => {
       if (np.length < 8) { showToast("Password must be at least 8 characters.", "err"); return; }
       try {

@@ -32,22 +32,22 @@ export default function ScheduleTab({ filter }) {
       <div>
         {/* WEEK/MONTH HEADER + DAY PILLS */}
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
-          <h2 style={{ fontFamily: "var(--sr)", fontSize: 20, fontWeight: 800, color: "var(--g)" }}>This week</h2>
+          <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 20, fontWeight: 800, color: "var(--color-primary)" }}>This week</h2>
           <div style={{ display: "flex", gap: 6 }}>
-            {["grid", "list", "calendar"].map(v => <button key={v} onClick={() => { track("view_toggle", { view: v }); setWeekView(v); setSelectedDay(null) }} style={{ fontSize: 11, fontWeight: 600, color: weekView === v ? "var(--acc)" : "var(--mt)", background: weekView === v ? "var(--accl)" : "none", border: weekView === v ? "1px solid #f8c4bc" : "1px solid transparent", borderRadius: 8, padding: "3px 8px", cursor: "pointer", fontFamily: "var(--sn)", textTransform: "capitalize" }}>{v}</button>)}
+            {["grid", "list", "calendar"].map(v => <button key={v} onClick={() => { track("view_toggle", { view: v }); setWeekView(v); setSelectedDay(null) }} style={{ fontSize: 11, fontWeight: 600, color: weekView === v ? "var(--color-accent)" : "var(--color-muted)", background: weekView === v ? "var(--color-accent-bg)" : "none", border: weekView === v ? "1px solid #f8c4bc" : "1px solid transparent", borderRadius: 8, padding: "3px 8px", cursor: "pointer", fontFamily: "var(--font-sans)", textTransform: "capitalize" }}>{v}</button>)}
           </div>
         </div>
 
         {/* HORIZONTAL DAY PILLS */}
-        {weekView !== "grid" && <div style={{ display: "flex", gap: 4, marginBottom: 12, overflowX: "auto", WebkitOverflowScrolling: "touch" }} className="hsb">
+        {weekView !== "grid" && <div style={{ display: "flex", gap: 4, marginBottom: 12, overflowX: "auto", WebkitOverflowScrolling: "touch" }} className="hide-scrollbar">
           {wd.map(d => {
             const today = isToday(d);
             const sel = selectedDay && selectedDay.getDate() === d.getDate() && selectedDay.getMonth() === d.getMonth() && selectedDay.getFullYear() === d.getFullYear();
             const dayEvts = weekEvts.filter(e => e.date.getFullYear() === d.getFullYear() && e.date.getMonth() === d.getMonth() && e.date.getDate() === d.getDate());
-            return <div key={d.toISOString()} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, minWidth: 44, padding: "6px 4px", borderRadius: 12, background: today ? "var(--g)" : sel ? "var(--gxl)" : "transparent", cursor: "pointer", border: sel && !today ? "1.5px solid var(--g)" : "1.5px solid transparent" }} onClick={() => setSelectedDay(sel ? null : d)}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: today ? "rgba(255,255,255,.7)" : "var(--mt)", textTransform: "uppercase" }}>{d.toLocaleDateString("en-IE", { weekday: "short" }).slice(0, 3)}</span>
-              <span style={{ fontSize: 16, fontWeight: 800, color: today ? "#fff" : "var(--tx)" }}>{d.getDate()}</span>
-              {dayEvts.length > 0 && <div style={{ width: 14, height: 3, borderRadius: 2, background: today ? "rgba(255,255,255,.35)" : "var(--acc)", marginTop: 1 }} />}
+            return <div key={d.toISOString()} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, minWidth: 44, padding: "6px 4px", borderRadius: 12, background: today ? "var(--color-primary)" : sel ? "var(--color-primary-bg)" : "transparent", cursor: "pointer", border: sel && !today ? "1.5px solid var(--color-primary)" : "1.5px solid transparent" }} onClick={() => setSelectedDay(sel ? null : d)}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: today ? "rgba(255,255,255,.7)" : "var(--color-muted)", textTransform: "uppercase" }}>{d.toLocaleDateString("en-IE", { weekday: "short" }).slice(0, 3)}</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: today ? "#fff" : "var(--color-text)" }}>{d.getDate()}</span>
+              {dayEvts.length > 0 && <div style={{ width: 14, height: 3, borderRadius: 2, background: today ? "rgba(255,255,255,.35)" : "var(--color-accent)", marginTop: 1 }} />}
             </div>;
           })}
         </div>}
@@ -61,10 +61,10 @@ export default function ScheduleTab({ filter }) {
           const unpaidCount = isAdmin ? (pays || []).filter(p => !p.paid && p.status !== "not_renewing").length : 0;
           const unpaidTotal = isAdmin ? (pays || []).filter(p => !p.paid && p.status !== "not_renewing").reduce((s, p) => s + parseFloat(p.amount || 0), 0) : 0;
 
-          return <div style={{ display: "flex", gap: 14, padding: "0 0 16px", fontSize: 13, color: "var(--mt)", flexWrap: "wrap" }}>
-            <span><strong style={{ color: "var(--g)", fontWeight: 700 }}>{thisWeekCount}</strong> activities</span>
-            {nextHol && daysToHol !== null && daysToHol <= 60 && <><span style={{ color: "var(--bd)" }}>{"\u00B7"}</span><span><strong style={{ color: "#c49000", fontWeight: 700 }}>{daysToHol}</strong> days to {nextHol.name}</span></>}
-            {isAdmin && unpaidCount > 0 && <><span style={{ color: "var(--bd)" }}>{"\u00B7"}</span><span style={{ cursor: "pointer" }}><strong style={{ color: "var(--acc)", fontWeight: 700 }}>{"\u20AC"}{unpaidTotal.toFixed(0)}</strong> due</span></>}
+          return <div style={{ display: "flex", gap: 14, padding: "0 0 16px", fontSize: 13, color: "var(--color-muted)", flexWrap: "wrap" }}>
+            <span><strong style={{ color: "var(--color-primary)", fontWeight: 700 }}>{thisWeekCount}</strong> activities</span>
+            {nextHol && daysToHol !== null && daysToHol <= 60 && <><span style={{ color: "var(--color-border)" }}>{"\u00B7"}</span><span><strong style={{ color: "#c49000", fontWeight: 700 }}>{daysToHol}</strong> days to {nextHol.name}</span></>}
+            {isAdmin && unpaidCount > 0 && <><span style={{ color: "var(--color-border)" }}>{"\u00B7"}</span><span style={{ cursor: "pointer" }}><strong style={{ color: "var(--color-accent)", fontWeight: 700 }}>{"\u20AC"}{unpaidTotal.toFixed(0)}</strong> due</span></>}
           </div>;
         })()}
 
@@ -73,28 +73,28 @@ export default function ScheduleTab({ filter }) {
           const dayEvts = weekEvts.filter(e => e.date.getFullYear() === selectedDay.getFullYear() && e.date.getMonth() === selectedDay.getMonth() && e.date.getDate() === selectedDay.getDate());
           const isHol = (holidays || []).some(h => { const s = new Date(h.start_date), e = new Date(h.end_date); return selectedDay >= s && selectedDay <= e });
           const holName = isHol ? (holidays || []).find(h => selectedDay >= new Date(h.start_date) && selectedDay <= new Date(h.end_date))?.name : "";
-          return <div style={{ marginBottom: 14, background: "var(--card)", borderRadius: 16, border: "1px solid var(--bd)", boxShadow: "var(--shadow)", overflow: "hidden", animation: "slideUp .2s ease" }}>
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--bd)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          return <div style={{ marginBottom: 14, background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", boxShadow: "var(--shadow)", overflow: "hidden", animation: "slideUp .2s ease" }}>
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--g)" }}>{selectedDay.toLocaleDateString("en-IE", { weekday: "long", day: "numeric", month: "long" })}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)" }}>{selectedDay.toLocaleDateString("en-IE", { weekday: "long", day: "numeric", month: "long" })}</div>
                 {isHol && <div style={{ fontSize: 11, color: "#b8860b", fontWeight: 600 }}>{holName}</div>}
               </div>
-              <button onClick={() => setSelectedDay(null)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "var(--mt)", padding: "4px" }}>{"\u2715"}</button>
+              <button onClick={() => setSelectedDay(null)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "var(--color-muted)", padding: "4px" }}>{"\u2715"}</button>
             </div>
             <div style={{ padding: "8px 12px", maxHeight: 240, overflowY: "auto" }}>
-              {dayEvts.length === 0 ? <div style={{ padding: "16px 0", textAlign: "center", color: "var(--mt)", fontSize: 13 }}>{isHol ? "School holiday \u2014 no activities" : "No activities this day"}</div>
+              {dayEvts.length === 0 ? <div style={{ padding: "16px 0", textAlign: "center", color: "var(--color-muted)", fontSize: 13 }}>{isHol ? "School holiday \u2014 no activities" : "No activities this day"}</div>
               : dayEvts.map((e, i) => <div key={e.id || i} className="stagger-card" style={{ animationDelay: (i * 50) + "ms" }} onClick={() => handleTapEvent(e)}>
-                <div style={{ display: "flex", alignItems: "stretch", gap: 0, borderRadius: 12, overflow: "hidden", background: "var(--bg)", border: "1px solid var(--bd)", marginBottom: 6, cursor: "pointer", transition: "transform .1s" }} onTouchStart={ev => ev.currentTarget.style.transform = "scale(.98)"} onTouchEnd={ev => ev.currentTarget.style.transform = ""}>
+                <div style={{ display: "flex", alignItems: "stretch", gap: 0, borderRadius: 12, overflow: "hidden", background: "var(--bg)", border: "1px solid var(--color-border)", marginBottom: 6, cursor: "pointer", transition: "transform .1s" }} onTouchStart={ev => ev.currentTarget.style.transform = "scale(.98)"} onTouchEnd={ev => ev.currentTarget.style.transform = ""}>
                 <div style={{ width: 4, background: getMemberCol(e.memberId, e.colour), flexShrink: 0 }} />
                 <div style={{ flex: 1, padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--tx)" }}>{e.source_type === "camp" ? "\u{1F3D5}\uFE0F " : ""}{e.club || e.title || ""}</div>
-                    <div style={{ fontSize: 12, color: "var(--mt)", marginTop: 1 }}>{e.member}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text)" }}>{e.source_type === "camp" ? "\u{1F3D5}\uFE0F " : ""}{e.club || e.title || ""}</div>
+                    <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 1 }}>{e.member}</div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--g)", fontVariantNumeric: "tabular-nums" }}>{e.time || ""}{e.endTime ? "\u2013" + e.endTime : ""}</div>
-                      {e.driver && <div style={{ fontSize: 12, color: "var(--mt)", marginTop: 1, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}><span style={{ color: "var(--mt)" }}>{ICN.car}</span> {e.driver}</div>}
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)", fontVariantNumeric: "tabular-nums" }}>{e.time || ""}{e.endTime ? "\u2013" + e.endTime : ""}</div>
+                      {e.driver && <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 1, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}><span style={{ color: "var(--color-muted)" }}>{ICN.car}</span> {e.driver}</div>}
                     </div>
                     <span style={{ color: "#ddd" }}>{ICN.chevron}</span>
                   </div>
@@ -175,13 +175,13 @@ export default function ScheduleTab({ filter }) {
 
           return <div style={{ marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <button onClick={prevMonth} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", padding: "4px 8px", color: "var(--gl)" }}>{"\u2039"}</button>
-              <span onClick={goToday} style={{ fontFamily: "var(--sr)", fontSize: 15, fontWeight: 700, color: "var(--g)", cursor: "pointer" }}>{new Date(year, month).toLocaleDateString("en-IE", { month: "long", year: "numeric" })}</span>
-              <button onClick={nextMonth} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", padding: "4px 8px", color: "var(--gl)" }}>{"\u203A"}</button>
+              <button onClick={prevMonth} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", padding: "4px 8px", color: "var(--color-primary-light)" }}>{"\u2039"}</button>
+              <span onClick={goToday} style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", cursor: "pointer" }}>{new Date(year, month).toLocaleDateString("en-IE", { month: "long", year: "numeric" })}</span>
+              <button onClick={nextMonth} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", padding: "4px 8px", color: "var(--color-primary-light)" }}>{"\u203A"}</button>
             </div>
             {/* Day headers */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2, marginBottom: 4 }}>
-              {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => <div key={i} style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: "var(--mt)", padding: "2px 0" }}>{d}</div>)}
+              {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => <div key={i} style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: "var(--color-muted)", padding: "2px 0" }}>{d}</div>)}
             </div>
             {/* Calendar grid */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
@@ -192,8 +192,8 @@ export default function ScheduleTab({ filter }) {
                 const dayEvts = monthEvts(day);
                 const isHoliday = (holidays || []).some(h => { const s = new Date(h.start_date), e = new Date(h.end_date); return cellDate >= s && cellDate <= e });
                 const isSelected = selectedDay && selectedDay.getDate() === day && selectedDay.getMonth() === month && selectedDay.getFullYear() === year;
-                return <div key={i} style={{ textAlign: "center", padding: "6px 2px", borderRadius: 10, background: isToday2 ? "var(--g)" : isSelected ? "var(--gxl)" : isHoliday ? "#fef3e2" : "transparent", cursor: "pointer", position: "relative", border: isSelected ? "1.5px solid var(--g)" : "1.5px solid transparent" }} onClick={() => setSelectedDay(cellDate)}>
-                  <span style={{ fontSize: 13, fontWeight: isToday2 || isSelected ? 800 : 500, color: isToday2 ? "#fff" : isHoliday ? "#b8860b" : "var(--tx)" }}>{day}</span>
+                return <div key={i} style={{ textAlign: "center", padding: "6px 2px", borderRadius: 10, background: isToday2 ? "var(--color-primary)" : isSelected ? "var(--color-primary-bg)" : isHoliday ? "#fef3e2" : "transparent", cursor: "pointer", position: "relative", border: isSelected ? "1.5px solid var(--color-primary)" : "1.5px solid transparent" }} onClick={() => setSelectedDay(cellDate)}>
+                  <span style={{ fontSize: 13, fontWeight: isToday2 || isSelected ? 800 : 500, color: isToday2 ? "#fff" : isHoliday ? "#b8860b" : "var(--color-text)" }}>{day}</span>
                   {dayEvts.length > 0 && <div style={{ display: "flex", gap: 2, justifyContent: "center", marginTop: 2 }}>
                     {dayEvts.slice(0, 3).map((e, j) => <div key={j} style={{ width: 4, height: 4, borderRadius: "50%", background: isToday2 ? "rgba(255,255,255,.6)" : getMemberCol(e.memberId, e.colour) }} />)}
                   </div>}
@@ -206,27 +206,27 @@ export default function ScheduleTab({ filter }) {
               const dayE = monthEvts(selectedDay.getDate());
               const isHol = (holidays || []).some(h => { const s = new Date(h.start_date), e = new Date(h.end_date); return selectedDay >= s && selectedDay <= e });
               const holName = isHol ? (holidays || []).find(h => selectedDay >= new Date(h.start_date) && selectedDay <= new Date(h.end_date))?.name : "";
-              return <div style={{ marginTop: 12, background: "var(--card)", borderRadius: 16, border: "1px solid var(--bd)", boxShadow: "var(--shadow)", overflow: "hidden", animation: "slideUp .2s ease" }}>
-                <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--bd)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              return <div style={{ marginTop: 12, background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", boxShadow: "var(--shadow)", overflow: "hidden", animation: "slideUp .2s ease" }}>
+                <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--g)" }}>{selectedDay.toLocaleDateString("en-IE", { weekday: "long", day: "numeric", month: "long" })}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)" }}>{selectedDay.toLocaleDateString("en-IE", { weekday: "long", day: "numeric", month: "long" })}</div>
                     {isHol && <div style={{ fontSize: 11, color: "#b8860b", fontWeight: 600 }}>{holName}</div>}
                   </div>
-                  <button onClick={() => setSelectedDay(null)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "var(--mt)", padding: "4px" }}>{"\u2715"}</button>
+                  <button onClick={() => setSelectedDay(null)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "var(--color-muted)", padding: "4px" }}>{"\u2715"}</button>
                 </div>
                 <div style={{ padding: "8px 12px", maxHeight: 240, overflowY: "auto" }}>
-                  {dayE.length === 0 ? <div style={{ padding: "16px 0", textAlign: "center", color: "var(--mt)", fontSize: 13 }}>No activities this day</div>
-                  : dayE.map((e, i) => <div key={e.id || i} onClick={() => handleTapEvent(e)} style={{ display: "flex", alignItems: "stretch", gap: 0, borderRadius: 12, overflow: "hidden", background: "var(--bg)", border: "1px solid var(--bd)", marginBottom: 6, cursor: "pointer", transition: "transform .1s" }} onTouchStart={ev => ev.currentTarget.style.transform = "scale(.98)"} onTouchEnd={ev => ev.currentTarget.style.transform = ""}>
+                  {dayE.length === 0 ? <div style={{ padding: "16px 0", textAlign: "center", color: "var(--color-muted)", fontSize: 13 }}>No activities this day</div>
+                  : dayE.map((e, i) => <div key={e.id || i} onClick={() => handleTapEvent(e)} style={{ display: "flex", alignItems: "stretch", gap: 0, borderRadius: 12, overflow: "hidden", background: "var(--bg)", border: "1px solid var(--color-border)", marginBottom: 6, cursor: "pointer", transition: "transform .1s" }} onTouchStart={ev => ev.currentTarget.style.transform = "scale(.98)"} onTouchEnd={ev => ev.currentTarget.style.transform = ""}>
                     <div style={{ width: 4, background: getMemberCol(e.memberId, e.colour), flexShrink: 0 }} />
                     <div style={{ flex: 1, padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--tx)" }}>{e.source_type === "camp" ? "\u{1F3D5}\uFE0F " : ""}{e.club || e.title || ""}</div>
-                        <div style={{ fontSize: 12, color: "var(--mt)", marginTop: 1 }}>{e.member}</div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text)" }}>{e.source_type === "camp" ? "\u{1F3D5}\uFE0F " : ""}{e.club || e.title || ""}</div>
+                        <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 1 }}>{e.member}</div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <div style={{ textAlign: "right", flexShrink: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--g)", fontVariantNumeric: "tabular-nums" }}>{e.time || ""}{e.endTime ? "\u2013" + e.endTime : ""}</div>
-                          {e.driver && <div style={{ fontSize: 12, color: "var(--mt)", marginTop: 1, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}><span style={{ color: "var(--mt)" }}>{ICN.car}</span> {e.driver}</div>}
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)", fontVariantNumeric: "tabular-nums" }}>{e.time || ""}{e.endTime ? "\u2013" + e.endTime : ""}</div>
+                          {e.driver && <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 1, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}><span style={{ color: "var(--color-muted)" }}>{ICN.car}</span> {e.driver}</div>}
                         </div>
                         <span style={{ color: "#ddd" }}>{ICN.chevron}</span>
                       </div>
@@ -242,7 +242,7 @@ export default function ScheduleTab({ filter }) {
         {weekView === "grid" && <WeekGrid weekDays={wd} events={filtEvts} holidays={[...(holidays || []), ...(userHolidays || [])]} onTapEvent={handleTapEvent} kids={kids} />}
 
         {/* SWIMLANE LIST VIEW */}
-        {weekView === "list" && <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }} className="hsb">
+        {weekView === "list" && <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }} className="hide-scrollbar">
           {wd.map(d => {
             const dayEvts = (filter === "all" ? weekEvts : weekEvts.filter(e => e.memberId === filter)).filter(e => e.date.getFullYear() === d.getFullYear() && e.date.getMonth() === d.getMonth() && e.date.getDate() === d.getDate());
             const today = isToday(d);
@@ -256,28 +256,28 @@ export default function ScheduleTab({ filter }) {
             const lanes = Object.values(memberEvts);
             return <div key={d.toISOString()} style={{ marginBottom: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: today ? "var(--acc)" : "var(--card)", border: today ? "none" : "1px solid var(--bd)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", boxShadow: today ? "0 4px 12px rgba(232,93,74,.25)" : "var(--shadow)" }}>
-                  <span style={{ fontSize: 9, fontWeight: 700, color: today ? "rgba(255,255,255,.7)" : "var(--mt)", textTransform: "uppercase" }}>{d.toLocaleDateString("en-IE", { weekday: "short" })}</span>
-                  <span style={{ fontSize: 16, fontWeight: 800, color: today ? "#fff" : "var(--tx)", lineHeight: 1 }}>{d.getDate()}</span>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: today ? "var(--color-accent)" : "var(--color-card)", border: today ? "none" : "1px solid var(--color-border)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", boxShadow: today ? "0 4px 12px rgba(232,93,74,.25)" : "var(--shadow)" }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: today ? "rgba(255,255,255,.7)" : "var(--color-muted)", textTransform: "uppercase" }}>{d.toLocaleDateString("en-IE", { weekday: "short" })}</span>
+                  <span style={{ fontSize: 16, fontWeight: 800, color: today ? "#fff" : "var(--color-text)", lineHeight: 1 }}>{d.getDate()}</span>
                 </div>
-                {today && <span style={{ fontSize: 11, fontWeight: 700, color: "var(--acc)", textTransform: "uppercase", letterSpacing: .5 }}>Today</span>}
+                {today && <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-accent)", textTransform: "uppercase", letterSpacing: .5 }}>Today</span>}
               </div>
-              {lanes.length === 0 ? <div style={{ padding: "8px 0 4px 48px", fontSize: 13, color: "var(--mt)" }}>Free day {"\u2728"}</div>
+              {lanes.length === 0 ? <div style={{ padding: "8px 0 4px 48px", fontSize: 13, color: "var(--color-muted)" }}>Free day {"\u2728"}</div>
               : <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingLeft: 48 }}>
                 {lanes.map((lane, li) => lane.events.map((e, ei) => {
                   const kidIdx = kids.findIndex(k => k.id === e.memberId);
                   const memberCol = kidIdx >= 0 ? COLS[kidIdx % COLS.length] : (e.colour || COLS[li % COLS.length]);
-                  return <div key={e.id || li + "-" + ei} className="stagger-card" style={{ animationDelay: (li * 50 + ei * 50) + "ms", display: "flex", alignItems: "stretch", gap: 0, borderRadius: 14, overflow: "hidden", background: e.skipped ? "#f9f9f9" : "var(--card)", border: "1px solid var(--bd)", boxShadow: e.skipped ? "none" : "var(--shadow)", cursor: "pointer", opacity: e.skipped ? .5 : 1 }} onClick={() => handleTapEvent(e)}>
-                    <div style={{ width: 5, background: e.skipped ? "var(--bd)" : memberCol, flexShrink: 0 }} />
+                  return <div key={e.id || li + "-" + ei} className="stagger-card" style={{ animationDelay: (li * 50 + ei * 50) + "ms", display: "flex", alignItems: "stretch", gap: 0, borderRadius: 14, overflow: "hidden", background: e.skipped ? "#f9f9f9" : "var(--color-card)", border: "1px solid var(--color-border)", boxShadow: e.skipped ? "none" : "var(--shadow)", cursor: "pointer", opacity: e.skipped ? .5 : 1 }} onClick={() => handleTapEvent(e)}>
+                    <div style={{ width: 5, background: e.skipped ? "var(--color-border)" : memberCol, flexShrink: 0 }} />
                     <div style={{ flex: 1, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 15, fontWeight: 600, color: e.skipped ? "var(--mt)" : "var(--tx)", textDecoration: e.skipped ? "line-through" : "none" }}>{e.club || e.title || ""}{e.skipped ? " \u2014 Skipped" : ""}</div>
-                        <div style={{ fontSize: 13, color: "var(--mt)", marginTop: 1 }}>{e.member}</div>
+                        <div style={{ fontSize: 15, fontWeight: 600, color: e.skipped ? "var(--color-muted)" : "var(--color-text)", textDecoration: e.skipped ? "line-through" : "none" }}>{e.club || e.title || ""}{e.skipped ? " \u2014 Skipped" : ""}</div>
+                        <div style={{ fontSize: 13, color: "var(--color-muted)", marginTop: 1 }}>{e.member}</div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <div style={{ textAlign: "right", flexShrink: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--g)", fontVariantNumeric: "tabular-nums" }}>{e.time || ""}{e.endTime ? "\u2013" + e.endTime : ""}</div>
-                          {e.driver && <div style={{ fontSize: 12, color: "var(--mt)", marginTop: 1, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}><span style={{ color: "var(--mt)" }}>{ICN.car}</span> {e.driver}</div>}
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)", fontVariantNumeric: "tabular-nums" }}>{e.time || ""}{e.endTime ? "\u2013" + e.endTime : ""}</div>
+                          {e.driver && <div style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 1, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}><span style={{ color: "var(--color-muted)" }}>{ICN.car}</span> {e.driver}</div>}
                         </div>
                         <span style={{ color: "#ddd" }}>{ICN.chevron}</span>
                       </div>
@@ -290,7 +290,7 @@ export default function ScheduleTab({ filter }) {
         </div>}
 
         {/* FORWARD BANNER */}
-        <div style={{ background: "var(--g)", borderRadius: 14, padding: 16, marginTop: 16, color: "#fff" }}>
+        <div style={{ background: "var(--color-primary)", borderRadius: 14, padding: 16, marginTop: 16, color: "#fff" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}><span style={{ color: "rgba(255,255,255,.5)" }}>{ICN.mail}</span><span style={{ fontSize: 14, fontWeight: 700 }}>Forward club emails</span></div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <div style={{ background: "rgba(255,255,255,.06)", borderRadius: 10, padding: 10 }}>
