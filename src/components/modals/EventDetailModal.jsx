@@ -110,8 +110,8 @@ export default function EventDetailModal({event,open,onClose,onDelete,onDriverCh
           <span style={{fontSize:14,color:"var(--mt)"}}>Location</span>
           <span style={{fontSize:14,fontWeight:600,color:"var(--tx)",textAlign:"right",maxWidth:"60%"}}>{event.location}</span>
         </div>}
-        {/* Colour row */}
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderTop:"1px solid var(--bd)"}}>
+        {/* Colour row — only for one-off/manual events; recurring events inherit club colour */}
+        {isManual&&<><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderTop:"1px solid var(--bd)"}}>
           <span style={{fontSize:14,color:"var(--mt)"}}>Colour</span>
           <div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>setShowColours(!showColours)}>
             <div style={{width:20,height:20,borderRadius:6,background:event.colour||"#999",border:"2px solid var(--bd)"}}/>
@@ -120,7 +120,7 @@ export default function EventDetailModal({event,open,onClose,onDelete,onDriverCh
         </div>
         {showColours&&<div style={{display:"flex",gap:6,flexWrap:"wrap",padding:"8px 0"}}>
           {COLOUR_OPTIONS.map(c=><div key={c} onClick={()=>{if(onColourChange)onColourChange(event,c);setShowColours(false)}} style={{width:28,height:28,borderRadius:8,background:c,cursor:"pointer",border:event.colour===c?"3px solid var(--g)":"2px solid var(--bd)",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.85)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}/>)}
-        </div>}
+        </div>}</>}
       </div>
 
       {/* Who's going — for manual events, show all family members */}

@@ -178,7 +178,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           const kid=re.dependant_id?kidMap.get(re.dependant_id):null;
           evts.push({id:re.id+d.toISOString(),source_id:re.id,source_type:"recurring",title:re.title,date:d,time:re.start_time?.slice(0,5)||"",
             endTime:re.start_time&&re.duration_minutes?((h,m)=>{const t=parseInt(re.start_time.slice(0,2))*60+parseInt(re.start_time.slice(3,5))+re.duration_minutes;return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()||"":"",
-            club:cl?.nickname||cl?.club_name||"",colour:re.colour||cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null,skipped:isSkipped,location:re.location||cl?.club_addr||null});
+            club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null,skipped:isSkipped,location:re.location||cl?.club_addr||null});
         }
       });
     });
@@ -243,9 +243,8 @@ export default function Hub({user,profile,onRefresh,onLogout}){
 
   const myRole=profile?.family_role||"admin";
   const isAdmin=myRole==="admin";
-  // Helper: handle event tap — payments go to Money tab, others open detail modal
+  // Helper: handle event tap — all events (including payments) open detail modal
   function handleTapEvent(e){
-    if(e.isPayment||e.source_type==="payment"){setTab("money");window.scrollTo(0,0);return;}
     setTapEvent(e);
   }
   // Helper: get member colour (kid index-based from COLS, or fallback)
@@ -615,7 +614,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             const kid=re.dependant_id?kidMap.get(re.dependant_id):null;
             evts.push({id:re.id+cellDate.toISOString(),source_id:re.id,source_type:"recurring",title:re.title,date:cellDate,time:re.start_time?.slice(0,5)||"",
               endTime:re.start_time&&re.duration_minutes?((()=>{const t=parseInt(re.start_time.slice(0,2))*60+parseInt(re.start_time.slice(3,5))+re.duration_minutes;return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()):"",
-              club:cl?.nickname||cl?.club_name||"",colour:re.colour||cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null});
+              club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null});
           });
           (mans||[]).forEach(me=>{
             const d=new Date(me.event_date);
@@ -1382,8 +1381,8 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           }
         }}
         onColourChange={async(ev,col)=>{
-          const table=ev.source_type==="recurring"?"recurring_events":"manual_events";
-          await db(table,"PATCH",{filters:["id=eq."+ev.source_id],body:{colour:col}});
+          if(ev.source_type!=="manual")return;
+          await db("manual_events","PATCH",{filters:["id=eq."+ev.source_id],body:{colour:col}});
           setTapEvent({...ev,colour:col});load();
         }}/>
 
