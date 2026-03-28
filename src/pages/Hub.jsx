@@ -30,11 +30,17 @@ export default function Hub({user,profile,onRefresh,onLogout}){
   const[schoolLocs,setSchoolLocs]=useState([]);
   const[familyLocs,setFamilyLocs]=useState([]);const[showLocations,setShowLocations]=useState(false);
   const[showAddEv,setShowAddEv]=useState(false);const[showAddPay,setShowAddPay]=useState(false);
+  const[darkMode,setDarkMode]=useState(()=>localStorage.getItem("ocv-dark")==="1");
   const[showAddKid,setShowAddKid]=useState(false);const[editClub,setEditClub]=useState(null);const[editHol,setEditHol]=useState(null);const[showAddHol,setShowAddHol]=useState(false);const[showInvite,setShowInvite]=useState(false);const[showSupport,setShowSupport]=useState(false);const[showFamily,setShowFamily]=useState(false);const[weekView,setWeekView]=useState("grid");const[selectedDay,setSelectedDay]=useState(null);const[calMonth,setCalMonth]=useState(new Date().getMonth());const[calYear,setCalYear]=useState(new Date().getFullYear());const[showPaste,setShowPaste]=useState(false);const[showFab,setShowFab]=useState(false);const[editEvent,setEditEvent]=useState(null);const[showProfile,setShowProfile]=useState(false);const[localEvents,setLocalEvents]=useState([]);const[actCats,setActCats]=useState([]);const[loading,setLoading]=useState(true);const[userLoc,setUserLoc]=useState(null);const[familyMembers,setFamilyMembers]=useState([]);const[notifications,setNotifications]=useState([]);const[showNotifs,setShowNotifs]=useState(false);const[showAddActivity,setShowAddActivity]=useState(false);const[showAddPlaydate,setShowAddPlaydate]=useState(false);const[tapEvent,setTapEvent]=useState(null);
   const[showChangePw,setShowChangePw]=useState(false);const[showDeleteAcct,setShowDeleteAcct]=useState(false);
   const[ptrState,setPtrState]=useState("");const ptrStart=useRef(0);const ptrDist=useRef(0);
   const[showSaveLocModal,setShowSaveLocModal]=useState(false);const[showAddLocModal,setShowAddLocModal]=useState(false);
   const[campLoc,setCampLoc]=useState("all");
+
+  useEffect(()=>{
+    document.documentElement.setAttribute("data-theme",darkMode?"dark":"light");
+    localStorage.setItem("ocv-dark",darkMode?"1":"0")
+  },[darkMode]);
 
   async function load(){
     try{
@@ -172,7 +178,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           const kid=re.dependant_id?kidMap.get(re.dependant_id):null;
           evts.push({id:re.id+d.toISOString(),source_id:re.id,source_type:"recurring",title:re.title,date:d,time:re.start_time?.slice(0,5)||"",
             endTime:re.start_time&&re.duration_minutes?((h,m)=>{const t=parseInt(re.start_time.slice(0,2))*60+parseInt(re.start_time.slice(3,5))+re.duration_minutes;return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()||"":"",
-            club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null,skipped:isSkipped});
+            club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:re.dependant_id||"self",driver:re.driver||null,skipped:isSkipped,location:re.location||cl?.club_addr||null});
         }
       });
     });
@@ -184,7 +190,8 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         const kid=me.dependant_id?kidMap.get(me.dependant_id):null;
         const mTime=d.toTimeString().slice(0,5);
         const mEnd=me.duration_minutes&&mTime?((()=>{const t=parseInt(mTime.slice(0,2))*60+parseInt(mTime.slice(3,5))+(me.duration_minutes||60);return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()):"";
-        evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:mTime,endTime:mEnd,club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
+        const mAtt=me.description&&me.description.startsWith("Going: ")?me.description.replace("Going: ","").split(", ").filter(Boolean):[];
+        evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:mTime,endTime:mEnd,club:cl?.nickname||cl?.club_name||"",colour:me.colour||cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self",attendees:mAtt,location:me.location||null});
       }
     });
     // Payment reminders — show on due date
@@ -194,7 +201,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       if(d>=wd[0]&&d<end){
         const cl=clubMap.get(p.club_id);
         const kid=p.dependant_id?kidMap.get(p.dependant_id):null;
-        evts.push({id:"pay-"+p.id,source_id:p.id,source_type:"payment",title:"💳 "+p.description+" — €"+parseFloat(p.amount).toFixed(2),date:d,time:"",endTime:"",club:cl?.nickname||cl?.club_name||"Payment due",colour:"#c4960c",member:kid?.first_name||(profile?.first_name||"You"),memberId:p.dependant_id||"self",isPayment:true});
+        evts.push({id:"pay-"+p.id,source_id:p.id,source_type:"payment",title:"💳 "+p.description+" — €"+parseFloat(p.amount).toFixed(2),date:d,time:"",endTime:"",club:cl?.nickname||cl?.club_name||"Payment due",colour:"#c4960c",member:kid?.first_name||(profile?.first_name||"You"),memberId:p.dependant_id||"self",isPayment:true,payAmount:parseFloat(p.amount),payDescription:p.description,payDueDate:p.due_date,payClub:cl?.nickname||cl?.club_name||""});
       }
     });
     return evts.sort((a,b)=>a.date-b.date||(a.time||"").localeCompare(b.time||""));
@@ -236,11 +243,77 @@ export default function Hub({user,profile,onRefresh,onLogout}){
 
   const myRole=profile?.family_role||"admin";
   const isAdmin=myRole==="admin";
+  // Helper: handle event tap — all events (including payments) open detail modal
+  function handleTapEvent(e){
+    setTapEvent(e);
+  }
+  // Helper: get member colour (kid index-based from COLS, or fallback)
+  function getMemberCol(memberId,fallback){
+    const kidIdx=kids.findIndex(k=>k.id===memberId);
+    if(kidIdx>=0)return COLS[kidIdx%COLS.length];
+    if(memberId==="self")return "var(--g)";
+    return fallback||"#999";
+  }
   const overviewIcon = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
   const allTabs=[{id:"overview",l:"Overview",i:overviewIcon},{id:"week",l:"Schedule",i:ICN.calendar},{id:"money",l:"Money",i:ICN.wallet},{id:"explore",l:"Explore",i:ICN.search}];
   const tabs=isAdmin?allTabs:allTabs.filter(t=>t.id!=="money");
 
-  if(loading)return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--warm)"}}><p style={{color:"var(--mt)"}}>Loading...</p></div>;
+  if(loading)return <div style={{minHeight:"100vh",background:"var(--warm)"}}>
+    {/* Skeleton Header */}
+    <div style={{background:"var(--card)",borderBottom:"1px solid var(--bd)",padding:"12px 20px 6px"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+        <div className="skeleton-shimmer" style={{width:120,height:22,borderRadius:8}}/>
+        <div style={{display:"flex",gap:10}}>
+          <div className="skeleton-shimmer" style={{width:20,height:20,borderRadius:6}}/>
+          <div className="skeleton-shimmer" style={{width:30,height:30,borderRadius:10}}/>
+        </div>
+      </div>
+      <div style={{display:"flex",gap:6,paddingBottom:8}}>
+        {[80,60,55,45].map((w,i)=><div key={i} className="skeleton-shimmer" style={{width:w,height:36,borderRadius:100}}/>)}
+      </div>
+      <div style={{display:"flex",gap:0,marginTop:4}}>
+        {["Overview","Schedule","Money","Explore"].map((t,i)=><div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"8px 0 6px"}}>
+          <div className="skeleton-shimmer" style={{width:20,height:20,borderRadius:6}}/>
+          <div className="skeleton-shimmer" style={{width:40,height:10,borderRadius:4}}/>
+        </div>)}
+      </div>
+    </div>
+    {/* Skeleton Body */}
+    <div style={{maxWidth:520,margin:"0 auto",padding:"16px 20px"}}>
+      {/* This Week card skeleton */}
+      <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12}}>
+        <div className="skeleton-shimmer" style={{width:80,height:16,borderRadius:6,marginBottom:12}}/>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          {[0,1,2,3].map(i=><div key={i} style={{background:"var(--gxl)",borderRadius:12,padding:16,display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+            <div className="skeleton-shimmer" style={{width:36,height:28,borderRadius:6}}/>
+            <div className="skeleton-shimmer" style={{width:50,height:10,borderRadius:4}}/>
+          </div>)}
+        </div>
+      </div>
+      {/* Family card skeleton */}
+      <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12}}>
+        <div className="skeleton-shimmer" style={{width:60,height:16,borderRadius:6,marginBottom:14}}/>
+        {[0,1,2].map(i=><div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:i<2?"1px solid var(--bd)":"none"}}>
+          <div className="skeleton-shimmer" style={{width:32,height:32,borderRadius:10}}/>
+          <div style={{flex:1}}>
+            <div className="skeleton-shimmer" style={{width:80+i*20,height:13,borderRadius:4,marginBottom:6}}/>
+            <div className="skeleton-shimmer" style={{width:120+i*10,height:10,borderRadius:4}}/>
+          </div>
+        </div>)}
+      </div>
+      {/* Clubs card skeleton */}
+      <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12}}>
+        <div className="skeleton-shimmer" style={{width:70,height:16,borderRadius:6,marginBottom:14}}/>
+        {[0,1].map(i=><div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<1?"1px solid var(--bd)":"none"}}>
+          <div className="skeleton-shimmer" style={{width:36,height:36,borderRadius:10}}/>
+          <div style={{flex:1}}>
+            <div className="skeleton-shimmer" style={{width:100+i*30,height:13,borderRadius:4,marginBottom:6}}/>
+            <div className="skeleton-shimmer" style={{width:140,height:10,borderRadius:4}}/>
+          </div>
+        </div>)}
+      </div>
+    </div>
+  </div>;
 
   // If no clubs yet, prompt
   // Trial/subscription check
@@ -442,7 +515,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           <div style={{padding:"8px 12px",maxHeight:200,overflowY:"auto"}}>
             {dayEvts.length===0?<div style={{padding:"12px 0",textAlign:"center",color:"var(--mt)",fontSize:13}}>{isHol?"School holiday — no activities scheduled":"Nothing scheduled this day"}</div>
             :dayEvts.map((e,i)=><div key={e.id||i} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6}}>
-              <div style={{width:4,background:e.colour||"#999",flexShrink:0}}/>
+              <div style={{width:4,background:getMemberCol(e.memberId,e.colour),flexShrink:0}}/>
               <div style={{flex:1,padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
                 <div style={{minWidth:0}}>
                   <div style={{fontSize:13,fontWeight:600,color:"var(--tx)"}}>{e.source_type==="camp"?"🏕️ ":""}{e.club||e.title||""}</div>
@@ -491,8 +564,9 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           </div>
           <div style={{padding:"8px 12px",maxHeight:240,overflowY:"auto"}}>
             {dayEvts.length===0?<div style={{padding:"16px 0",textAlign:"center",color:"var(--mt)",fontSize:13}}>{isHol?"School holiday — no activities":"No activities this day"}</div>
-            :dayEvts.map((e,i)=><div key={e.id||i} onClick={()=>setTapEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6,cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.98)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
-              <div style={{width:4,background:e.colour||"#999",flexShrink:0}}/>
+            :dayEvts.map((e,i)=><div key={e.id||i} className="stagger-card" style={{animationDelay:(i*50)+"ms"}} onClick={()=>handleTapEvent(e)}>
+              <div style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6,cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.98)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
+              <div style={{width:4,background:getMemberCol(e.memberId,e.colour),flexShrink:0}}/>
               <div style={{flex:1,padding:"12px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
                 <div style={{minWidth:0}}>
                   <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>{e.source_type==="camp"?"🏕️ ":""}{e.club||e.title||""}</div>
@@ -505,6 +579,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
                   </div>
                   <span style={{color:"#ddd"}}>{ICN.chevron}</span>
                 </div>
+              </div>
               </div>
             </div>)}
           </div>
@@ -548,7 +623,8 @@ export default function Hub({user,profile,onRefresh,onLogout}){
               const kid=me.dependant_id?kidMap.get(me.dependant_id):null;
               const mTime=d.toTimeString().slice(0,5);
               const mEnd=me.duration_minutes&&mTime?((()=>{const t=parseInt(mTime.slice(0,2))*60+parseInt(mTime.slice(3,5))+(me.duration_minutes||60);return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})()):"";
-              evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:mTime,endTime:mEnd,club:cl?.nickname||cl?.club_name||"",colour:cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self"});
+              const mAtt=me.description&&me.description.startsWith("Going: ")?me.description.replace("Going: ","").split(", ").filter(Boolean):[];
+        evts.push({id:me.id,source_id:me.id,source_type:"manual",title:me.title,date:d,time:mTime,endTime:mEnd,club:cl?.nickname||cl?.club_name||"",colour:me.colour||cl?.colour||"#999",member:kid?.first_name||(profile?.first_name||"You"),memberId:me.dependant_id||"self",attendees:mAtt,location:me.location||null});
             }
           });
           // Camp bookings — show on each day within camp date range
@@ -568,7 +644,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             if(pd.getDate()===day&&pd.getMonth()===month&&pd.getFullYear()===year){
               const cl=clubMap.get(p.club_id);
               const kid=p.dependant_id?kidMap.get(p.dependant_id):null;
-              evts.push({id:"pay-"+p.id,source_id:p.id,source_type:"payment",title:"💳 "+p.description+" — €"+parseFloat(p.amount).toFixed(2),date:cellDate,time:"",endTime:"",club:cl?.nickname||cl?.club_name||"Payment due",colour:"#c4960c",member:kid?.first_name||(profile?.first_name||"You"),memberId:p.dependant_id||"self",isPayment:true});
+              evts.push({id:"pay-"+p.id,source_id:p.id,source_type:"payment",title:"💳 "+p.description+" — €"+parseFloat(p.amount).toFixed(2),date:cellDate,time:"",endTime:"",club:cl?.nickname||cl?.club_name||"Payment due",colour:"#c4960c",member:kid?.first_name||(profile?.first_name||"You"),memberId:p.dependant_id||"self",isPayment:true,payAmount:parseFloat(p.amount),payDescription:p.description,payDueDate:p.due_date,payClub:cl?.nickname||cl?.club_name||""});
             }
           });
           monthEvtsMap[day]=evts.sort((a,b)=>(a.time||"").localeCompare(b.time||""));
@@ -601,7 +677,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
               return <div key={i} style={{textAlign:"center",padding:"6px 2px",borderRadius:10,background:isToday2?"var(--g)":isSelected?"var(--gxl)":isHoliday?"#fef3e2":"transparent",cursor:"pointer",position:"relative",border:isSelected?"1.5px solid var(--g)":"1.5px solid transparent"}} onClick={()=>setSelectedDay(cellDate)}>
                 <span style={{fontSize:13,fontWeight:isToday2||isSelected?800:500,color:isToday2?"#fff":isHoliday?"#b8860b":"var(--tx)"}}>{day}</span>
                 {dayEvts.length>0&&<div style={{display:"flex",gap:2,justifyContent:"center",marginTop:2}}>
-                  {dayEvts.slice(0,3).map((e,j)=><div key={j} style={{width:4,height:4,borderRadius:"50%",background:isToday2?"rgba(255,255,255,.6)":(e.colour||"var(--acc)")}}/>)}
+                  {dayEvts.slice(0,3).map((e,j)=><div key={j} style={{width:4,height:4,borderRadius:"50%",background:isToday2?"rgba(255,255,255,.6)":getMemberCol(e.memberId,e.colour)}}/>)}
                 </div>}
               </div>;
             })}
@@ -622,8 +698,8 @@ export default function Hub({user,profile,onRefresh,onLogout}){
               </div>
               <div style={{padding:"8px 12px",maxHeight:240,overflowY:"auto"}}>
                 {dayE.length===0?<div style={{padding:"16px 0",textAlign:"center",color:"var(--mt)",fontSize:13}}>No activities this day</div>
-                :dayE.map((e,i)=><div key={e.id||i} onClick={()=>setTapEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6,cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.98)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
-                  <div style={{width:4,background:e.colour||"#999",flexShrink:0}}/>
+                :dayE.map((e,i)=><div key={e.id||i} onClick={()=>handleTapEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6,cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.98)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
+                  <div style={{width:4,background:getMemberCol(e.memberId,e.colour),flexShrink:0}}/>
                   <div style={{flex:1,padding:"12px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
                     <div style={{minWidth:0}}>
                       <div style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>{e.source_type==="camp"?"🏕️ ":""}{e.club||e.title||""}</div>
@@ -766,7 +842,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         })()}
 
         {/* THIS WEEK STATS */}
-        <div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
+        <div className="stagger-card" style={{animationDelay:"0ms",background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
           <h3 style={{fontFamily:"var(--sr)",fontSize:15,fontWeight:700,color:"var(--g)",marginBottom:10}}>This week</h3>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
             <div onClick={()=>{setTab("week");window.scrollTo(0,0)}} style={{background:"var(--gxl)",borderRadius:12,padding:12,textAlign:"center",cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.95)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
@@ -789,7 +865,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         </div>
 
         {/* FAMILY SUMMARY */}
-        <div id="family-section" style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
+        <div id="family-section" className="stagger-card" style={{animationDelay:"60ms",background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
           <h3 style={{fontFamily:"var(--sr)",fontSize:15,fontWeight:700,color:"var(--g)",marginBottom:10}}>Family</h3>
           {kids.map((k,ki)=>{
             const kidEvts=activeWeekEvts.filter(e=>e.memberId===k.id);
@@ -816,7 +892,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         </div>
 
         {/* SPEND SNAPSHOT (admin only) */}
-        {isAdmin&&pays.length>0&&<div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
+        {isAdmin&&pays.length>0&&<div className="stagger-card" style={{animationDelay:"120ms",background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
           <h3 style={{fontFamily:"var(--sr)",fontSize:15,fontWeight:700,color:"var(--g)",marginBottom:10}}>Spend</h3>
           {(()=>{
             const clubFees={};
@@ -843,7 +919,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         </div>}
 
         {/* MY CLUBS */}
-        {clubs.length>0&&<div style={{background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
+        {clubs.length>0&&<div className="stagger-card" style={{animationDelay:"180ms",background:"var(--card)",borderRadius:16,border:"1px solid var(--bd)",padding:16,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>
           <h3 style={{fontFamily:"var(--sr)",fontSize:15,fontWeight:700,color:"var(--g)",marginBottom:10}}>My Clubs</h3>
           {(()=>{
             const grouped={};
@@ -875,7 +951,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       {tab==="week"&&<div>
 
         {/* WEEKLY GRID VIEW */}
-        {weekView==="grid"&&<WeekGrid weekDays={wd} events={filtEvts} holidays={[...(holidays||[]),...(userHolidays||[])]} onTapEvent={setTapEvent}/>}
+        {weekView==="grid"&&<WeekGrid weekDays={wd} events={filtEvts} holidays={[...(holidays||[]),...(userHolidays||[])]} onTapEvent={handleTapEvent} kids={kids}/>}
 
         {/* SWIMLANE LIST VIEW */}
         {weekView==="list"&&<div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
@@ -901,9 +977,11 @@ export default function Hub({user,profile,onRefresh,onLogout}){
               </div>
               {lanes.length===0?<div style={{padding:"8px 0 4px 48px",fontSize:13,color:"var(--mt)"}}>Free day ✨</div>
               :<div style={{display:"flex",flexDirection:"column",gap:6,paddingLeft:48}}>
-                {lanes.map((lane,li)=>lane.events.map((e,ei)=>
-                  <div key={e.id||li+"-"+ei} onClick={()=>setTapEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:e.skipped?"#f9f9f9":"var(--card)",border:"1px solid var(--bd)",boxShadow:e.skipped?"none":"var(--shadow)",cursor:"pointer",opacity:e.skipped?.5:1}}>
-                    <div style={{width:5,background:e.skipped?"var(--bd)":(e.colour||COLS[li%COLS.length]),flexShrink:0}}/>
+                {lanes.map((lane,li)=>lane.events.map((e,ei)=>{
+                  const kidIdx=kids.findIndex(k=>k.id===e.memberId);
+                  const memberCol=kidIdx>=0?COLS[kidIdx%COLS.length]:(e.colour||COLS[li%COLS.length]);
+                  return <div key={e.id||li+"-"+ei} className="stagger-card" style={{animationDelay:(li*50+ei*50)+"ms",display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:e.skipped?"#f9f9f9":"var(--card)",border:"1px solid var(--bd)",boxShadow:e.skipped?"none":"var(--shadow)",cursor:"pointer",opacity:e.skipped?.5:1}} onClick={()=>handleTapEvent(e)}>
+                    <div style={{width:5,background:e.skipped?"var(--bd)":memberCol,flexShrink:0}}/>
                     <div style={{flex:1,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
                       <div style={{minWidth:0}}>
                         <div style={{fontSize:15,fontWeight:600,color:e.skipped?"var(--mt)":"var(--tx)",textDecoration:e.skipped?"line-through":"none"}}>{e.club||e.title||""}{e.skipped?" — Skipped":""}</div>
@@ -918,7 +996,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
                       </div>
                     </div>
                   </div>
-                ))}
+                }))}
               </div>}
             </div>;
           })}
@@ -1204,6 +1282,12 @@ export default function Hub({user,profile,onRefresh,onLogout}){
         :profile?.subscription_status!=="active"&&<button onClick={()=>{setShowProfile(false);startCheckout("standard")}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>⭐ Subscribe — €7.99/mo</button>}
         <button onClick={()=>{setShowProfile(false);setShowFamily(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>👨‍👩‍👧‍👦 Family Members</button>
         <a href="/privacy" style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>🔒 Privacy & Data</a>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderTop:"1px solid var(--bd)"}}>
+          <span style={{fontSize:14,fontWeight:600,color:"var(--tx)"}}>Dark mode</span>
+          <div onClick={()=>setDarkMode(!darkMode)} style={{width:48,height:28,borderRadius:14,background:darkMode?"var(--acc)":"var(--bd)",cursor:"pointer",position:"relative",transition:"background .2s"}}>
+            <div style={{width:22,height:22,borderRadius:11,background:"#fff",position:"absolute",top:3,left:darkMode?23:3,transition:"left .2s",boxShadow:"0 1px 3px rgba(0,0,0,.2)"}}/>
+          </div>
+        </div>
         <div style={{borderTop:"1px solid var(--bd)",marginTop:4,paddingTop:4}}>
           <button onClick={()=>setShowDeleteAcct(true)} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🗑️ Delete Account</button>
           <button onClick={()=>{setShowProfile(false);onLogout()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"#dc2626",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🚪 Log out</button>
@@ -1289,6 +1373,17 @@ export default function Hub({user,profile,onRefresh,onLogout}){
             await db("recurring_events","PATCH",{filters:["id=eq."+ev.source_id],body:{excluded_dates:excluded}});
             showToast("Skipped for this week");setTapEvent(null);load();
           }
+        }}
+        onMarkPaid={async(ev)=>{
+          if(ev.source_type==="payment"&&ev.source_id){
+            await db("payment_reminders","PATCH",{filters:["id=eq."+ev.source_id],body:{paid:true,paid_at:new Date().toISOString()}});
+            showToast("Marked as paid!");setTapEvent(null);load();
+          }
+        }}
+        onColourChange={async(ev,col)=>{
+          if(ev.source_type!=="manual")return;
+          await db("manual_events","PATCH",{filters:["id=eq."+ev.source_id],body:{colour:col}});
+          setTapEvent({...ev,colour:col});load();
         }}/>
 
       {/* Change Password Modal */}

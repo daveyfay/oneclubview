@@ -31,7 +31,7 @@ function colourToGrad(hex) {
   return `linear-gradient(135deg,${hex},${hex}dd)`;
 }
 
-export default function WeekGrid({ weekDays, events, holidays, onTapEvent }) {
+export default function WeekGrid({ weekDays, events, holidays, onTapEvent, kids }) {
   // Split 7 days into pages of 4 (page 0 = days 0-3, page 1 = days 3-6)
   // Use overlapping pages so swipe feels natural
   const [page, setPage] = useState(() => {
