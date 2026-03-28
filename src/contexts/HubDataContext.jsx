@@ -156,8 +156,8 @@ export function HubDataProvider({ user, profile, children }) {
     members, wd, clubMap, clubTermMap, kidMap,
     // Actions
     load, getMemberCol,
-    // Setters needed by modals
-    setFamilyLocs, setCampBookings,
+    // Setters needed by modals/tabs
+    setFamilyLocs, setCampBookings, setUserLoc,
     // User info
     user, profile,
   }), [
