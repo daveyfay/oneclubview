@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useHubData } from '../../hooks/useHubData';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import AddPaymentModal from '../../components/modals/AddPaymentModal';
@@ -9,7 +9,7 @@ export default function MoneyTab({ filter }) {
   const {
     kids, clubs, pays, holidays,
     isAdmin, wd, clubMap, clubTermMap, kidMap,
-    getMemberCol, user, profile, load, recs, mans,
+    getMemberCol, user, profile, load, recs, mans, weekEvts,
   } = useHubData();
 
   const [showAddPay, setShowAddPay] = useState(false);
@@ -18,40 +18,6 @@ export default function MoneyTab({ filter }) {
   const filtPays = filter === "all" ? pays : pays.filter(p => (p.dependant_id || "self") === filter);
   const totalDue = filtPays.filter(p => !p.paid && p.status !== "not_renewing").reduce((s, p) => s + parseFloat(p.amount || 0), 0);
   const totalPaid = filtPays.filter(p => p.paid).reduce((s, p) => s + parseFloat(p.amount || 0), 0);
-
-  // Build weekly events for day panel
-  const weekEvts = useMemo(() => {
-    const evts = [];
-    (recs || []).forEach(re => {
-      if (!re.active) return;
-      wd.forEach(d => {
-        if (d.getDay() === re.day_of_week) {
-          const term = clubTermMap.get(re.club_id);
-          if (term && (d < term.start || d > term.end)) return;
-          const dStr = d.toISOString().split("T")[0];
-          const isSkipped = (re.excluded_dates || []).includes(dStr);
-          if (isSkipped) return;
-          const cl = clubMap.get(re.club_id);
-          const kid = re.dependant_id ? kidMap.get(re.dependant_id) : null;
-          evts.push({ id: re.id + d.toISOString(), source_type: "recurring", title: re.title, date: d, time: re.start_time?.slice(0, 5) || "",
-            endTime: re.start_time && re.duration_minutes ? ((() => { const t = parseInt(re.start_time.slice(0, 2)) * 60 + parseInt(re.start_time.slice(3, 5)) + re.duration_minutes; return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0") })()) : "",
-            club: cl?.nickname || cl?.club_name || "", colour: cl?.colour || "#999", member: kid?.first_name || (profile?.first_name || "You"), memberId: re.dependant_id || "self" });
-        }
-      });
-    });
-    (mans || []).forEach(me => {
-      const d = new Date(me.event_date);
-      const end = new Date(wd[6]); end.setDate(end.getDate() + 1);
-      if (d >= wd[0] && d < end) {
-        const cl = clubMap.get(me.club_id);
-        const kid = me.dependant_id ? kidMap.get(me.dependant_id) : null;
-        const mTime = d.toTimeString().slice(0, 5);
-        const mEnd = me.duration_minutes && mTime ? ((() => { const t = parseInt(mTime.slice(0, 2)) * 60 + parseInt(mTime.slice(3, 5)) + (me.duration_minutes || 60); return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0") })()) : "";
-        evts.push({ id: me.id, source_type: "manual", title: me.title, date: d, time: mTime, endTime: mEnd, club: cl?.nickname || cl?.club_name || "", colour: me.colour || cl?.colour || "#999", member: kid?.first_name || (profile?.first_name || "You"), memberId: me.dependant_id || "self" });
-      }
-    });
-    return evts.sort((a, b) => a.date - b.date || (a.time || "").localeCompare(b.time || ""));
-  }, [recs, mans, clubMap, clubTermMap, kidMap, profile, wd]);
 
   return (
     <ErrorBoundary label="Money">

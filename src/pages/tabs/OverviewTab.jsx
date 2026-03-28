@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useHubData } from '../../hooks/useHubData';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import { COLS } from '../../lib/constants';
@@ -10,51 +10,8 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
     holidays, userHolidays, familyMembers,
     isAdmin, members, wd, clubMap, clubTermMap, kidMap,
     getMemberCol, user, profile, load,
-    userLoc, familyLocs, schoolLocs,
+    userLoc, familyLocs, schoolLocs, weekEvts,
   } = useHubData();
-
-  // Build weekly events (same logic as Hub had for weekEvts)
-  const weekEvts = useMemo(() => {
-    const evts = [];
-    (recs || []).forEach(re => {
-      if (!re.active) return;
-      wd.forEach(d => {
-        if (d.getDay() === re.day_of_week) {
-          const term = clubTermMap.get(re.club_id);
-          if (term && (d < term.start || d > term.end)) return;
-          const dStr = d.toISOString().split("T")[0];
-          const isSkipped = (re.excluded_dates || []).includes(dStr);
-          const cl = clubMap.get(re.club_id);
-          const kid = re.dependant_id ? kidMap.get(re.dependant_id) : null;
-          evts.push({ id: re.id + d.toISOString(), source_id: re.id, source_type: "recurring", title: re.title, date: d, time: re.start_time?.slice(0, 5) || "",
-            endTime: re.start_time && re.duration_minutes ? ((() => { const t = parseInt(re.start_time.slice(0, 2)) * 60 + parseInt(re.start_time.slice(3, 5)) + re.duration_minutes; return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0") })()) : "",
-            club: cl?.nickname || cl?.club_name || "", colour: cl?.colour || "#999", member: kid?.first_name || (profile?.first_name || "You"), memberId: re.dependant_id || "self", driver: re.driver || null, skipped: isSkipped, location: re.location || cl?.club_addr || null });
-        }
-      });
-    });
-    (mans || []).forEach(me => {
-      const d = new Date(me.event_date);
-      const end = new Date(wd[6]); end.setDate(end.getDate() + 1);
-      if (d >= wd[0] && d < end) {
-        const cl = clubMap.get(me.club_id);
-        const kid = me.dependant_id ? kidMap.get(me.dependant_id) : null;
-        const mTime = d.toTimeString().slice(0, 5);
-        const mEnd = me.duration_minutes && mTime ? ((() => { const t = parseInt(mTime.slice(0, 2)) * 60 + parseInt(mTime.slice(3, 5)) + (me.duration_minutes || 60); return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0") })()) : "";
-        const mAtt = me.description && me.description.startsWith("Going: ") ? me.description.replace("Going: ", "").split(", ").filter(Boolean) : [];
-        evts.push({ id: me.id, source_id: me.id, source_type: "manual", title: me.title, date: d, time: mTime, endTime: mEnd, club: cl?.nickname || cl?.club_name || "", colour: me.colour || cl?.colour || "#999", member: kid?.first_name || (profile?.first_name || "You"), memberId: me.dependant_id || "self", attendees: mAtt, location: me.location || null });
-      }
-    });
-    (pays || []).filter(p => !p.paid && p.status !== "not_renewing" && p.due_date).forEach(p => {
-      const d = new Date(p.due_date + "T00:00:00");
-      const end = new Date(wd[6]); end.setDate(end.getDate() + 1);
-      if (d >= wd[0] && d < end) {
-        const cl = clubMap.get(p.club_id);
-        const kid = p.dependant_id ? kidMap.get(p.dependant_id) : null;
-        evts.push({ id: "pay-" + p.id, source_id: p.id, source_type: "payment", title: "\u{1F4B3} " + p.description + " \u2014 \u20AC" + parseFloat(p.amount).toFixed(2), date: d, time: "", endTime: "", club: cl?.nickname || cl?.club_name || "Payment due", colour: "#c4960c", member: kid?.first_name || (profile?.first_name || "You"), memberId: p.dependant_id || "self", isPayment: true, payAmount: parseFloat(p.amount), payDescription: p.description, payDueDate: p.due_date, payClub: cl?.nickname || cl?.club_name || "" });
-      }
-    });
-    return evts.sort((a, b) => a.date - b.date || (a.time || "").localeCompare(b.time || ""));
-  }, [recs, mans, pays, clubMap, clubTermMap, kidMap, profile, wd]);
 
   const activeWeekEvts = weekEvts.filter(e => !e.skipped);
   const filtPays = filter === "all" ? pays : pays.filter(p => (p.dependant_id || "self") === filter);
