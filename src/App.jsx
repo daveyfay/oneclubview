@@ -10,6 +10,7 @@ import OnboardKids from './pages/OnboardKids';
 import OnboardClubs from './pages/OnboardClubs';
 import Hub from './pages/Hub';
 import AdminDashboard from './pages/AdminDashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 
 export default function App() {
   const [screen, setScreen] = useState("loading");
@@ -129,7 +130,7 @@ export default function App() {
   if (screen === "hub" && user?.email === "hello@oneclubview.com") {
     return <AdminDashboard user={user} profile={profile} onBack={() => setScreen("hub_force")} onLogout={logout} />;
   }
-  if (screen === "hub" || screen === "hub_force") return <Hub user={user} profile={profile} onRefresh={(s) => { if (s === "clubs") setScreen("onboard_clubs"); }} onLogout={logout} />;
+  if (screen === "hub" || screen === "hub_force") return <ErrorBoundary><Hub user={user} profile={profile} onRefresh={(s) => { if (s === "clubs") setScreen("onboard_clubs"); }} onLogout={logout} /></ErrorBoundary>;
 
   // Password recovery modal — rendered on any screen
   if (showRecoveryPw) return <>
