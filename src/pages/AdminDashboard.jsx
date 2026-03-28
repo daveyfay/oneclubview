@@ -109,7 +109,7 @@ export default function AdminDashboard({user,onBack}){
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
               <div style={{flex:1}}>
                 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
-                  <span style={{fontSize:12,fontWeight:800,color:"var(--color-primary)",fontFamily:"monospace"}}>OCV-{String(t.ticket_number||0).padStart(3,"0")}</span>
+                  <span style={{fontSize:12,fontWeight:800,color:"var(--color-primary)",fontFamily:"var(--font-mono)"}}>OCV-{String(t.ticket_number||0).padStart(3,"0")}</span>
                   <span style={{fontSize:12}}>{catEmoji[t.category]||"💬"}</span>
                   <span style={{fontSize:11,color:"var(--color-muted)"}}>{t.category||"general"}</span>
                 </div>

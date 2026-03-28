@@ -65,7 +65,7 @@ function SupportModal({ userId, userEmail, onClose }) {
                 fontSize: 15,
                 fontWeight: 700,
                 color: "var(--color-primary)",
-                fontFamily: "monospace",
+                fontFamily: "var(--font-mono)",
               }}
             >
               OCV-{String(ticketNum).padStart(3, "0")}

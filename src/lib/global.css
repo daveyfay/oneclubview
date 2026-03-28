@@ -15,6 +15,7 @@
   --color-border: #e4e2de;
   --font-serif: 'Fraunces', Georgia, serif;
   --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Courier New', monospace;
   --shadow: 0 2px 8px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
   --shadow-lg: 0 8px 30px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.04);
   --shadow-xl: 0 20px 50px rgba(0,0,0,.12);
@@ -404,6 +405,7 @@ select {
   --shadow-lg: 0 8px 30px rgba(0,0,0,.3), 0 2px 8px rgba(0,0,0,.15);
   --shadow-xl: 0 20px 50px rgba(0,0,0,.4);
   --color-danger: #ef4444;
+  --font-mono: 'SF Mono', 'Fira Code', 'Courier New', monospace;
 }
 [data-theme="dark"] input,
 [data-theme="dark"] select,

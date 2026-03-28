@@ -307,7 +307,7 @@ export default function ScheduleTab({ filter }) {
             <div style={{ background: "rgba(255,255,255,.06)", borderRadius: 10, padding: 10 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.7)", marginBottom: 3 }}>{"\u{1F4E7}"} Email from a club?</div>
               <div style={{ fontSize: 11, color: "rgba(255,255,255,.45)", lineHeight: 1.3 }}>Forward it to:</div>
-              <span onClick={() => navigator.clipboard?.writeText("schedule@geovoriofi.resend.app")} style={{ display: "inline-block", padding: "4px 8px", background: "rgba(255,255,255,.1)", borderRadius: 5, fontSize: 10, fontWeight: 700, fontFamily: "monospace", marginTop: 4, cursor: "pointer" }}>schedule@geovoriofi.resend.app {"\u{1F4CB}"}</span>
+              <span onClick={() => navigator.clipboard?.writeText("schedule@geovoriofi.resend.app")} style={{ display: "inline-block", padding: "4px 8px", background: "rgba(255,255,255,.1)", borderRadius: 5, fontSize: 10, fontWeight: 700, fontFamily: "var(--font-mono)", marginTop: 4, cursor: "pointer" }}>schedule@geovoriofi.resend.app {"\u{1F4CB}"}</span>
             </div>
             <div style={{ background: "rgba(255,255,255,.06)", borderRadius: 10, padding: 10 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#25D366", marginBottom: 3 }}>{"\u{1F4AC}"} WhatsApp from a coach?</div>
