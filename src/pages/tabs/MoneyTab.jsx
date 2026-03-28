@@ -9,11 +9,21 @@ export default function MoneyTab({ filter }) {
   const {
     kids, clubs, pays, holidays,
     isAdmin, wd, clubMap, clubTermMap, kidMap,
-    getMemberCol, user, profile, load, recs, mans, weekEvts,
+    getMemberCol, user, profile, load, loading, recs, mans, weekEvts,
   } = useHubData();
 
   const [showAddPay, setShowAddPay] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
+
+  if (loading) return (
+    <ErrorBoundary label="Money">
+      <div style={{ padding: '4px 0' }}>
+        <div className="skeleton-shimmer" style={{ height: 100, borderRadius: 16, marginBottom: 16 }} />
+        <div className="skeleton-shimmer" style={{ width: '30%', height: 14, borderRadius: 6, marginBottom: 12 }} />
+        {[0,1,2].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 72, borderRadius: 12, marginBottom: 8 }} />)}
+      </div>
+    </ErrorBoundary>
+  );
 
   const filtPays = filter === "all" ? pays : pays.filter(p => (p.dependant_id || "self") === filter);
   const totalDue = filtPays.filter(p => !p.paid && p.status !== "not_renewing").reduce((s, p) => s + parseFloat(p.amount || 0), 0);

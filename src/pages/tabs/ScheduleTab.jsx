@@ -13,7 +13,7 @@ export default function ScheduleTab({ filter }) {
     kids, clubs, recs, mans, pays, camps, campBookings,
     holidays, userHolidays,
     isAdmin, members, wd, clubMap, clubTermMap, kidMap,
-    getMemberCol, user, profile, load, familyMembers, weekEvts,
+    getMemberCol, user, profile, load, loading, familyMembers, weekEvts,
   } = useHubData();
 
   const [weekView, setWeekView] = useState("grid");
@@ -23,6 +23,17 @@ export default function ScheduleTab({ filter }) {
   const [tapEvent, setTapEvent] = useState(null);
 
   function handleTapEvent(e) { setTapEvent(e); }
+
+  if (loading) return (
+    <ErrorBoundary label="Schedule">
+      <div style={{ padding: '4px 0' }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+          {[0,1,2,3,4,5,6].map(i => <div key={i} className="skeleton-shimmer" style={{ width: 44, height: 56, borderRadius: 12 }} />)}
+        </div>
+        {[0,1,2,3].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 56, borderRadius: 12, marginBottom: 8 }} />)}
+      </div>
+    </ErrorBoundary>
+  );
 
   const activeWeekEvts = weekEvts.filter(e => !e.skipped);
   const filtEvts = filter === "all" ? activeWeekEvts : activeWeekEvts.filter(e => e.memberId === filter);

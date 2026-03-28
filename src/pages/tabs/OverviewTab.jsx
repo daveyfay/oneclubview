@@ -9,9 +9,21 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
     kids, clubs, recs, mans, pays, camps, campBookings,
     holidays, userHolidays, familyMembers,
     isAdmin, members, wd, clubMap, clubTermMap, kidMap,
-    getMemberCol, user, profile, load,
+    getMemberCol, user, profile, load, loading,
     userLoc, familyLocs, schoolLocs, weekEvts,
   } = useHubData();
+
+  if (loading) return (
+    <ErrorBoundary label="Overview">
+      <div style={{ padding: '4px 0' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
+          {[0,1,2,3].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 80, borderRadius: 16 }} />)}
+        </div>
+        <div className="skeleton-shimmer" style={{ width: '40%', height: 16, borderRadius: 6, marginBottom: 12 }} />
+        {[0,1,2].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 64, borderRadius: 12, marginBottom: 8 }} />)}
+      </div>
+    </ErrorBoundary>
+  );
 
   const activeWeekEvts = weekEvts.filter(e => !e.skipped);
   const filtPays = filter === "all" ? pays : pays.filter(p => (p.dependant_id || "self") === filter);

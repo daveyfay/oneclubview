@@ -17,7 +17,7 @@ export default function ExploreTab({ filter, onRefresh }) {
   const {
     kids, clubs, camps, campBookings, holidays, userHolidays,
     schoolLocs, familyLocs, isAdmin,
-    clubTermMap, kidMap, user, profile, load, userLoc,
+    clubTermMap, kidMap, user, profile, load, loading, userLoc,
     setFamilyLocs,
   } = useHubData();
 
@@ -55,6 +55,17 @@ export default function ExploreTab({ filter, onRefresh }) {
     const age = getAge(kid.date_of_birth);
     return fc.filter(c => age >= c.age_min && age <= c.age_max);
   }, [camps, filter, kids, allLocs, campLoc]);
+
+  if (loading) return (
+    <ErrorBoundary label="Explore">
+      <div style={{ padding: '4px 0' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          {[0,1,2].map(i => <div key={i} className="skeleton-shimmer" style={{ width: 80, height: 36, borderRadius: 100 }} />)}
+        </div>
+        {[0,1,2].map(i => <div key={i} className="skeleton-shimmer" style={{ height: 100, borderRadius: 16, marginBottom: 10 }} />)}
+      </div>
+    </ErrorBoundary>
+  );
 
   return (
     <ErrorBoundary label="Explore">

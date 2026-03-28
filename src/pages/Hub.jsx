@@ -109,8 +109,8 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
   const allTabs = [{ id: "overview", l: "Overview", i: overviewIcon }, { id: "week", l: "Schedule", i: ICN.calendar }, { id: "money", l: "Money", i: ICN.wallet }, { id: "explore", l: "Explore", i: ICN.search }];
   const tabs = isAdmin ? allTabs : allTabs.filter(t => t.id !== "money");
 
-  // Loading skeleton
-  if (loading) return <div style={{ minHeight: "100vh", background: "var(--color-warm)" }}>
+  // Loading skeleton — only shown on first load (no data yet)
+  if (loading && kids.length === 0 && clubs.length === 0) return <div style={{ minHeight: "100vh", background: "var(--color-warm)" }}>
     <div style={{ background: "var(--color-card)", borderBottom: "1px solid var(--color-border)", padding: "12px 20px 6px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <div className="skeleton-shimmer" style={{ width: 120, height: 22, borderRadius: 8 }} />
