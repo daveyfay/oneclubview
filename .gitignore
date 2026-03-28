@@ -21,3 +21,4 @@ android/build/
 *.apk
 *.aab
 .superpowers/
+.worktrees/
