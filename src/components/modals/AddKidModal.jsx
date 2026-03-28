@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SB, db, getToken } from '../../lib/supabase';
 import { showToast } from '../../lib/utils';
 import SchoolPicker from '../SchoolPicker';
+import OcvModal from './OcvModal';
 
 function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
   const [memberType, setMemberType] = useState(editKid?._initType || "kid");
@@ -222,22 +223,11 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
 
   if (done)
     return (
-      <div
-        className="modal-backdrop"
-        onClick={(e) => e.target === e.currentTarget && onClose()}
-      >
-        <div className="modal-box" style={{ textAlign: "center", padding: 32 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
-          <h3
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: 18,
-              fontWeight: 700,
-              color: "var(--color-primary)",
-            }}
-          >
-            Invite sent!
-          </h3>
+      <OcvModal open={true} onClose={onClose} title="Invite sent!" footer={
+        <button onClick={onClose} className="btn btn-primary">Done</button>
+      }>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>&#x2705;</div>
           <p style={{ fontSize: 14, color: "var(--color-muted)", margin: "8px 0 12px" }}>
             We've emailed {name} with an invite.
           </p>
@@ -246,7 +236,6 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
               background: "#f5f3ef",
               borderRadius: 12,
               padding: 12,
-              marginBottom: 16,
               display: "flex",
               alignItems: "center",
               gap: 8,
@@ -283,256 +272,224 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
               Copy link
             </button>
           </div>
-          <button onClick={onClose} className="btn btn-primary">
-            Done
-          </button>
         </div>
-      </div>
+      </OcvModal>
     );
 
   return (
-    <div
-      className="modal-backdrop"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+    <OcvModal
+      open={true}
+      onClose={onClose}
+      title={editKid ? "Edit " + editKid.first_name : "Add family member"}
+      footer={
+        <button
+          onClick={save}
+          disabled={
+            sv ||
+            !name.trim() ||
+            (memberType === "adult" && !adultEmail.trim())
+          }
+          className="btn btn-primary"
+        >
+          {sv
+            ? "Saving..."
+            : editKid
+            ? "Save changes"
+            : memberType === "adult"
+            ? "Send invite"
+            : "Add child"}
+        </button>
+      }
     >
-      <div className="modal-box">
+      {!editKid && (
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
-            marginBottom: 20,
+            gap: 8,
+            background: "#f5f3ef",
+            borderRadius: 12,
+            padding: 4,
+            marginBottom: 16,
           }}
         >
-          <h3
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: 18,
-              fontWeight: 700,
-              color: "var(--color-primary)",
-            }}
-          >
-            {editKid ? "Edit " + editKid.first_name : "Add family member"}
-          </h3>
           <button
-            onClick={onClose}
+            onClick={() => setMemberType("kid")}
             style={{
-              background: "none",
+              flex: 1,
+              padding: 10,
+              borderRadius: 10,
               border: "none",
-              fontSize: 20,
+              background:
+                memberType === "kid" ? "var(--color-primary)" : "transparent",
+              color:
+                memberType === "kid" ? "#fff" : "var(--color-muted)",
+              fontSize: 13,
+              fontWeight: 700,
               cursor: "pointer",
-              color: "var(--color-muted)",
+              fontFamily: "var(--font-sans)",
             }}
           >
-            ✕
+            {'\u{1F467}'} Child
+          </button>
+          <button
+            onClick={() => setMemberType("adult")}
+            style={{
+              flex: 1,
+              padding: 10,
+              borderRadius: 10,
+              border: "none",
+              background:
+                memberType === "adult" ? "var(--color-primary)" : "transparent",
+              color:
+                memberType === "adult" ? "#fff" : "var(--color-muted)",
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: "pointer",
+              fontFamily: "var(--font-sans)",
+            }}
+          >
+            {'\u{1F464}'} Adult / Partner
           </button>
         </div>
-        {!editKid && (
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              background: "#f5f3ef",
-              borderRadius: 12,
-              padding: 4,
-              marginBottom: 16,
-            }}
-          >
-            <button
-              onClick={() => setMemberType("kid")}
-              style={{
-                flex: 1,
-                padding: 10,
-                borderRadius: 10,
-                border: "none",
-                background:
-                  memberType === "kid" ? "var(--color-primary)" : "transparent",
-                color:
-                  memberType === "kid" ? "#fff" : "var(--color-muted)",
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: "pointer",
-                fontFamily: "var(--font-sans)",
-              }}
-            >
-              👧 Child
-            </button>
-            <button
-              onClick={() => setMemberType("adult")}
-              style={{
-                flex: 1,
-                padding: 10,
-                borderRadius: 10,
-                border: "none",
-                background:
-                  memberType === "adult" ? "var(--color-primary)" : "transparent",
-                color:
-                  memberType === "adult" ? "#fff" : "var(--color-muted)",
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: "pointer",
-                fontFamily: "var(--font-sans)",
-              }}
-            >
-              👤 Adult / Partner
-            </button>
-          </div>
-        )}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div>
-            <span className="label">Name</span>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="First name"
-            />
-          </div>
-          {memberType === "adult" && (
-            <>
-              <div>
-                <span className="label">Their email</span>
-                <input
-                  type="email"
-                  value={adultEmail}
-                  onChange={(e) => setAdultEmail(e.target.value)}
-                  placeholder="email@example.com"
-                />
-              </div>
-              <div>
-                <span className="label">What can they see?</span>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 6,
-                    marginTop: 6,
-                  }}
-                >
-                  {[
-                    {
-                      v: "admin",
-                      l: "👨‍👩‍👧 Full access (parent/partner)",
-                      d: "See everything — schedule, fees, camps, can edit and invite",
-                    },
-                    {
-                      v: "carer",
-                      l: "🧑‍🍳 Carer (grandparent/childminder)",
-                      d: "See schedule only — no fees, no editing, no payments",
-                    },
-                    {
-                      v: "viewer",
-                      l: "👁️ Viewer (au pair/family friend)",
-                      d: "See schedule only — read-only, no changes",
-                    },
-                  ].map((r) => (
-                    <button
-                      key={r.v}
-                      onClick={() => setInviteRole(r.v)}
+      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div>
+          <span className="label">Name</span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="First name"
+          />
+        </div>
+        {memberType === "adult" && (
+          <>
+            <div>
+              <span className="label">Their email</span>
+              <input
+                type="email"
+                value={adultEmail}
+                onChange={(e) => setAdultEmail(e.target.value)}
+                placeholder="email@example.com"
+              />
+            </div>
+            <div>
+              <span className="label">What can they see?</span>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                  marginTop: 6,
+                }}
+              >
+                {[
+                  {
+                    v: "admin",
+                    l: "\u{1F468}\u200D\u{1F469}\u200D\u{1F467} Full access (parent/partner)",
+                    d: "See everything \u2014 schedule, fees, camps, can edit and invite",
+                  },
+                  {
+                    v: "carer",
+                    l: "\u{1F9D1}\u200D\u{1F373} Carer (grandparent/childminder)",
+                    d: "See schedule only \u2014 no fees, no editing, no payments",
+                  },
+                  {
+                    v: "viewer",
+                    l: "\u{1F441}\uFE0F Viewer (au pair/family friend)",
+                    d: "See schedule only \u2014 read-only, no changes",
+                  },
+                ].map((r) => (
+                  <button
+                    key={r.v}
+                    onClick={() => setInviteRole(r.v)}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 10,
+                      border:
+                        inviteRole === r.v
+                          ? "2px solid var(--color-primary)"
+                          : "1px solid var(--color-border)",
+                      background:
+                        inviteRole === r.v ? "var(--color-primary-bg)" : "#fff",
+                      cursor: "pointer",
+                      textAlign: "left",
+                    }}
+                  >
+                    <div
                       style={{
-                        padding: "10px 12px",
-                        borderRadius: 10,
-                        border:
-                          inviteRole === r.v
-                            ? "2px solid var(--color-primary)"
-                            : "1px solid var(--color-border)",
-                        background:
-                          inviteRole === r.v ? "var(--color-primary-bg)" : "#fff",
-                        cursor: "pointer",
-                        textAlign: "left",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "var(--color-text)",
                       }}
                     >
-                      <div
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: "var(--color-text)",
-                        }}
-                      >
-                        {r.l}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 11,
-                          color: "var(--color-muted)",
-                          marginTop: 2,
-                        }}
-                      >
-                        {r.d}
-                      </div>
+                      {r.l}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "var(--color-muted)",
+                        marginTop: 2,
+                      }}
+                    >
+                      {r.d}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+        {memberType === "kid" && (
+          <>
+            <div>
+              <span className="label">Date of birth</span>
+              <input
+                type="date"
+                value={dob}
+                onChange={(e) => setDob(e.target.value)}
+              />
+            </div>
+            {(() => {
+              const age = dob
+                ? Math.floor(
+                    (new Date() - new Date(dob)) /
+                      (365.25 * 86400000)
+                  )
+                : null;
+              return age !== null && age < 5
+                ? null
+                : !showSchool ? (
+                    <button
+                      onClick={() => setShowSchool(true)}
+                      style={{
+                        padding: 10,
+                        borderRadius: 12,
+                        border: "2px dashed var(--color-border)",
+                        background: "none",
+                        cursor: "pointer",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "var(--color-muted)",
+                        fontFamily: "var(--font-sans)",
+                      }}
+                    >
+                      + Add school info (optional)
                     </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-          {memberType === "kid" && (
-            <>
-              <div>
-                <span className="label">Date of birth</span>
-                <input
-                  type="date"
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                />
-              </div>
-              {(() => {
-                const age = dob
-                  ? Math.floor(
-                      (new Date() - new Date(dob)) /
-                        (365.25 * 86400000)
-                    )
-                  : null;
-                return age !== null && age < 5
-                  ? null
-                  : !showSchool ? (
-                      <button
-                        onClick={() => setShowSchool(true)}
-                        style={{
-                          padding: 10,
-                          borderRadius: 12,
-                          border: "2px dashed var(--color-border)",
-                          background: "none",
-                          cursor: "pointer",
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: "var(--color-muted)",
-                          fontFamily: "var(--font-sans)",
-                        }}
-                      >
-                        + Add school info (optional)
-                      </button>
-                    ) : (
-                      <SchoolPicker
-                        school={school}
-                        setSchool={setSchool}
-                        schoolId={schoolId}
-                        setSchoolId={setSchoolId}
-                        cls={cls}
-                        setCls={setCls}
-                      />
-                    );
-              })()}
-            </>
-          )}
-          <button
-            onClick={save}
-            disabled={
-              sv ||
-              !name.trim() ||
-              (memberType === "adult" && !adultEmail.trim())
-            }
-            className="btn btn-primary"
-          >
-            {sv
-              ? "Saving..."
-              : editKid
-              ? "Save changes"
-              : memberType === "adult"
-              ? "Send invite"
-              : "Add child"}
-          </button>
-        </div>
+                  ) : (
+                    <SchoolPicker
+                      school={school}
+                      setSchool={setSchool}
+                      schoolId={schoolId}
+                      setSchoolId={setSchoolId}
+                      cls={cls}
+                      setCls={setCls}
+                    />
+                  );
+            })()}
+          </>
+        )}
       </div>
-    </div>
+    </OcvModal>
   );
 }
 

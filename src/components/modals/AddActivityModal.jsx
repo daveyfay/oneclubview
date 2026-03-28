@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '../../lib/supabase';
+import OcvModal from './OcvModal';
 
 function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) {
   const [name, setName] = useState("");
@@ -17,18 +18,18 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
   const [done, setDone] = useState(false);
 
   const categories = [
-    { v: "martial_arts", l: "🥋 Martial Arts" },
-    { v: "dance", l: "💃 Dance" },
-    { v: "music", l: "🎵 Music" },
-    { v: "art", l: "🎨 Art / Craft" },
-    { v: "drama", l: "🎭 Drama" },
-    { v: "language", l: "🗣️ Language" },
-    { v: "tutoring", l: "📚 Tutoring" },
-    { v: "sport", l: "⚽ Sport" },
-    { v: "swimming", l: "🏊 Swimming" },
-    { v: "scouts", l: "⚜️ Scouts / Guides" },
-    { v: "coding", l: "💻 Coding" },
-    { v: "other", l: "📌 Other" },
+    { v: "martial_arts", l: "\u{1F94B} Martial Arts" },
+    { v: "dance", l: "\u{1F483} Dance" },
+    { v: "music", l: "\u{1F3B5} Music" },
+    { v: "art", l: "\u{1F3A8} Art / Craft" },
+    { v: "drama", l: "\u{1F3AD} Drama" },
+    { v: "language", l: "\u{1F5E3}\uFE0F Language" },
+    { v: "tutoring", l: "\u{1F4DA} Tutoring" },
+    { v: "sport", l: "\u26BD Sport" },
+    { v: "swimming", l: "\u{1F3CA} Swimming" },
+    { v: "scouts", l: "\u269C\uFE0F Scouts / Guides" },
+    { v: "coding", l: "\u{1F4BB} Coding" },
+    { v: "other", l: "\u{1F4CC} Other" },
   ];
   const days = [
     "Monday",
@@ -123,19 +124,9 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
 
   if (done)
     return (
-      <div className="modal-backdrop" onClick={onClose}>
-        <div className="modal-box" style={{ textAlign: "center", padding: 32 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
-          <h3
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: 18,
-              fontWeight: 700,
-              color: "var(--color-primary)",
-            }}
-          >
-            Activity added!
-          </h3>
+      <OcvModal open={true} onClose={onClose} title="Activity added!">
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>{'\u2705'}</div>
           <p
             style={{
               fontSize: 13,
@@ -146,258 +137,227 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
             It's now in your clubs and schedule.
           </p>
         </div>
-      </div>
+      </OcvModal>
     );
 
   return (
-    <div
-      className="modal-backdrop"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="modal-box" style={{ maxHeight: "85vh", overflowY: "auto" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
+    <OcvModal
+      open={true}
+      onClose={onClose}
+      title="Add an activity"
+      footer={
+        <button
+          onClick={save}
+          disabled={sv || !name.trim() || !cat}
+          className="btn btn-primary"
         >
-          <h3
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: 18,
-              fontWeight: 700,
-              color: "var(--color-primary)",
-            }}
-          >
-            Add an activity
-          </h3>
-          <button
-            onClick={onClose}
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: 20,
-              cursor: "pointer",
-              color: "var(--color-muted)",
-            }}
-          >
-            ✕
-          </button>
+          {sv ? "Saving..." : "Add activity"}
+        </button>
+      }
+    >
+      <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 14 }}>
+        For classes, lessons, or activities that aren't a formal club — like a
+        local karate class, music teacher, or dance school.
+      </p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {/* Name */}
+        <div>
+          <span className="label">Activity name</span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Master Dong's Karate, Sarah's Piano Lessons"
+          />
         </div>
-        <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 14 }}>
-          For classes, lessons, or activities that aren't a formal club — like a
-          local karate class, music teacher, or dance school.
-        </p>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {/* Name */}
+        {/* Category */}
+        <div>
+          <span className="label">Type</span>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4 }}>
+            {categories.map((c) => (
+              <button
+                key={c.v}
+                onClick={() => setCat(c.v)}
+                style={{
+                  padding: "6px 4px",
+                  borderRadius: 8,
+                  border:
+                    cat === c.v
+                      ? "2px solid var(--color-primary)"
+                      : "1px solid var(--color-border)",
+                  background: cat === c.v ? "var(--color-primary-bg)" : "#fff",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "var(--color-text)",
+                  cursor: "pointer",
+                  fontFamily: "var(--font-sans)",
+                }}
+              >
+                {c.l}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Location */}
+        <div>
+          <span className="label">Where (optional)</span>
+          <input
+            value={loc}
+            onChange={(e) => setLoc(e.target.value)}
+            placeholder="e.g. Hollypark School hall, instructor's house"
+          />
+        </div>
+
+        {/* Contact */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           <div>
-            <span className="label">Activity name</span>
+            <span className="label">Contact name (optional)</span>
             <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Master Dong's Karate, Sarah's Piano Lessons"
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              placeholder="e.g. Master Dong"
             />
           </div>
-
-          {/* Category */}
           <div>
-            <span className="label">Type</span>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4 }}>
-              {categories.map((c) => (
-                <button
-                  key={c.v}
-                  onClick={() => setCat(c.v)}
-                  style={{
-                    padding: "6px 4px",
-                    borderRadius: 8,
-                    border:
-                      cat === c.v
-                        ? "2px solid var(--color-primary)"
-                        : "1px solid var(--color-border)",
-                    background: cat === c.v ? "var(--color-primary-bg)" : "#fff",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "var(--color-text)",
-                    cursor: "pointer",
-                    fontFamily: "var(--font-sans)",
-                  }}
-                >
-                  {c.l}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Location */}
-          <div>
-            <span className="label">Where (optional)</span>
+            <span className="label">Phone / WhatsApp (optional)</span>
             <input
-              value={loc}
-              onChange={(e) => setLoc(e.target.value)}
-              placeholder="e.g. Hollypark School hall, instructor's house"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="085 123 4567"
             />
           </div>
+        </div>
 
-          {/* Contact */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            <div>
-              <span className="label">Contact name (optional)</span>
-              <input
-                value={contact}
-                onChange={(e) => setContact(e.target.value)}
-                placeholder="e.g. Master Dong"
-              />
-            </div>
-            <div>
-              <span className="label">Phone / WhatsApp (optional)</span>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="085 123 4567"
-              />
-            </div>
-          </div>
-
-          {/* Which kid */}
-          {kids.length > 0 && (
-            <div>
-              <span className="label">Who attends</span>
-              <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+        {/* Which kid */}
+        {kids.length > 0 && (
+          <div>
+            <span className="label">Who attends</span>
+            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+              <button
+                onClick={() => setAssignKid("")}
+                style={{
+                  padding: "5px 12px",
+                  borderRadius: 8,
+                  border:
+                    !assignKid
+                      ? "1.5px solid var(--color-primary)"
+                      : "1.5px solid var(--color-border)",
+                  background: !assignKid ? "var(--color-primary-bg)" : "#fff",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: !assignKid ? "var(--color-primary)" : "var(--color-muted)",
+                  cursor: "pointer",
+                  fontFamily: "var(--font-sans)",
+                }}
+              >
+                Me
+              </button>
+              {kids.map((k) => (
                 <button
-                  onClick={() => setAssignKid("")}
+                  key={k.id}
+                  onClick={() => setAssignKid(k.id)}
                   style={{
                     padding: "5px 12px",
                     borderRadius: 8,
                     border:
-                      !assignKid
+                      assignKid === k.id
                         ? "1.5px solid var(--color-primary)"
                         : "1.5px solid var(--color-border)",
-                    background: !assignKid ? "var(--color-primary-bg)" : "#fff",
+                    background:
+                      assignKid === k.id ? "var(--color-primary-bg)" : "#fff",
                     fontSize: 11,
                     fontWeight: 600,
-                    color: !assignKid ? "var(--color-primary)" : "var(--color-muted)",
+                    color:
+                      assignKid === k.id ? "var(--color-primary)" : "var(--color-muted)",
                     cursor: "pointer",
                     fontFamily: "var(--font-sans)",
                   }}
                 >
-                  Me
+                  {k.first_name}
                 </button>
-                {kids.map((k) => (
-                  <button
-                    key={k.id}
-                    onClick={() => setAssignKid(k.id)}
-                    style={{
-                      padding: "5px 12px",
-                      borderRadius: 8,
-                      border:
-                        assignKid === k.id
-                          ? "1.5px solid var(--color-primary)"
-                          : "1.5px solid var(--color-border)",
-                      background:
-                        assignKid === k.id ? "var(--color-primary-bg)" : "#fff",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color:
-                        assignKid === k.id ? "var(--color-primary)" : "var(--color-muted)",
-                      cursor: "pointer",
-                      fontFamily: "var(--font-sans)",
-                    }}
-                  >
-                    {k.first_name}
-                  </button>
-                ))}
-              </div>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Schedule */}
+        {/* Schedule */}
+        <div>
+          <span className="label">When (optional — adds to your schedule)</span>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+            <select
+              value={day}
+              onChange={(e) => setDay(e.target.value)}
+              style={{
+                padding: 8,
+                borderRadius: 10,
+                border: "1px solid var(--color-border)",
+                fontSize: 12,
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              <option value="">Day</option>
+              {days.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              style={{
+                padding: 8,
+                borderRadius: 10,
+                border: "1px solid var(--color-border)",
+                fontSize: 12,
+                fontFamily: "var(--font-sans)",
+              }}
+            />
+            <select
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              style={{
+                padding: 8,
+                borderRadius: 10,
+                border: "1px solid var(--color-border)",
+                fontSize: 12,
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">1 hour</option>
+              <option value="90">1.5 hours</option>
+              <option value="120">2 hours</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Term cost */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           <div>
-            <span className="label">When (optional — adds to your schedule)</span>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
-              <select
-                value={day}
-                onChange={(e) => setDay(e.target.value)}
-                style={{
-                  padding: 8,
-                  borderRadius: 10,
-                  border: "1px solid var(--color-border)",
-                  fontSize: 12,
-                  fontFamily: "var(--font-sans)",
-                }}
-              >
-                <option value="">Day</option>
-                {days.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                style={{
-                  padding: 8,
-                  borderRadius: 10,
-                  border: "1px solid var(--color-border)",
-                  fontSize: 12,
-                  fontFamily: "var(--font-sans)",
-                }}
-              />
-              <select
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                style={{
-                  padding: 8,
-                  borderRadius: 10,
-                  border: "1px solid var(--color-border)",
-                  fontSize: 12,
-                  fontFamily: "var(--font-sans)",
-                }}
-              >
-                <option value="30">30 min</option>
-                <option value="45">45 min</option>
-                <option value="60">1 hour</option>
-                <option value="90">1.5 hours</option>
-                <option value="120">2 hours</option>
-              </select>
-            </div>
+            <span className="label">Term fee (optional)</span>
+            <input
+              type="number"
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+              placeholder="e.g. 120"
+            />
           </div>
-
-          {/* Term cost */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            <div>
-              <span className="label">Term fee (optional)</span>
-              <input
-                type="number"
-                value={cost}
-                onChange={(e) => setCost(e.target.value)}
-                placeholder="e.g. 120"
-              />
-            </div>
-            <div>
-              <span className="label">Term name (optional)</span>
-              <input
-                value={termName}
-                onChange={(e) => setTermName(e.target.value)}
-                placeholder="e.g. Spring 2026"
-              />
-            </div>
+          <div>
+            <span className="label">Term name (optional)</span>
+            <input
+              value={termName}
+              onChange={(e) => setTermName(e.target.value)}
+              placeholder="e.g. Spring 2026"
+            />
           </div>
-
-          <button
-            onClick={save}
-            disabled={sv || !name.trim() || !cat}
-            className="btn btn-primary"
-            style={{ marginTop: 4 }}
-          >
-            {sv ? "Saving..." : "Add activity"}
-          </button>
         </div>
       </div>
-    </div>
+    </OcvModal>
   );
 }
 

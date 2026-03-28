@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../lib/supabase';
 import { COLS } from '../../lib/constants';
+import OcvModal from './OcvModal';
 
 function EditClubModal({
   club,
@@ -129,359 +130,331 @@ function EditClubModal({
 
   if (!loaded)
     return (
-      <div className="modal-backdrop">
-        <div className="modal-box" style={{ textAlign: "center", padding: 40 }}>
+      <OcvModal open={true} onClose={onClose} title="Loading...">
+        <div style={{ textAlign: "center", padding: 20 }}>
           <p>Loading...</p>
         </div>
-      </div>
+      </OcvModal>
     );
 
   return (
-    <div
-      className="modal-backdrop"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="modal-box">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: 16,
-          }}
-        >
-          <h3
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: 18,
-              fontWeight: 700,
-              color: "var(--color-primary)",
-            }}
-          >
-            {club.club_name}
-          </h3>
+    <OcvModal
+      open={true}
+      onClose={onClose}
+      title={club.club_name}
+      footer={
+        <>
           <button
-            onClick={onClose}
+            onClick={save}
+            disabled={sv}
+            className="btn btn-primary"
+            style={{ marginBottom: 8 }}
+          >
+            {sv ? "Saving..." : "Save changes"}
+          </button>
+          <button
+            onClick={remove}
+            disabled={sv}
             style={{
-              background: "none",
+              width: "100%",
+              padding: 12,
+              borderRadius: 14,
               border: "none",
-              fontSize: 20,
+              background: "#fef2f2",
               cursor: "pointer",
-              color: "var(--color-muted)",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#dc2626",
+              fontFamily: "var(--font-sans)",
             }}
           >
-            ✕
+            Remove club
           </button>
-        </div>
-        {club.club_addr && (
-          <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 12 }}>
-            {club.club_addr}
-          </p>
-        )}
+        </>
+      }
+    >
+      {club.club_addr && (
+        <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 12 }}>
+          {club.club_addr}
+        </p>
+      )}
 
-        {/* Who attends - multi-select */}
-        <div style={{ marginBottom: 12 }}>
-          <span className="label">Nickname (shows on schedule)</span>
-          <input
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            placeholder={"e.g. Gym, Swimming, GAA"}
-            style={{ marginBottom: 4 }}
-          />
-          <span style={{ fontSize: 11, color: "var(--color-muted)" }}>
-            This is what you'll see on the weekly schedule instead of the full
-            club name
-          </span>
-        </div>
-        <div style={{ marginBottom: 16 }}>
-          <span className="label">Schedule colour</span>
-          <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-            {COLOUR_OPTIONS.map((col) => (
-              <button
-                key={col}
-                onClick={() => setClubColour(col)}
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: "50%",
-                  background: col,
-                  border: clubColour === col ? "3px solid #1a2a3a" : "1px solid rgba(0,0,0,.1)",
-                  cursor: "pointer",
-                  padding: 0,
-                  transition: "border .15s"
-                }}
-              />
-            ))}
-          </div>
-        </div>
-        <div style={{ marginBottom: 16 }}>
-          <span className="label">Who goes to this club?</span>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}>
+      {/* Who attends - multi-select */}
+      <div style={{ marginBottom: 12 }}>
+        <span className="label">Nickname (shows on schedule)</span>
+        <input
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
+          placeholder={"e.g. Gym, Swimming, GAA"}
+          style={{ marginBottom: 4 }}
+        />
+        <span style={{ fontSize: 11, color: "var(--color-muted)" }}>
+          This is what you'll see on the weekly schedule instead of the full
+          club name
+        </span>
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <span className="label">Schedule colour</span>
+        <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+          {COLOUR_OPTIONS.map((col) => (
             <button
-              onClick={() => toggleMember("self")}
+              key={col}
+              onClick={() => setClubColour(col)}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: "50%",
+                background: col,
+                border: clubColour === col ? "3px solid #1a2a3a" : "1px solid rgba(0,0,0,.1)",
+                cursor: "pointer",
+                padding: 0,
+                transition: "border .15s"
+              }}
+            />
+          ))}
+        </div>
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <span className="label">Who goes to this club?</span>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}>
+          <button
+            onClick={() => toggleMember("self")}
+            style={{
+              padding: "8px 16px",
+              borderRadius: 10,
+              border: who.includes("self")
+                ? "2px solid var(--color-primary)"
+                : "2px solid var(--color-border)",
+              background: who.includes("self")
+                ? "var(--color-primary-bg)"
+                : "var(--color-card)",
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 600,
+              color: who.includes("self") ? "var(--color-primary-light)" : "var(--color-muted)",
+              fontFamily: "var(--font-sans)",
+            }}
+          >
+            {'\u{1F464}'} {profile?.first_name || "Me"}
+          </button>
+          {kids.map((k) => (
+            <button
+              key={k.id}
+              onClick={() => toggleMember(k.id)}
               style={{
                 padding: "8px 16px",
                 borderRadius: 10,
-                border: who.includes("self")
+                border: who.includes(k.id)
                   ? "2px solid var(--color-primary)"
                   : "2px solid var(--color-border)",
-                background: who.includes("self")
+                background: who.includes(k.id)
                   ? "var(--color-primary-bg)"
                   : "var(--color-card)",
                 cursor: "pointer",
                 fontSize: 13,
                 fontWeight: 600,
-                color: who.includes("self") ? "var(--color-primary-light)" : "var(--color-muted)",
+                color: who.includes(k.id) ? "var(--color-primary-light)" : "var(--color-muted)",
                 fontFamily: "var(--font-sans)",
               }}
             >
-              👤 {profile?.first_name || "Me"}
+              {'\u{1F467}'} {k.first_name}
             </button>
-            {kids.map((k) => (
-              <button
-                key={k.id}
-                onClick={() => toggleMember(k.id)}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: 10,
-                  border: who.includes(k.id)
-                    ? "2px solid var(--color-primary)"
-                    : "2px solid var(--color-border)",
-                  background: who.includes(k.id)
-                    ? "var(--color-primary-bg)"
-                    : "var(--color-card)",
-                  cursor: "pointer",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: who.includes(k.id) ? "var(--color-primary-light)" : "var(--color-muted)",
-                  fontFamily: "var(--font-sans)",
-                }}
-              >
-                👧 {k.first_name}
-              </button>
-            ))}
+          ))}
+        </div>
+      </div>
+
+      {/* Club details toggle */}
+      <button
+        onClick={() => setShowDetails(!showDetails)}
+        style={{
+          width: "100%",
+          padding: 12,
+          borderRadius: 12,
+          border: "1px solid var(--color-border)",
+          background: "var(--color-card)",
+          cursor: "pointer",
+          fontSize: 13,
+          fontWeight: 600,
+          color: "var(--color-muted)",
+          fontFamily: "var(--font-sans)",
+          marginBottom: 12,
+          textAlign: "left",
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <span>
+          Club details {clubUrl || clubPhone ? "(added)" : ""}
+        </span>
+        <span>{showDetails ? "\u25B2" : "\u25BC"}</span>
+      </button>
+
+      {showDetails && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            marginBottom: 16,
+            background: "#f8f7f4",
+            borderRadius: 14,
+            padding: 14,
+            border: "1px solid var(--color-border)",
+          }}
+        >
+          <div>
+            <span className="label">Website</span>
+            <input
+              value={clubUrl}
+              onChange={(e) => setClubUrl(e.target.value)}
+              placeholder="https://..."
+            />
+          </div>
+          <div>
+            <span className="label">Facebook page</span>
+            <input
+              value={clubFb}
+              onChange={(e) => setClubFb(e.target.value)}
+              placeholder="https://facebook.com/..."
+            />
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ flex: 1 }}>
+              <span className="label">Phone</span>
+              <input
+                value={clubPhone}
+                onChange={(e) => setClubPhone(e.target.value)}
+                placeholder="085..."
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <span className="label">Email</span>
+              <input
+                value={clubEmail}
+                onChange={(e) => setClubEmail(e.target.value)}
+                placeholder="info@club.ie"
+              />
+            </div>
+          </div>
+          <div>
+            <span className="label">Eircode</span>
+            <input
+              value={clubEircode}
+              onChange={(e) => setClubEircode(e.target.value)}
+              placeholder="D05 X1Y2"
+              style={{ maxWidth: 140 }}
+            />
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ flex: 1 }}>
+              <span className="label">Term starts</span>
+              <input
+                type="date"
+                value={termStart}
+                onChange={(e) => setTermStart(e.target.value)}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <span className="label">Term ends</span>
+              <input
+                type="date"
+                value={termEnd}
+                onChange={(e) => setTermEnd(e.target.value)}
+              />
+            </div>
+          </div>
+          <div>
+            <span className="label">Notes</span>
+            <textarea
+              value={clubNotes}
+              onChange={(e) => setClubNotes(e.target.value)}
+              placeholder="Coach name, WhatsApp group link, gear needed..."
+              rows={3}
+              style={{
+                width: "100%",
+                padding: 10,
+                borderRadius: 10,
+                border: "1px solid var(--color-border)",
+                fontSize: 13,
+                fontFamily: "var(--font-sans)",
+                resize: "vertical",
+              }}
+            />
           </div>
         </div>
+      )}
 
-        {/* Club details toggle */}
-        <button
-          onClick={() => setShowDetails(!showDetails)}
+      {/* Quick links if URLs set */}
+      {(clubUrl || clubFb) && !showDetails && (
+        <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+          {clubUrl && (
+            <a
+              href={clubUrl}
+              target="_blank"
+              rel="noopener"
+              style={{
+                flex: 1,
+                textAlign: "center",
+                padding: 8,
+                borderRadius: 10,
+                background: "var(--color-primary)",
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 700,
+                textDecoration: "none",
+              }}
+            >
+              Website
+            </a>
+          )}
+          {clubFb && (
+            <a
+              href={clubFb}
+              target="_blank"
+              rel="noopener"
+              style={{
+                flex: 1,
+                textAlign: "center",
+                padding: 8,
+                borderRadius: 10,
+                background: "#1877F2",
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 700,
+                textDecoration: "none",
+              }}
+            >
+              Facebook
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Term info if set */}
+      {termStart && termEnd && !showDetails && (
+        <div
           style={{
-            width: "100%",
-            padding: 12,
-            borderRadius: 12,
-            border: "1px solid var(--color-border)",
-            background: "var(--color-card)",
-            cursor: "pointer",
-            fontSize: 13,
-            fontWeight: 600,
+            fontSize: 12,
             color: "var(--color-muted)",
-            fontFamily: "var(--font-sans)",
             marginBottom: 12,
-            textAlign: "left",
-            display: "flex",
-            justifyContent: "space-between",
+            background: "var(--color-sage)",
+            padding: "8px 12px",
+            borderRadius: 10,
           }}
         >
-          <span>
-            Club details {clubUrl || clubPhone ? "(added)" : ""}
-          </span>
-          <span>{showDetails ? "▲" : "▼"}</span>
-        </button>
-
-        {showDetails && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
-              marginBottom: 16,
-              background: "#f8f7f4",
-              borderRadius: 14,
-              padding: 14,
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <div>
-              <span className="label">Website</span>
-              <input
-                value={clubUrl}
-                onChange={(e) => setClubUrl(e.target.value)}
-                placeholder="https://..."
-              />
-            </div>
-            <div>
-              <span className="label">Facebook page</span>
-              <input
-                value={clubFb}
-                onChange={(e) => setClubFb(e.target.value)}
-                placeholder="https://facebook.com/..."
-              />
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <div style={{ flex: 1 }}>
-                <span className="label">Phone</span>
-                <input
-                  value={clubPhone}
-                  onChange={(e) => setClubPhone(e.target.value)}
-                  placeholder="085..."
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <span className="label">Email</span>
-                <input
-                  value={clubEmail}
-                  onChange={(e) => setClubEmail(e.target.value)}
-                  placeholder="info@club.ie"
-                />
-              </div>
-            </div>
-            <div>
-              <span className="label">Eircode</span>
-              <input
-                value={clubEircode}
-                onChange={(e) => setClubEircode(e.target.value)}
-                placeholder="D05 X1Y2"
-                style={{ maxWidth: 140 }}
-              />
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <div style={{ flex: 1 }}>
-                <span className="label">Term starts</span>
-                <input
-                  type="date"
-                  value={termStart}
-                  onChange={(e) => setTermStart(e.target.value)}
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <span className="label">Term ends</span>
-                <input
-                  type="date"
-                  value={termEnd}
-                  onChange={(e) => setTermEnd(e.target.value)}
-                />
-              </div>
-            </div>
-            <div>
-              <span className="label">Notes</span>
-              <textarea
-                value={clubNotes}
-                onChange={(e) => setClubNotes(e.target.value)}
-                placeholder="Coach name, WhatsApp group link, gear needed..."
-                rows={3}
-                style={{
-                  width: "100%",
-                  padding: 10,
-                  borderRadius: 10,
-                  border: "1px solid var(--color-border)",
-                  fontSize: 13,
-                  fontFamily: "var(--font-sans)",
-                  resize: "vertical",
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Quick links if URLs set */}
-        {(clubUrl || clubFb) && !showDetails && (
-          <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-            {clubUrl && (
-              <a
-                href={clubUrl}
-                target="_blank"
-                rel="noopener"
-                style={{
-                  flex: 1,
-                  textAlign: "center",
-                  padding: 8,
-                  borderRadius: 10,
-                  background: "var(--color-primary)",
-                  color: "#fff",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  textDecoration: "none",
-                }}
-              >
-                Website
-              </a>
-            )}
-            {clubFb && (
-              <a
-                href={clubFb}
-                target="_blank"
-                rel="noopener"
-                style={{
-                  flex: 1,
-                  textAlign: "center",
-                  padding: 8,
-                  borderRadius: 10,
-                  background: "#1877F2",
-                  color: "#fff",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  textDecoration: "none",
-                }}
-              >
-                Facebook
-              </a>
-            )}
-          </div>
-        )}
-
-        {/* Term info if set */}
-        {termStart && termEnd && !showDetails && (
-          <div
-            style={{
-              fontSize: 12,
-              color: "var(--color-muted)",
-              marginBottom: 12,
-              background: "var(--color-sage)",
-              padding: "8px 12px",
-              borderRadius: 10,
-            }}
-          >
-            📅 Current term:{" "}
-            {new Date(termStart).toLocaleDateString("en-IE", {
-              day: "numeric",
-              month: "short",
-            })}{" "}
-            –{" "}
-            {new Date(termEnd).toLocaleDateString("en-IE", {
-              day: "numeric",
-              month: "short",
-            })}
-          </div>
-        )}
-
-        <button
-          onClick={save}
-          disabled={sv}
-          className="btn btn-primary"
-          style={{ marginBottom: 8 }}
-        >
-          {sv ? "Saving..." : "Save changes"}
-        </button>
-        <button
-          onClick={remove}
-          disabled={sv}
-          style={{
-            width: "100%",
-            padding: 12,
-            borderRadius: 14,
-            border: "none",
-            background: "#fef2f2",
-            cursor: "pointer",
-            fontSize: 13,
-            fontWeight: 600,
-            color: "#dc2626",
-            fontFamily: "var(--font-sans)",
-          }}
-        >
-          Remove club
-        </button>
-      </div>
-    </div>
+          {'\u{1F4C5}'} Current term:{" "}
+          {new Date(termStart).toLocaleDateString("en-IE", {
+            day: "numeric",
+            month: "short",
+          })}{" "}
+          {'\u2013'}{" "}
+          {new Date(termEnd).toLocaleDateString("en-IE", {
+            day: "numeric",
+            month: "short",
+          })}
+        </div>
+      )}
+    </OcvModal>
   );
 }
 
