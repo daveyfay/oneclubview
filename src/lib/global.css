@@ -272,26 +272,6 @@ select {
   background: var(--gxl);
 }
 
-/* ── Skeleton Loading ── */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-.skeleton-shimmer {
-  background: linear-gradient(90deg, #e8e4df 25%, #f5f1ec 37%, #e8e4df 63%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s ease infinite;
-}
-
-/* ── Staggered Card Animations ── */
-@keyframes cardSlideIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.stagger-card {
-  animation: cardSlideIn .35s cubic-bezier(.4,0,.2,1) both;
-}
-
 /* ── Native App Polish ── */
 
 /* Native-only: iOS-style rubber-band scrolling, momentum */

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { isToday } from '../../lib/utils';
-import { COLS } from '../../lib/constants';
 
 const GRADS = [
   "linear-gradient(135deg,#3b82f6,#2563eb)",
@@ -32,15 +31,7 @@ function colourToGrad(hex) {
   return `linear-gradient(135deg,${hex},${hex}dd)`;
 }
 
-export default function WeekGrid({ weekDays, events, holidays, onTapEvent, kids }) {
-  // Helper: get member colour based on kid index
-  function getMemberCol(memberId, fallback) {
-    if (!kids) return fallback || "#999";
-    const kidIdx = kids.findIndex(k => k.id === memberId);
-    if (kidIdx >= 0) return COLS[kidIdx % COLS.length];
-    if (memberId === "self") return "#1a2a3a";
-    return fallback || "#999";
-  }
+export default function WeekGrid({ weekDays, events, holidays, onTapEvent }) {
   // Split 7 days into pages of 4 (page 0 = days 0-3, page 1 = days 3-6)
   // Use overlapping pages so swipe feels natural
   const [page, setPage] = useState(() => {
@@ -159,7 +150,7 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, kids 
                 onTouchEnd={ev => { ev.currentTarget.style.transform = ""; }}
                 style={{
                   borderRadius: 10, padding: "8px 5px", textAlign: "center",
-                  background: colourToGrad(getMemberCol(e.memberId, e.colour)), color: "#fff",
+                  background: colourToGrad(e.colour), color: "#fff",
                   minHeight: 56, display: "flex", flexDirection: "column",
                   justifyContent: "center", alignItems: "center",
                   cursor: "pointer", transition: "transform .1s",
