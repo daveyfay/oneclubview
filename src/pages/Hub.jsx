@@ -236,6 +236,11 @@ export default function Hub({user,profile,onRefresh,onLogout}){
 
   const myRole=profile?.family_role||"admin";
   const isAdmin=myRole==="admin";
+  // Helper: handle event tap — payments go to Money tab, others open detail modal
+  function handleTapEvent(e){
+    if(e.isPayment||e.source_type==="payment"){setTab("money");window.scrollTo(0,0);return;}
+    setTapEvent(e);
+  }
   // Helper: get member colour (kid index-based from COLS, or fallback)
   function getMemberCol(memberId,fallback){
     const kidIdx=kids.findIndex(k=>k.id===memberId);
@@ -553,7 +558,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
           </div>
           <div style={{padding:"8px 12px",maxHeight:240,overflowY:"auto"}}>
             {dayEvts.length===0?<div style={{padding:"16px 0",textAlign:"center",color:"var(--mt)",fontSize:13}}>{isHol?"School holiday — no activities":"No activities this day"}</div>
-            :dayEvts.map((e,i)=><div key={e.id||i} className="stagger-card" style={{animationDelay:(i*50)+"ms"}} onClick={()=>setTapEvent(e)}>
+            :dayEvts.map((e,i)=><div key={e.id||i} className="stagger-card" style={{animationDelay:(i*50)+"ms"}} onClick={()=>handleTapEvent(e)}>
               <div style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6,cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.98)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
               <div style={{width:4,background:getMemberCol(e.memberId,e.colour),flexShrink:0}}/>
               <div style={{flex:1,padding:"12px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
@@ -686,7 +691,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
               </div>
               <div style={{padding:"8px 12px",maxHeight:240,overflowY:"auto"}}>
                 {dayE.length===0?<div style={{padding:"16px 0",textAlign:"center",color:"var(--mt)",fontSize:13}}>No activities this day</div>
-                :dayE.map((e,i)=><div key={e.id||i} onClick={()=>setTapEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6,cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.98)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
+                :dayE.map((e,i)=><div key={e.id||i} onClick={()=>handleTapEvent(e)} style={{display:"flex",alignItems:"stretch",gap:0,borderRadius:12,overflow:"hidden",background:"var(--bg)",border:"1px solid var(--bd)",marginBottom:6,cursor:"pointer",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.98)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}>
                   <div style={{width:4,background:getMemberCol(e.memberId,e.colour),flexShrink:0}}/>
                   <div style={{flex:1,padding:"12px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
                     <div style={{minWidth:0}}>
@@ -939,7 +944,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
       {tab==="week"&&<div>
 
         {/* WEEKLY GRID VIEW */}
-        {weekView==="grid"&&<WeekGrid weekDays={wd} events={filtEvts} holidays={[...(holidays||[]),...(userHolidays||[])]} onTapEvent={setTapEvent} kids={kids}/>}
+        {weekView==="grid"&&<WeekGrid weekDays={wd} events={filtEvts} holidays={[...(holidays||[]),...(userHolidays||[])]} onTapEvent={handleTapEvent} kids={kids}/>}
 
         {/* SWIMLANE LIST VIEW */}
         {weekView==="list"&&<div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}} className="hsb">
@@ -968,7 +973,7 @@ export default function Hub({user,profile,onRefresh,onLogout}){
                 {lanes.map((lane,li)=>lane.events.map((e,ei)=>{
                   const kidIdx=kids.findIndex(k=>k.id===e.memberId);
                   const memberCol=kidIdx>=0?COLS[kidIdx%COLS.length]:(e.colour||COLS[li%COLS.length]);
-                  return <div key={e.id||li+"-"+ei} className="stagger-card" style={{animationDelay:(li*50+ei*50)+"ms",display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:e.skipped?"#f9f9f9":"var(--card)",border:"1px solid var(--bd)",boxShadow:e.skipped?"none":"var(--shadow)",cursor:"pointer",opacity:e.skipped?.5:1}} onClick={()=>setTapEvent(e)}>
+                  return <div key={e.id||li+"-"+ei} className="stagger-card" style={{animationDelay:(li*50+ei*50)+"ms",display:"flex",alignItems:"stretch",gap:0,borderRadius:14,overflow:"hidden",background:e.skipped?"#f9f9f9":"var(--card)",border:"1px solid var(--bd)",boxShadow:e.skipped?"none":"var(--shadow)",cursor:"pointer",opacity:e.skipped?.5:1}} onClick={()=>handleTapEvent(e)}>
                     <div style={{width:5,background:e.skipped?"var(--bd)":memberCol,flexShrink:0}}/>
                     <div style={{flex:1,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
                       <div style={{minWidth:0}}>
