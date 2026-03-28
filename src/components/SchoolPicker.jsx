@@ -65,11 +65,11 @@ function SchoolPicker({ school, setSchool, schoolId, setSchoolId, cls, setCls })
         background: "#f8f7f4",
         borderRadius: 14,
         padding: 14,
-        border: "1px solid var(--bd)",
+        border: "1px solid var(--color-border)",
       }}
     >
       <span
-        className="lbl"
+        className="label"
         style={{ marginBottom: 8 }}
       >
         School (helps match classmates at camps)
@@ -88,7 +88,7 @@ function SchoolPicker({ school, setSchool, schoolId, setSchoolId, cls, setCls })
                 right: 12,
                 top: 13,
                 fontSize: 12,
-                color: "var(--mt)",
+                color: "var(--color-muted)",
               }}
             >
               ...
@@ -114,7 +114,7 @@ function SchoolPicker({ school, setSchool, schoolId, setSchoolId, cls, setCls })
                 right: 12,
                 top: 13,
                 fontSize: 10,
-                color: "var(--acc)",
+                color: "var(--color-accent)",
               }}
             >
               Pick from list
@@ -128,7 +128,7 @@ function SchoolPicker({ school, setSchool, schoolId, setSchoolId, cls, setCls })
                 left: 0,
                 right: 0,
                 background: "#fff",
-                border: "1px solid var(--bd)",
+                border: "1px solid var(--color-border)",
                 borderRadius: 12,
                 boxShadow: "0 8px 24px rgba(0,0,0,.1)",
                 zIndex: 20,
@@ -150,19 +150,19 @@ function SchoolPicker({ school, setSchool, schoolId, setSchoolId, cls, setCls })
                     background: "none",
                     cursor: "pointer",
                     textAlign: "left",
-                    fontFamily: "var(--sn)",
+                    fontFamily: "var(--font-sans)",
                   }}
                 >
                   <div
                     style={{
                       fontSize: 13,
                       fontWeight: 600,
-                      color: "var(--tx)",
+                      color: "var(--color-text)",
                     }}
                   >
                     {s.name}
                   </div>
-                  <div style={{ fontSize: 11, color: "var(--mt)" }}>
+                  <div style={{ fontSize: 11, color: "var(--color-muted)" }}>
                     {s.address || s.county || ""}
                     {s.school_type === "secondary" ? " · Secondary" : ""}
                   </div>
@@ -173,7 +173,7 @@ function SchoolPicker({ school, setSchool, schoolId, setSchoolId, cls, setCls })
                   style={{
                     padding: 12,
                     fontSize: 12,
-                    color: "var(--mt)",
+                    color: "var(--color-muted)",
                     textAlign: "center",
                   }}
                 >
@@ -185,7 +185,7 @@ function SchoolPicker({ school, setSchool, schoolId, setSchoolId, cls, setCls })
         </div>
         {schoolId && (
           <div>
-            <span className="lbl">Class</span>
+            <span className="label">Class</span>
             <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
               {classes.map((cl) => (
                 <button
@@ -197,14 +197,14 @@ function SchoolPicker({ school, setSchool, schoolId, setSchoolId, cls, setCls })
                     borderRadius: 8,
                     border:
                       cls === cl
-                        ? "1.5px solid var(--g)"
-                        : "1.5px solid var(--bd)",
-                    background: cls === cl ? "var(--gxl)" : "#fff",
+                        ? "1.5px solid var(--color-primary)"
+                        : "1.5px solid var(--color-border)",
+                    background: cls === cl ? "var(--color-primary-bg)" : "#fff",
                     fontSize: 11,
                     fontWeight: 600,
-                    color: cls === cl ? "var(--g)" : "var(--mt)",
+                    color: cls === cl ? "var(--color-primary)" : "var(--color-muted)",
                     cursor: "pointer",
-                    fontFamily: "var(--sn)",
+                    fontFamily: "var(--font-sans)",
                   }}
                 >
                   {cl}

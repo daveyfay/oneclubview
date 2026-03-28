@@ -42,17 +42,17 @@ function SupportModal({ userId, userEmail, onClose }) {
   if (done)
     return (
       <div
-        className="mbg"
+        className="modal-backdrop"
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
-        <div className="mbox" style={{ textAlign: "center", padding: 32 }}>
+        <div className="modal-box" style={{ textAlign: "center", padding: 32 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             Ticket submitted!
@@ -60,24 +60,24 @@ function SupportModal({ userId, userEmail, onClose }) {
           {ticketNum && (
             <div
               style={{
-                background: "var(--gxl)",
+                background: "var(--color-primary-bg)",
                 borderRadius: 10,
                 padding: "8px 16px",
                 display: "inline-block",
                 margin: "8px 0",
                 fontSize: 15,
                 fontWeight: 700,
-                color: "var(--g)",
+                color: "var(--color-primary)",
                 fontFamily: "monospace",
               }}
             >
               OCV-{String(ticketNum).padStart(3, "0")}
             </div>
           )}
-          <p style={{ fontSize: 13, color: "var(--mt)", margin: "8px 0 16px" }}>
+          <p style={{ fontSize: 13, color: "var(--color-muted)", margin: "8px 0 16px" }}>
             We'll get back to you at {userEmail}
           </p>
-          <button onClick={onClose} className="btn bp">
+          <button onClick={onClose} className="btn btn-primary">
             Done
           </button>
         </div>
@@ -86,10 +86,10 @@ function SupportModal({ userId, userEmail, onClose }) {
 
   return (
     <div
-      className="mbg"
+      className="modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="mbox">
+      <div className="modal-box">
         <div
           style={{
             display: "flex",
@@ -99,10 +99,10 @@ function SupportModal({ userId, userEmail, onClose }) {
         >
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             Contact Support
@@ -114,7 +114,7 @@ function SupportModal({ userId, userEmail, onClose }) {
               border: "none",
               fontSize: 20,
               cursor: "pointer",
-              color: "var(--mt)",
+              color: "var(--color-muted)",
             }}
           >
             ✕
@@ -122,7 +122,7 @@ function SupportModal({ userId, userEmail, onClose }) {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <span className="lbl">Category</span>
+            <span className="label">Category</span>
             <div
               style={{
                 display: "grid",
@@ -139,15 +139,15 @@ function SupportModal({ userId, userEmail, onClose }) {
                     borderRadius: 10,
                     border:
                       category === c.v
-                        ? "2px solid var(--g)"
-                        : "1px solid var(--bd)",
+                        ? "2px solid var(--color-primary)"
+                        : "1px solid var(--color-border)",
                     background:
-                      category === c.v ? "var(--gxl)" : "#fff",
+                      category === c.v ? "var(--color-primary-bg)" : "#fff",
                     fontSize: 12,
                     fontWeight: 600,
-                    color: "var(--tx)",
+                    color: "var(--color-text)",
                     cursor: "pointer",
-                    fontFamily: "var(--sn)",
+                    fontFamily: "var(--font-sans)",
                     textAlign: "left",
                   }}
                 >
@@ -157,7 +157,7 @@ function SupportModal({ userId, userEmail, onClose }) {
             </div>
           </div>
           <div>
-            <span className="lbl">Subject</span>
+            <span className="label">Subject</span>
             <input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
@@ -165,7 +165,7 @@ function SupportModal({ userId, userEmail, onClose }) {
             />
           </div>
           <div>
-            <span className="lbl">Message</span>
+            <span className="label">Message</span>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -175,9 +175,9 @@ function SupportModal({ userId, userEmail, onClose }) {
                 width: "100%",
                 padding: 10,
                 borderRadius: 10,
-                border: "1px solid var(--bd)",
+                border: "1px solid var(--color-border)",
                 fontSize: 13,
-                fontFamily: "var(--sn)",
+                fontFamily: "var(--font-sans)",
                 resize: "vertical",
               }}
             />
@@ -185,7 +185,7 @@ function SupportModal({ userId, userEmail, onClose }) {
           <button
             onClick={send}
             disabled={sv || !subject.trim() || !message.trim()}
-            className="btn bp"
+            className="btn btn-primary"
           >
             {sv ? "Sending..." : "Submit ticket"}
           </button>

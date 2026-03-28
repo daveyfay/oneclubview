@@ -161,14 +161,14 @@ function Auth({ onAuth, mode: im }) {
 
   return (
     <div
-      className="fi"
+      className="anim-fade"
       style={{
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: 16,
-        background: 'var(--warm)',
+        background: 'var(--color-warm)',
       }}
     >
       <div style={{ width: '100%', maxWidth: 400 }}>
@@ -177,9 +177,9 @@ function Auth({ onAuth, mode: im }) {
         </div>
         <div
           style={{
-            background: 'var(--card)',
+            background: 'var(--color-card)',
             borderRadius: 24,
-            border: '1px solid var(--bd)',
+            border: '1px solid var(--color-border)',
             padding: 28,
           }}
         >
@@ -207,9 +207,9 @@ function Auth({ onAuth, mode: im }) {
                   cursor: 'pointer',
                   fontSize: 13,
                   fontWeight: 700,
-                  fontFamily: 'var(--sn)',
+                  fontFamily: 'var(--font-sans)',
                   background: mode === m ? '#fff' : 'transparent',
-                  color: mode === m ? 'var(--g)' : 'var(--mt)',
+                  color: mode === m ? 'var(--color-primary)' : 'var(--color-muted)',
                 }}
               >
                 {m === 'signup' ? 'Sign up' : 'Log in'}
@@ -338,7 +338,7 @@ function Auth({ onAuth, mode: im }) {
             <button
               onClick={go}
               disabled={ld || (mode === 'signup' ? !canSignup : !canLogin)}
-              className="btn bp"
+              className="btn btn-primary"
             >
               {ld ? '...' : mode === 'signup' ? 'Start free trial' : 'Log in'}
             </button>
@@ -351,9 +351,9 @@ function Auth({ onAuth, mode: im }) {
                     style={{
                       background: 'none',
                       border: 'none',
-                      color: 'var(--mt)',
+                      color: 'var(--color-muted)',
                       cursor: 'pointer',
-                      fontFamily: 'var(--sn)',
+                      fontFamily: 'var(--font-sans)',
                       fontSize: 12,
                       textDecoration: 'underline',
                     }}
@@ -396,7 +396,7 @@ function Auth({ onAuth, mode: im }) {
               <p
                 style={{
                   fontSize: 12,
-                  color: 'var(--mt)',
+                  color: 'var(--color-muted)',
                   textAlign: 'center',
                 }}
               >
@@ -408,17 +408,17 @@ function Auth({ onAuth, mode: im }) {
               <p
                 style={{
                   fontSize: 11,
-                  color: 'var(--mt)',
+                  color: 'var(--color-muted)',
                   textAlign: 'center',
                   lineHeight: 1.5,
                 }}
               >
                 By signing up you agree to our{' '}
-                <a href="/terms" style={{ color: 'var(--acc)' }}>
+                <a href="/terms" style={{ color: 'var(--color-accent)' }}>
                   Terms of Service
                 </a>{' '}
                 and{' '}
-                <a href="/privacy" style={{ color: 'var(--acc)' }}>
+                <a href="/privacy" style={{ color: 'var(--color-accent)' }}>
                   Privacy Policy
                 </a>
                 .
@@ -429,7 +429,7 @@ function Auth({ onAuth, mode: im }) {
               <p
                 style={{
                   fontSize: 11,
-                  color: 'var(--mt)',
+                  color: 'var(--color-muted)',
                   textAlign: 'center',
                 }}
               >

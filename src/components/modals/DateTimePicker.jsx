@@ -47,9 +47,9 @@ export default function DateTimePicker({ open, onClose, onSelect, title }) {
 
       {/* Month nav */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <button onClick={prevMonth} style={{ width: 36, height: 36, borderRadius: 10, border: "1px solid var(--bd)", background: "#fff", cursor: "pointer", fontSize: 16, color: "var(--tx)" }}>‹</button>
-        <span style={{ fontFamily: "var(--sr)", fontSize: 16, fontWeight: 700, color: "var(--g)" }}>{monthName}</span>
-        <button onClick={nextMo} style={{ width: 36, height: 36, borderRadius: 10, border: "1px solid var(--bd)", background: "#fff", cursor: "pointer", fontSize: 16, color: "var(--tx)" }}>›</button>
+        <button onClick={prevMonth} style={{ width: 36, height: 36, borderRadius: 10, border: "1px solid var(--color-border)", background: "#fff", cursor: "pointer", fontSize: 16, color: "var(--color-text)" }}>‹</button>
+        <span style={{ fontFamily: "var(--font-serif)", fontSize: 16, fontWeight: 700, color: "var(--color-primary)" }}>{monthName}</span>
+        <button onClick={nextMo} style={{ width: 36, height: 36, borderRadius: 10, border: "1px solid var(--color-border)", background: "#fff", cursor: "pointer", fontSize: 16, color: "var(--color-text)" }}>›</button>
       </div>
 
       {/* Day headers */}
@@ -75,16 +75,16 @@ export default function DateTimePicker({ open, onClose, onSelect, title }) {
 
       {/* Time selector */}
       <div style={{ marginBottom: 20 }}>
-        <label style={{ fontSize: 13, fontWeight: 700, color: "var(--g)", marginBottom: 8, display: "block" }}>Time</label>
+        <label style={{ fontSize: 13, fontWeight: 700, color: "var(--color-primary)", marginBottom: 8, display: "block" }}>Time</label>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00"].map(t =>
-            <button key={t} onClick={() => setSelTime(t)} className="qp" style={{ flex: "0 0 auto", borderColor: selTime === t ? "var(--g)" : "var(--bd)", color: selTime === t ? "var(--g)" : "var(--tx)", background: selTime === t ? "var(--gxl)" : "#fff", fontWeight: selTime === t ? 700 : 500 }}>{t}</button>
+            <button key={t} onClick={() => setSelTime(t)} className="qp" style={{ flex: "0 0 auto", borderColor: selTime === t ? "var(--color-primary)" : "var(--color-border)", color: selTime === t ? "var(--color-primary)" : "var(--color-text)", background: selTime === t ? "var(--color-primary-bg)" : "#fff", fontWeight: selTime === t ? 700 : 500 }}>{t}</button>
           )}
         </div>
       </div>
 
       {/* Confirm */}
-      <button onClick={() => { if (selDate) { onSelect(selDate, selTime); onClose(); } }} className="btn bp" disabled={!selDate}>
+      <button onClick={() => { if (selDate) { onSelect(selDate, selTime); onClose(); } }} className="btn btn-primary" disabled={!selDate}>
         {selDate ? "Add to schedule — " + new Date(selDate + "T00:00:00").toLocaleDateString("en-IE", { weekday: "short", day: "numeric", month: "short" }) + " at " + selTime : "Pick a date above"}
       </button>
     </OcvModal>

@@ -123,15 +123,15 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
 
   if (done)
     return (
-      <div className="mbg" onClick={onClose}>
-        <div className="mbox" style={{ textAlign: "center", padding: 32 }}>
+      <div className="modal-backdrop" onClick={onClose}>
+        <div className="modal-box" style={{ textAlign: "center", padding: 32 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             Activity added!
@@ -139,7 +139,7 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
           <p
             style={{
               fontSize: 13,
-              color: "var(--mt)",
+              color: "var(--color-muted)",
               margin: "8px 0",
             }}
           >
@@ -151,10 +151,10 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
 
   return (
     <div
-      className="mbg"
+      className="modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="mbox" style={{ maxHeight: "85vh", overflowY: "auto" }}>
+      <div className="modal-box" style={{ maxHeight: "85vh", overflowY: "auto" }}>
         <div
           style={{
             display: "flex",
@@ -164,10 +164,10 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
         >
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             Add an activity
@@ -179,13 +179,13 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
               border: "none",
               fontSize: 20,
               cursor: "pointer",
-              color: "var(--mt)",
+              color: "var(--color-muted)",
             }}
           >
             ✕
           </button>
         </div>
-        <p style={{ fontSize: 12, color: "var(--mt)", marginBottom: 14 }}>
+        <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 14 }}>
           For classes, lessons, or activities that aren't a formal club — like a
           local karate class, music teacher, or dance school.
         </p>
@@ -193,7 +193,7 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {/* Name */}
           <div>
-            <span className="lbl">Activity name</span>
+            <span className="label">Activity name</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -203,7 +203,7 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
 
           {/* Category */}
           <div>
-            <span className="lbl">Type</span>
+            <span className="label">Type</span>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4 }}>
               {categories.map((c) => (
                 <button
@@ -214,14 +214,14 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
                     borderRadius: 8,
                     border:
                       cat === c.v
-                        ? "2px solid var(--g)"
-                        : "1px solid var(--bd)",
-                    background: cat === c.v ? "var(--gxl)" : "#fff",
+                        ? "2px solid var(--color-primary)"
+                        : "1px solid var(--color-border)",
+                    background: cat === c.v ? "var(--color-primary-bg)" : "#fff",
                     fontSize: 11,
                     fontWeight: 600,
-                    color: "var(--tx)",
+                    color: "var(--color-text)",
                     cursor: "pointer",
-                    fontFamily: "var(--sn)",
+                    fontFamily: "var(--font-sans)",
                   }}
                 >
                   {c.l}
@@ -232,7 +232,7 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
 
           {/* Location */}
           <div>
-            <span className="lbl">Where (optional)</span>
+            <span className="label">Where (optional)</span>
             <input
               value={loc}
               onChange={(e) => setLoc(e.target.value)}
@@ -243,7 +243,7 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
           {/* Contact */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div>
-              <span className="lbl">Contact name (optional)</span>
+              <span className="label">Contact name (optional)</span>
               <input
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
@@ -251,7 +251,7 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
               />
             </div>
             <div>
-              <span className="lbl">Phone / WhatsApp (optional)</span>
+              <span className="label">Phone / WhatsApp (optional)</span>
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -263,7 +263,7 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
           {/* Which kid */}
           {kids.length > 0 && (
             <div>
-              <span className="lbl">Who attends</span>
+              <span className="label">Who attends</span>
               <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                 <button
                   onClick={() => setAssignKid("")}
@@ -272,14 +272,14 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
                     borderRadius: 8,
                     border:
                       !assignKid
-                        ? "1.5px solid var(--g)"
-                        : "1.5px solid var(--bd)",
-                    background: !assignKid ? "var(--gxl)" : "#fff",
+                        ? "1.5px solid var(--color-primary)"
+                        : "1.5px solid var(--color-border)",
+                    background: !assignKid ? "var(--color-primary-bg)" : "#fff",
                     fontSize: 11,
                     fontWeight: 600,
-                    color: !assignKid ? "var(--g)" : "var(--mt)",
+                    color: !assignKid ? "var(--color-primary)" : "var(--color-muted)",
                     cursor: "pointer",
-                    fontFamily: "var(--sn)",
+                    fontFamily: "var(--font-sans)",
                   }}
                 >
                   Me
@@ -293,16 +293,16 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
                       borderRadius: 8,
                       border:
                         assignKid === k.id
-                          ? "1.5px solid var(--g)"
-                          : "1.5px solid var(--bd)",
+                          ? "1.5px solid var(--color-primary)"
+                          : "1.5px solid var(--color-border)",
                       background:
-                        assignKid === k.id ? "var(--gxl)" : "#fff",
+                        assignKid === k.id ? "var(--color-primary-bg)" : "#fff",
                       fontSize: 11,
                       fontWeight: 600,
                       color:
-                        assignKid === k.id ? "var(--g)" : "var(--mt)",
+                        assignKid === k.id ? "var(--color-primary)" : "var(--color-muted)",
                       cursor: "pointer",
-                      fontFamily: "var(--sn)",
+                      fontFamily: "var(--font-sans)",
                     }}
                   >
                     {k.first_name}
@@ -314,7 +314,7 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
 
           {/* Schedule */}
           <div>
-            <span className="lbl">When (optional — adds to your schedule)</span>
+            <span className="label">When (optional — adds to your schedule)</span>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
               <select
                 value={day}
@@ -322,9 +322,9 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
                 style={{
                   padding: 8,
                   borderRadius: 10,
-                  border: "1px solid var(--bd)",
+                  border: "1px solid var(--color-border)",
                   fontSize: 12,
-                  fontFamily: "var(--sn)",
+                  fontFamily: "var(--font-sans)",
                 }}
               >
                 <option value="">Day</option>
@@ -341,9 +341,9 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
                 style={{
                   padding: 8,
                   borderRadius: 10,
-                  border: "1px solid var(--bd)",
+                  border: "1px solid var(--color-border)",
                   fontSize: 12,
-                  fontFamily: "var(--sn)",
+                  fontFamily: "var(--font-sans)",
                 }}
               />
               <select
@@ -352,9 +352,9 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
                 style={{
                   padding: 8,
                   borderRadius: 10,
-                  border: "1px solid var(--bd)",
+                  border: "1px solid var(--color-border)",
                   fontSize: 12,
-                  fontFamily: "var(--sn)",
+                  fontFamily: "var(--font-sans)",
                 }}
               >
                 <option value="30">30 min</option>
@@ -369,7 +369,7 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
           {/* Term cost */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div>
-              <span className="lbl">Term fee (optional)</span>
+              <span className="label">Term fee (optional)</span>
               <input
                 type="number"
                 value={cost}
@@ -378,7 +378,7 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
               />
             </div>
             <div>
-              <span className="lbl">Term name (optional)</span>
+              <span className="label">Term name (optional)</span>
               <input
                 value={termName}
                 onChange={(e) => setTermName(e.target.value)}
@@ -390,7 +390,7 @@ function AddActivityModal({ userId, userLoc, profile, kids, onClose, onSaved }) 
           <button
             onClick={save}
             disabled={sv || !name.trim() || !cat}
-            className="btn bp"
+            className="btn btn-primary"
             style={{ marginTop: 4 }}
           >
             {sv ? "Saving..." : "Add activity"}

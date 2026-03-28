@@ -10,6 +10,7 @@ import OnboardKids from './pages/OnboardKids';
 import OnboardClubs from './pages/OnboardClubs';
 import Hub from './pages/Hub';
 import AdminDashboard from './pages/AdminDashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 
 export default function App() {
   const [screen, setScreen] = useState("loading");
@@ -117,7 +118,7 @@ export default function App() {
 
   // ── Screen routing ──
   if (screen === "loading") {
-    return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--warm)" }}><Logo /></div>;
+    return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-warm)" }}><Logo /></div>;
   }
   if (screen === "landing") {
     return <Landing onGo={() => { track("cta_signup_clicked"); setScreen("auth_signup"); }} onLogin={() => { track("cta_login_clicked"); setScreen("auth_login"); }} />;
@@ -129,11 +130,11 @@ export default function App() {
   if (screen === "hub" && user?.email === "hello@oneclubview.com") {
     return <AdminDashboard user={user} profile={profile} onBack={() => setScreen("hub_force")} onLogout={logout} />;
   }
-  if (screen === "hub" || screen === "hub_force") return <Hub user={user} profile={profile} onRefresh={(s) => { if (s === "clubs") setScreen("onboard_clubs"); }} onLogout={logout} />;
+  if (screen === "hub" || screen === "hub_force") return <ErrorBoundary><Hub user={user} profile={profile} onRefresh={(s) => { if (s === "clubs") setScreen("onboard_clubs"); }} onLogout={logout} /></ErrorBoundary>;
 
   // Password recovery modal — rendered on any screen
   if (showRecoveryPw) return <>
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--warm)" }}><Logo /></div>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-warm)" }}><Logo /></div>
     <OcvInput open={showRecoveryPw} onClose={() => { setShowRecoveryPw(false); window.location.reload(); }} title="Set your new password" placeholder="New password (min 8 characters)" inputType="password" onSubmit={async (np) => {
       if (np.length < 8) { showToast("Password must be at least 8 characters.", "err"); return; }
       try {

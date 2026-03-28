@@ -23,10 +23,10 @@ function CancelFeedback({ userId, email, status, trialDays }) {
         style={{
           marginTop: 16,
           padding: 12,
-          background: "var(--sage)",
+          background: "var(--color-sage)",
           borderRadius: 12,
           fontSize: 13,
-          color: "var(--gl)",
+          color: "var(--color-primary-light)",
           fontWeight: 600,
         }}
       >
@@ -43,9 +43,9 @@ function CancelFeedback({ userId, email, status, trialDays }) {
           background: "none",
           border: "none",
           fontSize: 12,
-          color: "var(--mt)",
+          color: "var(--color-muted)",
           cursor: "pointer",
-          fontFamily: "var(--sn)",
+          fontFamily: "var(--font-sans)",
           textDecoration: "underline",
         }}
       >
@@ -57,9 +57,9 @@ function CancelFeedback({ userId, email, status, trialDays }) {
     <div
       style={{
         marginTop: 16,
-        background: "var(--card)",
+        background: "var(--color-card)",
         borderRadius: 16,
-        border: "1px solid var(--bd)",
+        border: "1px solid var(--color-border)",
         padding: 16,
         textAlign: "left",
       }}
@@ -68,13 +68,13 @@ function CancelFeedback({ userId, email, status, trialDays }) {
         style={{
           fontSize: 14,
           fontWeight: 700,
-          color: "var(--g)",
+          color: "var(--color-primary)",
           marginBottom: 4,
         }}
       >
         We'd love to know why
       </div>
-      <p style={{ fontSize: 12, color: "var(--mt)", marginBottom: 12 }}>
+      <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 12 }}>
         Your feedback helps us build a better product for every parent.
       </p>
       <div
@@ -94,14 +94,14 @@ function CancelFeedback({ userId, email, status, trialDays }) {
               borderRadius: 10,
               border:
                 reason === r.v
-                  ? "2px solid var(--g)"
-                  : "1px solid var(--bd)",
-              background: reason === r.v ? "var(--gxl)" : "#fff",
+                  ? "2px solid var(--color-primary)"
+                  : "1px solid var(--color-border)",
+              background: reason === r.v ? "var(--color-primary-bg)" : "#fff",
               fontSize: 11,
               fontWeight: 600,
-              color: "var(--tx)",
+              color: "var(--color-text)",
               cursor: "pointer",
-              fontFamily: "var(--sn)",
+              fontFamily: "var(--font-sans)",
               textAlign: "left",
             }}
           >
@@ -120,9 +120,9 @@ function CancelFeedback({ userId, email, status, trialDays }) {
               width: "100%",
               padding: 10,
               borderRadius: 10,
-              border: "1px solid var(--bd)",
+              border: "1px solid var(--color-border)",
               fontSize: 12,
-              fontFamily: "var(--sn)",
+              fontFamily: "var(--font-sans)",
               resize: "vertical",
               marginBottom: 8,
             }}
@@ -146,12 +146,12 @@ function CancelFeedback({ userId, email, status, trialDays }) {
               padding: 10,
               borderRadius: 12,
               border: "none",
-              background: "var(--g)",
+              background: "var(--color-primary)",
               color: "#fff",
               fontSize: 13,
               fontWeight: 700,
               cursor: "pointer",
-              fontFamily: "var(--sn)",
+              fontFamily: "var(--font-sans)",
             }}
           >
             Send feedback

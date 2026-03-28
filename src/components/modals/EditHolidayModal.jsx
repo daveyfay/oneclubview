@@ -68,10 +68,10 @@ function EditHolidayModal({ holiday, userId, onClose, onSaved }) {
 
   return (
     <div
-      className="mbg"
+      className="modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="mbox">
+      <div className="modal-box">
         <div
           style={{
             display: "flex",
@@ -81,10 +81,10 @@ function EditHolidayModal({ holiday, userId, onClose, onSaved }) {
         >
           <h3
             style={{
-              fontFamily: "var(--sr)",
+              fontFamily: "var(--font-serif)",
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--g)",
+              color: "var(--color-primary)",
             }}
           >
             Edit Holiday Dates
@@ -96,18 +96,18 @@ function EditHolidayModal({ holiday, userId, onClose, onSaved }) {
               border: "none",
               fontSize: 20,
               cursor: "pointer",
-              color: "var(--mt)",
+              color: "var(--color-muted)",
             }}
           >
             ✕
           </button>
         </div>
-        <p style={{ fontSize: 13, color: "var(--mt)", marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 16 }}>
           Adjust to match your school's actual dates
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <span className="lbl">Holiday name</span>
+            <span className="label">Holiday name</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -115,7 +115,7 @@ function EditHolidayModal({ holiday, userId, onClose, onSaved }) {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <div style={{ flex: 1 }}>
-              <span className="lbl">Starts</span>
+              <span className="label">Starts</span>
               <input
                 type="date"
                 value={start}
@@ -123,7 +123,7 @@ function EditHolidayModal({ holiday, userId, onClose, onSaved }) {
               />
             </div>
             <div style={{ flex: 1 }}>
-              <span className="lbl">Ends</span>
+              <span className="label">Ends</span>
               <input
                 type="date"
                 value={end}
@@ -134,14 +134,14 @@ function EditHolidayModal({ holiday, userId, onClose, onSaved }) {
           <button
             onClick={save}
             disabled={sv}
-            className="btn bp"
+            className="btn btn-primary"
           >
             {sv ? "Saving..." : "Save dates"}
           </button>
           {holiday.is_user_override && (
             <button
               onClick={reset}
-              className="btn bs"
+              className="btn btn-secondary"
               style={{ fontSize: 13 }}
             >
               Reset to default dates
@@ -159,7 +159,7 @@ function EditHolidayModal({ holiday, userId, onClose, onSaved }) {
               fontSize: 12,
               fontWeight: 600,
               color: "#dc2626",
-              fontFamily: "var(--sn)",
+              fontFamily: "var(--font-sans)",
               marginTop: 4,
             }}
           >

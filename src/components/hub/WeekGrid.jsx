@@ -99,18 +99,18 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, kids 
           return (
             <div key={i} style={{
               textAlign: "center", padding: "8px 4px", borderRadius: 12,
-              background: today ? "var(--g)" : hol ? "#fef3e2" : "transparent"
+              background: today ? "var(--color-primary)" : hol ? "#fef3e2" : "transparent"
             }}>
               <span style={{
                 display: "block", fontSize: 10, fontWeight: 700,
-                color: today ? "rgba(255,255,255,.6)" : "var(--mt)",
+                color: today ? "rgba(255,255,255,.6)" : "var(--color-muted)",
                 textTransform: "uppercase"
               }}>
                 {d.toLocaleDateString("en-IE", { weekday: "short" }).slice(0, 3)}
               </span>
               <span style={{
                 display: "block", fontSize: 18, fontWeight: 800,
-                color: today ? "#fff" : hol ? "#b8860b" : "var(--tx)"
+                color: today ? "#fff" : hol ? "#b8860b" : "var(--color-text)"
               }}>
                 {d.getDate()}
               </span>
@@ -177,14 +177,14 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, kids 
 
       {/* Swipe indicator */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 0 4px" }}>
-        <svg onClick={() => page === 1 && setPage(0)} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={page === 0 ? "var(--bd)" : "var(--mt)"} strokeWidth="2" strokeLinecap="round" style={{ cursor: page === 1 ? "pointer" : "default" }}><polyline points="15 18 9 12 15 6" /></svg>
-        <span style={{ fontSize: 11, color: "var(--mt)", fontWeight: 500 }}>
+        <svg onClick={() => page === 1 && setPage(0)} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={page === 0 ? "var(--color-border)" : "var(--color-muted)"} strokeWidth="2" strokeLinecap="round" style={{ cursor: page === 1 ? "pointer" : "default" }}><polyline points="15 18 9 12 15 6" /></svg>
+        <span style={{ fontSize: 11, color: "var(--color-muted)", fontWeight: 500 }}>
           {page === 0 ? "Mon–Thu" : "Wed–Sun"}
         </span>
-        <svg onClick={() => page === 0 && setPage(1)} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={page === 1 ? "var(--bd)" : "var(--mt)"} strokeWidth="2" strokeLinecap="round" style={{ cursor: page === 0 ? "pointer" : "default" }}><polyline points="9 18 15 12 9 6" /></svg>
+        <svg onClick={() => page === 0 && setPage(1)} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={page === 1 ? "var(--color-border)" : "var(--color-muted)"} strokeWidth="2" strokeLinecap="round" style={{ cursor: page === 0 ? "pointer" : "default" }}><polyline points="9 18 15 12 9 6" /></svg>
         <div style={{ display: "flex", gap: 4, marginLeft: 8 }}>
-          <div style={{ width: page === 0 ? 14 : 6, height: 6, borderRadius: 3, background: page === 0 ? "var(--g)" : "var(--bd)", transition: "width .2s", cursor: "pointer" }} onClick={() => setPage(0)} />
-          <div style={{ width: page === 1 ? 14 : 6, height: 6, borderRadius: 3, background: page === 1 ? "var(--g)" : "var(--bd)", transition: "width .2s", cursor: "pointer" }} onClick={() => setPage(1)} />
+          <div style={{ width: page === 0 ? 14 : 6, height: 6, borderRadius: 3, background: page === 0 ? "var(--color-primary)" : "var(--color-border)", transition: "width .2s", cursor: "pointer" }} onClick={() => setPage(0)} />
+          <div style={{ width: page === 1 ? 14 : 6, height: 6, borderRadius: 3, background: page === 1 ? "var(--color-primary)" : "var(--color-border)", transition: "width .2s", cursor: "pointer" }} onClick={() => setPage(1)} />
         </div>
       </div>
 
@@ -192,7 +192,7 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, kids 
       {legendMap.size > 0 && (
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", padding: "8px 2px 0", marginTop: 4 }}>
           {Array.from(legendMap.entries()).map(([name, colour]) => (
-            <div key={name} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "var(--mt)", fontWeight: 600 }}>
+            <div key={name} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "var(--color-muted)", fontWeight: 600 }}>
               <div style={{ width: 8, height: 8, borderRadius: 3, background: colour, flexShrink: 0 }} />
               {name}
             </div>
