@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '../../lib/supabase';
+import OcvModal from './OcvModal';
 
 function EditHolidayModal({ holiday, userId, onClose, onSaved }) {
   const [name, setName] = useState(holiday.name);
@@ -67,70 +68,12 @@ function EditHolidayModal({ holiday, userId, onClose, onSaved }) {
   }
 
   return (
-    <div
-      className="modal-backdrop"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="modal-box">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: 20,
-          }}
-        >
-          <h3
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: 18,
-              fontWeight: 700,
-              color: "var(--color-primary)",
-            }}
-          >
-            Edit Holiday Dates
-          </h3>
-          <button
-            onClick={onClose}
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: 20,
-              cursor: "pointer",
-              color: "var(--color-muted)",
-            }}
-          >
-            ✕
-          </button>
-        </div>
-        <p style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 16 }}>
-          Adjust to match your school's actual dates
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div>
-            <span className="label">Holiday name</span>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <div style={{ flex: 1 }}>
-              <span className="label">Starts</span>
-              <input
-                type="date"
-                value={start}
-                onChange={(e) => setStart(e.target.value)}
-              />
-            </div>
-            <div style={{ flex: 1 }}>
-              <span className="label">Ends</span>
-              <input
-                type="date"
-                value={end}
-                onChange={(e) => setEnd(e.target.value)}
-              />
-            </div>
-          </div>
+    <OcvModal
+      open={true}
+      onClose={onClose}
+      title="Edit Holiday Dates"
+      footer={
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <button
             onClick={save}
             disabled={sv}
@@ -166,8 +109,39 @@ function EditHolidayModal({ holiday, userId, onClose, onSaved }) {
             Remove from my calendar
           </button>
         </div>
+      }
+    >
+      <p style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 16 }}>
+        Adjust to match your school's actual dates
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div>
+          <span className="label">Holiday name</span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ flex: 1 }}>
+            <span className="label">Starts</span>
+            <input
+              type="date"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+            />
+          </div>
+          <div style={{ flex: 1 }}>
+            <span className="label">Ends</span>
+            <input
+              type="date"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </OcvModal>
   );
 }
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '../../lib/supabase';
 import { track } from '../../lib/utils';
+import OcvModal from './OcvModal';
 
 function SupportModal({ userId, userEmail, onClose }) {
   const [subject, setSubject] = useState("");
@@ -41,22 +42,18 @@ function SupportModal({ userId, userEmail, onClose }) {
 
   if (done)
     return (
-      <div
-        className="modal-backdrop"
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+      <OcvModal
+        open={true}
+        onClose={onClose}
+        title="Ticket submitted!"
+        footer={
+          <button onClick={onClose} className="btn btn-primary">
+            Done
+          </button>
+        }
       >
-        <div className="modal-box" style={{ textAlign: "center", padding: 32 }}>
+        <div style={{ textAlign: "center", padding: "8px 0" }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
-          <h3
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: 18,
-              fontWeight: 700,
-              color: "var(--color-primary)",
-            }}
-          >
-            Ticket submitted!
-          </h3>
           {ticketNum && (
             <div
               style={{
@@ -74,124 +71,92 @@ function SupportModal({ userId, userEmail, onClose }) {
               OCV-{String(ticketNum).padStart(3, "0")}
             </div>
           )}
-          <p style={{ fontSize: 13, color: "var(--color-muted)", margin: "8px 0 16px" }}>
+          <p style={{ fontSize: 13, color: "var(--color-muted)", margin: "8px 0" }}>
             We'll get back to you at {userEmail}
           </p>
-          <button onClick={onClose} className="btn btn-primary">
-            Done
-          </button>
         </div>
-      </div>
+      </OcvModal>
     );
 
   return (
-    <div
-      className="modal-backdrop"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="modal-box">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: 16,
-          }}
+    <OcvModal
+      open={true}
+      onClose={onClose}
+      title="Contact Support"
+      footer={
+        <button
+          onClick={send}
+          disabled={sv || !subject.trim() || !message.trim()}
+          className="btn btn-primary"
         >
-          <h3
+          {sv ? "Sending..." : "Submit ticket"}
+        </button>
+      }
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div>
+          <span className="label">Category</span>
+          <div
             style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: 18,
-              fontWeight: 700,
-              color: "var(--color-primary)",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 6,
             }}
           >
-            Contact Support
-          </h3>
-          <button
-            onClick={onClose}
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: 20,
-              cursor: "pointer",
-              color: "var(--color-muted)",
-            }}
-          >
-            ✕
-          </button>
+            {categories.map((c) => (
+              <button
+                key={c.v}
+                onClick={() => setCategory(c.v)}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 10,
+                  border:
+                    category === c.v
+                      ? "2px solid var(--color-primary)"
+                      : "1px solid var(--color-border)",
+                  background:
+                    category === c.v ? "var(--color-primary-bg)" : "#fff",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "var(--color-text)",
+                  cursor: "pointer",
+                  fontFamily: "var(--font-sans)",
+                  textAlign: "left",
+                }}
+              >
+                {c.l}
+              </button>
+            ))}
+          </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div>
-            <span className="label">Category</span>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 6,
-              }}
-            >
-              {categories.map((c) => (
-                <button
-                  key={c.v}
-                  onClick={() => setCategory(c.v)}
-                  style={{
-                    padding: "8px 10px",
-                    borderRadius: 10,
-                    border:
-                      category === c.v
-                        ? "2px solid var(--color-primary)"
-                        : "1px solid var(--color-border)",
-                    background:
-                      category === c.v ? "var(--color-primary-bg)" : "#fff",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "var(--color-text)",
-                    cursor: "pointer",
-                    fontFamily: "var(--font-sans)",
-                    textAlign: "left",
-                  }}
-                >
-                  {c.l}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <span className="label">Subject</span>
-            <input
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Brief summary"
-            />
-          </div>
-          <div>
-            <span className="label">Message</span>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Describe your issue..."
-              rows={4}
-              style={{
-                width: "100%",
-                padding: 10,
-                borderRadius: 10,
-                border: "1px solid var(--color-border)",
-                fontSize: 13,
-                fontFamily: "var(--font-sans)",
-                resize: "vertical",
-              }}
-            />
-          </div>
-          <button
-            onClick={send}
-            disabled={sv || !subject.trim() || !message.trim()}
-            className="btn btn-primary"
-          >
-            {sv ? "Sending..." : "Submit ticket"}
-          </button>
+        <div>
+          <span className="label">Subject</span>
+          <input
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            placeholder="Brief summary"
+          />
+        </div>
+        <div>
+          <span className="label">Message</span>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Describe your issue..."
+            rows={4}
+            style={{
+              width: "100%",
+              padding: 10,
+              borderRadius: 10,
+              border: "1px solid var(--color-border)",
+              fontSize: 13,
+              fontFamily: "var(--font-sans)",
+              resize: "vertical",
+            }}
+          />
         </div>
       </div>
-    </div>
+    </OcvModal>
   );
 }
 

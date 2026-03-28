@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SB, db, getToken } from '../../lib/supabase';
+import OcvModal from './OcvModal';
 
 function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
   const [email, setEmail] = useState("");
@@ -64,22 +65,18 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
 
   if (done)
     return (
-      <div
-        className="modal-backdrop"
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+      <OcvModal
+        open={true}
+        onClose={onClose}
+        title="Invite sent!"
+        footer={
+          <button onClick={onClose} className="btn btn-primary">
+            Done
+          </button>
+        }
       >
-        <div className="modal-box" style={{ textAlign: "center", padding: 32 }}>
+        <div style={{ textAlign: "center", padding: "8px 0" }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
-          <h3
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: 18,
-              fontWeight: 700,
-              color: "var(--color-primary)",
-            }}
-          >
-            Invite sent!
-          </h3>
           <p style={{ fontSize: 14, color: "var(--color-muted)", margin: "8px 0 12px" }}>
             We've emailed {name || email} with an invite. You can also share this
             link directly:
@@ -126,119 +123,87 @@ function InviteAdultModal({ userId, familyId, onClose, onSaved }) {
               Copy link
             </button>
           </div>
-          <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 16 }}>
+          <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 8 }}>
             Once they create an account, they'll see your shared family calendar
             with all clubs, events, and camps.
           </p>
-          <button onClick={onClose} className="btn btn-primary">
-            Done
-          </button>
         </div>
-      </div>
+      </OcvModal>
     );
 
   return (
-    <div
-      className="modal-backdrop"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="modal-box">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: 20,
-          }}
+    <OcvModal
+      open={true}
+      onClose={onClose}
+      title="Invite a family member"
+      footer={
+        <button
+          onClick={send}
+          disabled={sv || !email.trim()}
+          className="btn btn-primary"
         >
-          <h3
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: 18,
-              fontWeight: 700,
-              color: "var(--color-primary)",
-            }}
-          >
-            Invite a family member
-          </h3>
-          <button
-            onClick={onClose}
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: 20,
-              cursor: "pointer",
-              color: "var(--color-muted)",
-            }}
-          >
-            ✕
-          </button>
+          {sv ? "Sending..." : "Send invite"}
+        </button>
+      }
+    >
+      <p style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 16 }}>
+        Add your partner or another adult. They'll get their own login and see
+        the same family calendar.
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div>
+          <span className="label">Their name</span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="First name"
+          />
         </div>
-        <p style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 16 }}>
-          Add your partner or another adult. They'll get their own login and see
-          the same family calendar.
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div>
-            <span className="label">Their name</span>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="First name"
-            />
+        <div>
+          <span className="label">Their email</span>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="email@example.com"
+          />
+        </div>
+        <div>
+          <span className="label">Their role</span>
+          <div style={{ display: "flex", gap: 6 }}>
+            {[
+              { v: "admin", l: "👨‍👩‍👧 Parent" },
+              { v: "carer", l: "🧑‍🍳 Carer" },
+              { v: "viewer", l: "👁️ Viewer" },
+            ].map((r) => (
+              <button
+                key={r.v}
+                onClick={() => setRole(r.v)}
+                style={{
+                  flex: 1,
+                  padding: "8px 4px",
+                  borderRadius: 10,
+                  border:
+                    role === r.v
+                      ? "2px solid var(--color-primary)"
+                      : "2px solid var(--color-border)",
+                  background:
+                    role === r.v ? "var(--color-primary-bg)" : "var(--color-card)",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color:
+                    role === r.v ? "var(--color-primary)" : "var(--color-muted)",
+                  cursor: "pointer",
+                  fontFamily: "var(--font-sans)",
+                }}
+              >
+                {r.l}
+              </button>
+            ))}
           </div>
-          <div>
-            <span className="label">Their email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@example.com"
-            />
-          </div>
-          <div>
-            <span className="label">Their role</span>
-            <div style={{ display: "flex", gap: 6 }}>
-              {[
-                { v: "admin", l: "👨‍👩‍👧 Parent" },
-                { v: "carer", l: "🧑‍🍳 Carer" },
-                { v: "viewer", l: "👁️ Viewer" },
-              ].map((r) => (
-                <button
-                  key={r.v}
-                  onClick={() => setRole(r.v)}
-                  style={{
-                    flex: 1,
-                    padding: "8px 4px",
-                    borderRadius: 10,
-                    border:
-                      role === r.v
-                        ? "2px solid var(--color-primary)"
-                        : "2px solid var(--color-border)",
-                    background:
-                      role === r.v ? "var(--color-primary-bg)" : "var(--color-card)",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color:
-                      role === r.v ? "var(--color-primary)" : "var(--color-muted)",
-                    cursor: "pointer",
-                    fontFamily: "var(--font-sans)",
-                  }}
-                >
-                  {r.l}
-                </button>
-              ))}
-            </div>
-          </div>
-          <button
-            onClick={send}
-            disabled={sv || !email.trim()}
-            className="btn btn-primary"
-          >
-            {sv ? "Sending..." : "Send invite"}
-          </button>
         </div>
       </div>
-    </div>
+    </OcvModal>
   );
 }
 
