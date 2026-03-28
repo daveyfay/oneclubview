@@ -129,7 +129,7 @@ footer p{color:rgba(255,255,255,.3);font-size:11px;margin-top:8px}
     document.getElementById('hero-emoji').textContent = post.hero_emoji || '📝';
     document.getElementById('hero-title').textContent = post.title;
     const pubDate = post.published_at ? new Date(post.published_at).toLocaleDateString('en-IE', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-    document.getElementById('hero-meta').textContent = (post.author || 'OneClubView') + ' · ' + pubDate + ' · ' + (post.read_minutes || 5) + ' min read';
+    document.getElementById('hero-meta').innerHTML = (post.author || 'OneClubView') + ' &middot; ' + pubDate + ' &middot; ' + (post.read_minutes || 5) + ' min read';
     const tagsEl = document.getElementById('hero-tags');
     (post.tags || []).forEach(t => {
       const s = document.createElement('span');
@@ -140,7 +140,7 @@ footer p{color:rgba(255,255,255,.3);font-size:11px;margin-top:8px}
 
     // Content
     const contentEl = document.getElementById('content');
-    contentEl.innerHTML = '<a href="/blog/" class="back">← Back to all posts</a>' + post.content +
+    contentEl.innerHTML = '<a href="/blog/" class="back">&larr; Back to all posts</a>' + post.content +
       '<div class="cta-box"><h3>Tired of the chaos?</h3><p>All your kids\' clubs, camps, fees, and schedules in one place. Both parents see the same thing.</p><a href="/">Try OneClubView free</a></div>';
 
   } catch (e) {
