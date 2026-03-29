@@ -690,7 +690,7 @@ function Landing({ onGo, onLogin }) {
                 Standard
               </div>
               <div style={{ fontFamily: "var(--font-serif)", fontSize: 28, fontWeight: 800, color: 'var(--color-primary)' }}>
-                €7.99
+                €4.99
                 <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-muted)' }}>/mo</span>
               </div>
               <div style={{ fontSize: 12, color: 'var(--color-muted)', margin: '12px 0 16px', lineHeight: 1.5 }}>Perfect for most families</div>
@@ -732,7 +732,7 @@ function Landing({ onGo, onLogin }) {
                 Family+
               </div>
               <div style={{ fontFamily: "var(--font-serif)", fontSize: 28, fontWeight: 800 }}>
-                €14.99
+                €7.99
                 <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,.6)' }}>/mo</span>
               </div>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)', margin: '12px 0 16px', lineHeight: 1.5 }}>

@@ -180,12 +180,12 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
             <div onClick={() => startCheckout("standard")} style={{ background: "var(--color-warm)", borderRadius: 16, padding: 16, border: "2px solid var(--color-border)", cursor: "pointer", textAlign: "center" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "var(--color-muted)", marginBottom: 4 }}>STANDARD</div>
-              <div style={{ fontFamily: "var(--font-serif)", fontSize: 24, fontWeight: 800, color: "var(--color-primary)" }}>{"\u20AC"}7.99<span style={{ fontSize: 11, color: "var(--color-muted)" }}>/mo</span></div>
+              <div style={{ fontFamily: "var(--font-serif)", fontSize: 24, fontWeight: 800, color: "var(--color-primary)" }}>{"\u20AC"}4.99<span style={{ fontSize: 11, color: "var(--color-muted)" }}>/mo</span></div>
               <div style={{ fontSize: 11, color: "var(--color-muted)", marginTop: 4 }}>2 adults {"\u00B7"} 3 kids</div>
             </div>
             <div onClick={() => startCheckout("family_plus")} style={{ background: "var(--color-primary)", borderRadius: 16, padding: 16, border: "2px solid var(--color-primary)", cursor: "pointer", textAlign: "center", color: "#fff" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "var(--color-accent)", marginBottom: 4 }}>FAMILY+</div>
-              <div style={{ fontFamily: "var(--font-serif)", fontSize: 24, fontWeight: 800 }}>{"\u20AC"}14.99<span style={{ fontSize: 11, color: "rgba(255,255,255,.5)" }}>/mo</span></div>
+              <div style={{ fontFamily: "var(--font-serif)", fontSize: 24, fontWeight: 800 }}>{"\u20AC"}7.99<span style={{ fontSize: 11, color: "rgba(255,255,255,.5)" }}>/mo</span></div>
               <div style={{ fontSize: 11, color: "rgba(255,255,255,.5)", marginTop: 4 }}>4 adults {"\u00B7"} 6 kids</div>
             </div>
           </div>

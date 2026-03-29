@@ -155,13 +155,13 @@ export default function AdminDashboard({user,onBack}){
       const churned=users.filter(u=>u.subscription_status==="churned");
       content=<div>
         <div style={{background:"var(--color-sage)",borderRadius:14,padding:16,marginBottom:12}}>
-          <div style={{fontSize:28,fontWeight:800,color:"var(--color-primary)",fontFamily:"var(--font-serif)"}}>€{(active.length*7.99).toFixed(2)}</div>
+          <div style={{fontSize:28,fontWeight:800,color:"var(--color-primary)",fontFamily:"var(--font-serif)"}}>€{(active.length*4.99).toFixed(2)}</div>
           <div style={{fontSize:13,color:"var(--color-primary-light)",fontWeight:600}}>Monthly Recurring Revenue</div>
-          <div style={{fontSize:12,color:"var(--color-muted)",marginTop:4}}>{active.length} active subscriber{active.length!==1?"s":""} × €7.99</div>
+          <div style={{fontSize:12,color:"var(--color-muted)",marginTop:4}}>{active.length} active subscriber{active.length!==1?"s":""} × €4.99</div>
         </div>
         <h4 style={{fontSize:14,fontWeight:700,color:"var(--color-primary)",margin:"16px 0 8px"}}>Active Subscribers ({active.length})</h4>
         {active.map(u=><div key={u.id} style={{background:"var(--color-card)",borderRadius:10,border:"1px solid var(--color-border)",padding:10,marginBottom:4,fontSize:13,display:"flex",justifyContent:"space-between"}}>
-          <span>{u.first_name} ({u.email})</span><span style={{fontWeight:700,color:"var(--color-primary-light)"}}>€7.99/mo</span>
+          <span>{u.first_name} ({u.email})</span><span style={{fontWeight:700,color:"var(--color-primary-light)"}}>€4.99/mo</span>
         </div>)}
         <h4 style={{fontSize:14,fontWeight:700,color:"#f0a500",margin:"16px 0 8px"}}>On Trial ({trial.length})</h4>
         {trial.map(u=><div key={u.id} style={{background:"var(--color-card)",borderRadius:10,border:"1px solid var(--color-border)",padding:10,marginBottom:4,fontSize:13}}>
