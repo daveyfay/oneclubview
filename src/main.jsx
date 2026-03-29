@@ -1,8 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import * as Sentry from '@sentry/react';
 import './lib/global.css';
 import App from './App';
 import { Capacitor } from '@capacitor/core';
+
+const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
+if (sentryDsn) {
+  Sentry.init({
+    dsn: sentryDsn,
+    environment: import.meta.env.MODE,
+    enabled: import.meta.env.PROD,
+    tracesSampleRate: 0.1,
+  });
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 

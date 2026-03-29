@@ -12,6 +12,9 @@ export default class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, info) {
     console.error('ErrorBoundary caught:', error, info.componentStack);
+    import('@sentry/react').then(Sentry => {
+      Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
+    }).catch(() => {});
   }
 
   render() {
