@@ -44,7 +44,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
           }
           if (
             confirm(
-              "Adding a 3rd adult requires the Family+ plan (€14.99/mo instead of €7.99/mo). This gives you up to 4 adults and 6 kids. Upgrade now?"
+              "Adding a 3rd adult requires the Family+ plan (€7.99/mo instead of €4.99/mo). This gives you up to 4 adults and 6 kids. Upgrade now?"
             )
           ) {
             const upRes = await fetch(SB + "/functions/v1/stripe-billing", {
@@ -155,7 +155,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
         }
         if (
           confirm(
-            "Adding a 4th child requires the Family+ plan (€14.99/mo). This gives you up to 6 kids and 4 adults. Upgrade now?"
+            "Adding a 4th child requires the Family+ plan (€7.99/mo). This gives you up to 6 kids and 4 adults. Upgrade now?"
           )
         ) {
           const upRes = await fetch(SB + "/functions/v1/stripe-billing", {

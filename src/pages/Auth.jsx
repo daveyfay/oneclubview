@@ -400,7 +400,7 @@ function Auth({ onAuth, mode: im }) {
                   textAlign: 'center',
                 }}
               >
-                14 days free, then from €7.99/month
+                14 days free, then from €4.99/month
               </p>
             )}
 

@@ -206,7 +206,7 @@ export default function OnboardClubs({ userId, kids, email, onDone, onLogout }) 
             <>
               <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
               <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 24, fontWeight: 800, color: "var(--color-primary)", marginBottom: 8 }}>You're all set!</h2>
-              <p style={{ fontSize: 15, color: "var(--color-muted)", marginBottom: 24, lineHeight: 1.6 }}>Your first 14 days are completely free.<br />After that, it's just €7.99/month to keep your family organised.</p>
+              <p style={{ fontSize: 15, color: "var(--color-muted)", marginBottom: 24, lineHeight: 1.6 }}>Your first 14 days are completely free.<br />After that, it's just €4.99/month to keep your family organised.</p>
               <div style={{
                 background: "#fff",
                 borderRadius: 16,
