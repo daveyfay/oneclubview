@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useMemo, useCallback } from 
 import { db, rpc, SB } from '../lib/supabase';
 import { showToast, getAge, weekDates } from '../lib/utils';
 import { COLS } from '../lib/constants';
+import { cacheGet, cacheSet } from '../lib/cache';
 
 export const HubDataContext = createContext(null);
 
@@ -26,19 +27,23 @@ export function HubDataProvider({ user, profile, children }) {
     const uidFilter=famIds.length>1?"user_id=in.("+famIds.join(",")+")":"user_id=eq."+user.id;
     const pidFilter=famIds.length>1?"parent_user_id=in.("+famIds.join(",")+")":"parent_user_id=eq."+user.id;
     setLoading(true);
+    const cachedCamps = cacheGet('camps');
+    const cachedActCats = cacheGet('actCats');
     const[k,c,r,m,p,ca,hols,userHols,cBooks,lEvts,aCats]=await Promise.all([
       db("dependants","GET",{filters:[pidFilter],order:"created_at.asc"}),
       db("hub_subscriptions","GET",{select:"id,club_id,dependant_id,colour,nickname,clubs(id,name,address,location,phone,rating,term_start,term_end)",filters:[uidFilter]}),
       db("recurring_events","GET",{filters:[uidFilter]}),
       db("manual_events","GET",{filters:[uidFilter]}),
       db("payment_reminders","GET",{filters:[uidFilter],order:"due_date.asc"}),
-      db("camps","GET",{select:"id,title,camp_type,start_date,end_date,daily_start_time,daily_end_time,age_min,age_max,cost_eur,cost_notes,location_name,latitude,longitude,booking_url,source",filters:["status=eq.active"],order:"start_date.asc"}),
+      cachedCamps || db("camps","GET",{select:"id,title,camp_type,start_date,end_date,daily_start_time,daily_end_time,age_min,age_max,cost_eur,cost_notes,location_name,latitude,longitude,booking_url,source",filters:["status=eq.active"],order:"start_date.asc"}),
       db("school_holidays","GET",{order:"start_date.asc"}),
       db("user_school_holidays","GET",{filters:[uidFilter],order:"start_date.asc"}),
       db("camp_bookings","GET",{filters:[uidFilter]}),
       db("local_events","GET",{select:"*,category",order:"event_date.asc"}),
-      db("activity_categories","GET",{order:"name.asc"})
+      cachedActCats || db("activity_categories","GET",{order:"name.asc"})
     ]);
+    if (!cachedCamps && ca) cacheSet('camps', ca, 300000); // 5 min
+    if (!cachedActCats && aCats) cacheSet('actCats', aCats, 300000); // 5 min
     setKids(k||[]);
     // Fetch school coordinates for kids' schools (for camp proximity matching)
     const kidSchools=(k||[]).filter(kid=>kid.school_name).map(kid=>kid.school_name);
