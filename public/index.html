@@ -50,14 +50,14 @@
     {
       "@type": "Offer",
       "name": "Standard",
-      "price": "7.99",
+      "price": "4.99",
       "priceCurrency": "EUR",
       "description": "2 adults, 3 kids, all features"
     },
     {
       "@type": "Offer", 
       "name": "Family+",
-      "price": "14.99",
+      "price": "7.99",
       "priceCurrency": "EUR",
       "description": "4 adults, 6 kids, all features"
     }
@@ -141,7 +141,7 @@ select{-webkit-appearance:none;appearance:none}
     <h2 style="font-size:18px;color:#1a2a3a;margin-bottom:16px">All your clubs. One calm view.</h2>
     <p style="color:#666;line-height:1.6;margin-bottom:20px">The family calendar app to manage all your clubs, activities, fees, and camps in one place. Both parents see everything. Clash detection, fee tracking, and camp finder for Dublin and Ireland.</p>
     <p style="color:#666">Please enable JavaScript to use OneClubView.</p>
-    <p style="margin-top:20px"><strong>Plans from €7.99/month</strong> — 14-day free trial, cancel anytime.</p>
+    <p style="margin-top:20px"><strong>Plans from €4.99/month</strong> — 14-day free trial, cancel anytime.</p>
   </div>
 </noscript>
 <script type="text/babel">
@@ -704,7 +704,7 @@ function Landing({onGo,onLogin}){
           {/* Standard */}
           <div style={{background:"var(--warm)",borderRadius:20,padding:24,border:"2px solid var(--bd)"}}>
             <div style={{fontSize:12,fontWeight:700,color:"var(--mt)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>Standard</div>
-            <div style={{fontFamily:"var(--sr)",fontSize:28,fontWeight:800,color:"var(--g)"}}>€7.99<span style={{fontSize:13,fontWeight:500,color:"var(--mt)"}}>/mo</span></div>
+            <div style={{fontFamily:"var(--sr)",fontSize:28,fontWeight:800,color:"var(--g)"}}>€4.99<span style={{fontSize:13,fontWeight:500,color:"var(--mt)"}}>/mo</span></div>
             <div style={{fontSize:12,color:"var(--mt)",margin:"12px 0 16px",lineHeight:1.5}}>Perfect for most families</div>
             {["2 adults","3 kids","All clubs & events","Fee tracking","Camp finder","Email forwarding","Clash detection"].map(f=><div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"var(--tx)",marginBottom:6}}><span style={{color:"#16a34a",fontWeight:700,fontSize:13}}>✓</span>{f}</div>)}
             <button onClick={onGo} className="btn bp" style={{width:"100%",marginTop:16,fontSize:13}}>Start free trial</button>
@@ -713,7 +713,7 @@ function Landing({onGo,onLogin}){
           <div style={{background:"var(--g)",borderRadius:20,padding:24,border:"2px solid var(--g)",color:"#fff",position:"relative"}}>
             <div style={{position:"absolute",top:-10,right:16,background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:100}}>BEST VALUE</div>
             <div style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,.6)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>Family+</div>
-            <div style={{fontFamily:"var(--sr)",fontSize:28,fontWeight:800}}>€14.99<span style={{fontSize:13,fontWeight:500,color:"rgba(255,255,255,.6)"}}>/mo</span></div>
+            <div style={{fontFamily:"var(--sr)",fontSize:28,fontWeight:800}}>€7.99<span style={{fontSize:13,fontWeight:500,color:"rgba(255,255,255,.6)"}}>/mo</span></div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.5)",margin:"12px 0 16px",lineHeight:1.5}}>Bigger families, more flexibility</div>
             {["Up to 4 adults","6 kids","Everything in Standard","Shared with grandparents","Multi-household support","Priority support"].map(f=><div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"rgba(255,255,255,.9)",marginBottom:6}}><span style={{color:"#e85d4a",fontWeight:700,fontSize:13}}>✓</span>{f}</div>)}
             <button onClick={onGo} style={{width:"100%",marginTop:16,padding:"12px 0",borderRadius:14,border:"2px solid rgba(255,255,255,.3)",background:"transparent",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--sn)"}}>Start free trial</button>
@@ -843,7 +843,7 @@ function Auth({onAuth,mode:im}){
             <button onClick={go} disabled={ld||(mode==="signup"?!canSignup:!canLogin)} className="btn bp">{ld?"...":mode==="signup"?"Start free trial":"Log in"}</button>
             {mode==="login"&&<><p style={{textAlign:"center",marginTop:8}}><button onClick={()=>setShowReset(true)} style={{background:"none",border:"none",color:"var(--mt)",cursor:"pointer",fontFamily:"var(--sn)",fontSize:12,textDecoration:"underline"}}>Forgot password?</button></p>
             <OcvInput open={showReset} onClose={()=>setShowReset(false)} title="Reset password" placeholder="Enter your email address" onSubmit={async(em)=>{try{const r=await fetch(SB+"/auth/v1/recover",{method:"POST",headers:{"apikey":SK,"Content-Type":"application/json"},body:JSON.stringify({email:em})});if(r.ok)showToast("Password reset link sent! Check your inbox.");else showToast("Could not send reset email. Try again.","err")}catch(e){showToast("Error: "+e.message,"err")}}}/></>}
-            {mode==="signup"&&<p style={{fontSize:12,color:"var(--mt)",textAlign:"center"}}>14 days free, then from €7.99/month</p>}
+            {mode==="signup"&&<p style={{fontSize:12,color:"var(--mt)",textAlign:"center"}}>14 days free, then from €4.99/month</p>}
             {mode==="signup"&&<p style={{fontSize:11,color:"var(--mt)",textAlign:"center",lineHeight:1.5}}>By signing up you agree to our <a href="/terms" style={{color:"var(--acc)"}}>Terms of Service</a> and <a href="/privacy" style={{color:"var(--acc)"}}>Privacy Policy</a>.</p>}
             {mode==="signup"&&<p style={{fontSize:11,color:"var(--mt)",textAlign:"center"}}>Password must be 8+ characters with a mix of uppercase, numbers, or symbols</p>}
           </div>
@@ -1003,7 +1003,7 @@ function OnboardClubs({userId,kids,email,onDone,onLogout}){
         </>:<>
           <div style={{fontSize:48,marginBottom:16}}>🎉</div>
           <h2 style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800,color:"var(--g)",marginBottom:8}}>You're all set!</h2>
-          <p style={{fontSize:15,color:"var(--mt)",marginBottom:24,lineHeight:1.6}}>Your first 14 days are completely free.<br/>After that, it's just €7.99/month to keep your family organised.</p>
+          <p style={{fontSize:15,color:"var(--mt)",marginBottom:24,lineHeight:1.6}}>Your first 14 days are completely free.<br/>After that, it's just €4.99/month to keep your family organised.</p>
           <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--bd)",padding:20,marginBottom:16,textAlign:"left"}}>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {["See your whole family's week in one place","Fee reminders across all clubs","Easter & summer camp finder","Clash detection & pickup planning","Works for both parents"].map((t,i)=>
@@ -1565,12 +1565,12 @@ function Hub({user,profile,onRefresh,onLogout}){
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
             <div onClick={()=>startCheckout("standard")} style={{background:"var(--warm)",borderRadius:16,padding:16,border:"2px solid var(--bd)",cursor:"pointer",textAlign:"center"}}>
               <div style={{fontSize:11,fontWeight:700,color:"var(--mt)",marginBottom:4}}>STANDARD</div>
-              <div style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800,color:"var(--g)"}}>€7.99<span style={{fontSize:11,color:"var(--mt)"}}>/mo</span></div>
+              <div style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800,color:"var(--g)"}}>€4.99<span style={{fontSize:11,color:"var(--mt)"}}>/mo</span></div>
               <div style={{fontSize:11,color:"var(--mt)",marginTop:4}}>2 adults · 3 kids</div>
             </div>
             <div onClick={()=>startCheckout("family_plus")} style={{background:"var(--g)",borderRadius:16,padding:16,border:"2px solid var(--g)",cursor:"pointer",textAlign:"center",color:"#fff"}}>
               <div style={{fontSize:11,fontWeight:700,color:"var(--acc)",marginBottom:4}}>FAMILY+</div>
-              <div style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800}}>€14.99<span style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>/mo</span></div>
+              <div style={{fontFamily:"var(--sr)",fontSize:24,fontWeight:800}}>€7.99<span style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>/mo</span></div>
               <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:4}}>4 adults · 6 kids</div>
             </div>
           </div>
@@ -2282,7 +2282,7 @@ function Hub({user,profile,onRefresh,onLogout}){
         <button onClick={()=>setShowChangePw(true)} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>🔑 Change Password</button>
         {profile?.subscription_status==="active"&&<button onClick={()=>{setShowProfile(false);openPortal()}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>💳 Manage Subscription</button>}
         {profile?.is_beta?<div style={{padding:"10px 14px",fontSize:12,fontWeight:700,color:"#16a34a",display:"flex",alignItems:"center",gap:8}}>🎁 Beta member — free forever</div>
-        :profile?.subscription_status!=="active"&&<button onClick={()=>{setShowProfile(false);startCheckout("standard")}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>⭐ Subscribe — €7.99/mo</button>}
+        :profile?.subscription_status!=="active"&&<button onClick={()=>{setShowProfile(false);startCheckout("standard")}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--acc)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>⭐ Subscribe — €4.99/mo</button>}
         <button onClick={()=>{setShowProfile(false);setShowFamily(true)}} style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>👨‍👩‍👧‍👦 Family Members</button>
         <a href="/privacy" style={{width:"100%",padding:"10px 14px",border:"none",background:"none",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--tx)",fontFamily:"var(--sn)",textAlign:"left",borderRadius:8,display:"flex",alignItems:"center",gap:8,textDecoration:"none"}}>🔒 Privacy & Data</a>
         <div style={{borderTop:"1px solid var(--bd)",marginTop:4,paddingTop:4}}>
@@ -2589,7 +2589,7 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
         const lim=await limRes.json();
         if(lim.adults>=lim.max_adults){
           if(lim.tier==="family_plus"||lim.is_beta){setSv(false);showToast("Maximum adults for your plan.","info");return}
-          if(confirm("Adding a 3rd adult requires the Family+ plan (€14.99/mo instead of €7.99/mo). This gives you up to 4 adults and 6 kids. Upgrade now?")){
+          if(confirm("Adding a 3rd adult requires the Family+ plan (€7.99/mo instead of €4.99/mo). This gives you up to 4 adults and 6 kids. Upgrade now?")){
             const upRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"upgrade",user_id:userId})});
             const upData=await upRes.json();
             if(upData.needs_checkout){
@@ -2618,7 +2618,7 @@ function AddKidModal({userId,onClose,onSaved,editKid,profile}){
       const lim=await limRes.json();
       if(lim.kids>=lim.max_kids){
         if(lim.tier==="family_plus"||lim.is_beta){setSv(false);showToast("Maximum kids for your plan.","info");return}
-        if(confirm("Adding a 4th child requires the Family+ plan (€14.99/mo). This gives you up to 6 kids and 4 adults. Upgrade now?")){
+        if(confirm("Adding a 4th child requires the Family+ plan (€7.99/mo). This gives you up to 6 kids and 4 adults. Upgrade now?")){
           const upRes=await fetch(SB+"/functions/v1/stripe-billing",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+_t},body:JSON.stringify({action:"upgrade",user_id:userId})});
           const upData=await upRes.json();
           if(upData.needs_checkout){
@@ -3384,13 +3384,13 @@ function AdminDashboard({user,onBack}){
       const churned=users.filter(u=>u.subscription_status==="churned");
       content=<div>
         <div style={{background:"var(--sage)",borderRadius:14,padding:16,marginBottom:12}}>
-          <div style={{fontSize:28,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)"}}>€{(active.length*7.99).toFixed(2)}</div>
+          <div style={{fontSize:28,fontWeight:800,color:"var(--g)",fontFamily:"var(--sr)"}}>€{(active.length*4.99).toFixed(2)}</div>
           <div style={{fontSize:13,color:"var(--gl)",fontWeight:600}}>Monthly Recurring Revenue</div>
-          <div style={{fontSize:12,color:"var(--mt)",marginTop:4}}>{active.length} active subscriber{active.length!==1?"s":""} × €7.99</div>
+          <div style={{fontSize:12,color:"var(--mt)",marginTop:4}}>{active.length} active subscriber{active.length!==1?"s":""} × €4.99</div>
         </div>
         <h4 style={{fontSize:14,fontWeight:700,color:"var(--g)",margin:"16px 0 8px"}}>Active Subscribers ({active.length})</h4>
         {active.map(u=><div key={u.id} style={{background:"#fff",borderRadius:10,border:"1px solid var(--bd)",padding:10,marginBottom:4,fontSize:13,display:"flex",justifyContent:"space-between"}}>
-          <span>{u.first_name} ({u.email})</span><span style={{fontWeight:700,color:"var(--gl)"}}>€7.99/mo</span>
+          <span>{u.first_name} ({u.email})</span><span style={{fontWeight:700,color:"var(--gl)"}}>€4.99/mo</span>
         </div>)}
         <h4 style={{fontSize:14,fontWeight:700,color:"#f0a500",margin:"16px 0 8px"}}>On Trial ({trial.length})</h4>
         {trial.map(u=><div key={u.id} style={{background:"#fff",borderRadius:10,border:"1px solid var(--bd)",padding:10,marginBottom:4,fontSize:13}}>
