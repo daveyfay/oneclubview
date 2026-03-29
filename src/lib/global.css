@@ -381,13 +381,6 @@ select {
   animation: fabIn .4s cubic-bezier(.4,0,.2,1) both;
 }
 
-/* Card press feedback */
-@keyframes cardPress {
-  0% { transform: scale(1); }
-  50% { transform: scale(.97); }
-  100% { transform: scale(1); }
-}
-
 /* Dark mode */
 [data-theme="dark"] {
   --color-primary: #e8f0f5;
