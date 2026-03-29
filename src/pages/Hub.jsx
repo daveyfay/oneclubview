@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { db, SB, getToken } from '../lib/supabase';
 import { track, showToast } from '../lib/utils';
 import { COLS } from '../lib/constants';
@@ -7,17 +7,21 @@ import Logo from '../components/Logo';
 import CancelFeedback from '../components/CancelFeedback';
 import AddEventModal from '../components/modals/AddEventModal';
 import AddPaymentModal from '../components/modals/AddPaymentModal';
-import AddKidModal from '../components/modals/AddKidModal';
-import PasteScheduleModal from '../components/modals/PasteScheduleModal';
-import AddActivityModal from '../components/modals/AddActivityModal';
 import AddPlaydateModal from '../components/modals/AddPlaydateModal';
 import { HubDataProvider } from '../contexts/HubDataContext';
 import { useHubData } from '../hooks/useHubData';
-import OverviewTab from './tabs/OverviewTab';
-import ScheduleTab from './tabs/ScheduleTab';
-import MoneyTab from './tabs/MoneyTab';
-import ExploreTab from './tabs/ExploreTab';
-import SettingsTab from './tabs/SettingsTab';
+
+// Lazy-loaded tabs
+const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
+const ScheduleTab = lazy(() => import('./tabs/ScheduleTab'));
+const MoneyTab = lazy(() => import('./tabs/MoneyTab'));
+const ExploreTab = lazy(() => import('./tabs/ExploreTab'));
+const SettingsTab = lazy(() => import('./tabs/SettingsTab'));
+
+// Lazy-loaded heavy modals (>200 lines)
+const PasteScheduleModal = lazy(() => import('../components/modals/PasteScheduleModal'));
+const AddActivityModal = lazy(() => import('../components/modals/AddActivityModal'));
+const AddKidModal = lazy(() => import('../components/modals/AddKidModal'));
 
 export default function Hub({ user, profile, onRefresh, onLogout }) {
   return (
@@ -265,10 +269,14 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
         </div>}
 
         {/* TAB CONTENT */}
-        {tab === "overview" && <OverviewTab filter={filter} onChangeTab={handleChangeTab} onRefresh={onRefresh} />}
-        {tab === "week" && <ScheduleTab filter={filter} />}
-        {tab === "money" && <MoneyTab filter={filter} />}
-        {tab === "explore" && <ExploreTab filter={filter} onRefresh={onRefresh} />}
+        <Suspense fallback={<div style={{ padding: '20px 0' }}>
+          <div className="skeleton-shimmer" style={{ height: 200, borderRadius: 16 }} />
+        </div>}>
+          {tab === "overview" && <OverviewTab filter={filter} onChangeTab={handleChangeTab} onRefresh={onRefresh} />}
+          {tab === "week" && <ScheduleTab filter={filter} />}
+          {tab === "money" && <MoneyTab filter={filter} />}
+          {tab === "explore" && <ExploreTab filter={filter} onRefresh={onRefresh} />}
+        </Suspense>
       </div>
 
       {/* Notification Panel */}
@@ -289,7 +297,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
       </div>}
 
       {/* Profile/Settings Menu */}
-      {showProfile && <SettingsTab onLogout={onLogout} darkMode={darkMode} setDarkMode={setDarkMode} onClose={() => setShowProfile(false)} startCheckout={startCheckout} openPortal={openPortal} />}
+      {showProfile && <Suspense fallback={null}><SettingsTab onLogout={onLogout} darkMode={darkMode} setDarkMode={setDarkMode} onClose={() => setShowProfile(false)} startCheckout={startCheckout} openPortal={openPortal} /></Suspense>}
 
       {/* FAB + Bottom Sheet */}
       {showFab && <div onClick={() => setShowFab(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(10,15,20,.35)", zIndex: 70, transition: "opacity .2s" }} />}
@@ -336,13 +344,16 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
       </div>}
       <button onClick={() => { setShowFab(!showFab); window.__hapticMedium && window.__hapticMedium() }} className="fab-btn" style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", right: 20, width: 56, height: 56, borderRadius: "50%", background: showFab ? "var(--color-muted)" : "linear-gradient(135deg,var(--color-primary),var(--color-primary-light))", color: "#fff", border: "none", fontSize: 26, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(26,42,58,.3)", zIndex: 72, transition: "transform .2s cubic-bezier(.4,0,.2,1),background .15s", transform: showFab ? "rotate(45deg) scale(.9)" : "none" }}>+</button>
 
-      {/* FAB Modals */}
+      {/* FAB Modals — small/frequent ones kept static */}
       {showAddEv && <AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={() => setShowAddEv(false)} onSaved={() => { setShowAddEv(false); window.__hapticSuccess && window.__hapticSuccess(); load() }} />}
       {showAddPay && <AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={() => setShowAddPay(false)} onSaved={() => { setShowAddPay(false); window.__hapticSuccess && window.__hapticSuccess(); load() }} />}
-      {showAddActivity && <AddActivityModal userId={user.id} userLoc={userLoc} profile={profile} kids={kids} onClose={() => setShowAddActivity(false)} onSaved={() => { track("add_activity"); setShowAddActivity(false); window.__hapticSuccess && window.__hapticSuccess(); load() }} />}
       {showAddPlaydate && <AddPlaydateModal userId={user.id} profile={profile} kids={kids} onClose={() => setShowAddPlaydate(false)} onSaved={() => { track("add_playdate"); setShowAddPlaydate(false); window.__hapticSuccess && window.__hapticSuccess(); load() }} />}
-      {showPaste && <PasteScheduleModal userId={user.id} clubs={clubs} kids={kids} profile={profile} onClose={() => setShowPaste(false)} onSaved={() => { setShowPaste(false); load() }} />}
-      {showAddKid && <AddKidModal userId={user.id} editKid={typeof showAddKid === "object" ? showAddKid : null} profile={profile} onClose={() => setShowAddKid(false)} onSaved={() => { track("add_kid"); setShowAddKid(false); load() }} />}
+      {/* Lazy-loaded heavy modals */}
+      <Suspense fallback={null}>
+        {showAddActivity && <AddActivityModal userId={user.id} userLoc={userLoc} profile={profile} kids={kids} onClose={() => setShowAddActivity(false)} onSaved={() => { track("add_activity"); setShowAddActivity(false); window.__hapticSuccess && window.__hapticSuccess(); load() }} />}
+        {showPaste && <PasteScheduleModal userId={user.id} clubs={clubs} kids={kids} profile={profile} onClose={() => setShowPaste(false)} onSaved={() => { setShowPaste(false); load() }} />}
+        {showAddKid && <AddKidModal userId={user.id} editKid={typeof showAddKid === "object" ? showAddKid : null} profile={profile} onClose={() => setShowAddKid(false)} onSaved={() => { track("add_kid"); setShowAddKid(false); load() }} />}
+      </Suspense>
     </div>
   );
 }
