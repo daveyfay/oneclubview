@@ -54,4 +54,25 @@ describe('supabase helpers', () => {
     expect(callUrl).toContain('id=eq.123');
     expect(result).toEqual([{ id: 1 }]);
   });
+
+  it('db() encodes filter values safely', async () => {
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: () => Promise.resolve('[]'),
+    });
+
+    const { db } = await import('../supabase.js');
+    await db('family_invites', 'GET', {
+      filters: ['invited_email=eq.parent+one@example.com', 'note=eq.A&B'],
+      order: 'created_at.desc',
+      limit: 1,
+    });
+
+    const callUrl = new URL(global.fetch.mock.calls[0][0]);
+    expect(callUrl.searchParams.get('invited_email')).toBe('eq.parent+one@example.com');
+    expect(callUrl.searchParams.get('note')).toBe('eq.A&B');
+    expect(callUrl.searchParams.get('order')).toBe('created_at.desc');
+    expect(callUrl.searchParams.get('limit')).toBe('1');
+  });
 });

@@ -18,7 +18,7 @@ export default function ExploreTab({ filter, onRefresh }) {
     kids, clubs, camps, campBookings, holidays, userHolidays,
     schoolLocs, familyLocs, isAdmin,
     clubTermMap, kidMap, user, profile, load, loading, userLoc,
-    setFamilyLocs,
+    setFamilyLocs, setCampBookings,
   } = useHubData();
 
   const [exploreTab, setExploreTab] = useState("clubs");
@@ -189,7 +189,7 @@ export default function ExploreTab({ filter, onRefresh }) {
                     <p style={{ fontSize: 13, color: "var(--color-muted)" }}>No camps listed yet for this break</p>
                     <p style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 2 }}>We'll alert you when camps appear</p>
                   </div>
-                : holCamps.map(camp => <CampCard key={camp.id} camp={camp} userLoc={userLoc} allLocs={allLocs} user={user} kids={kids} filter={filter} campBookings={campBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load} isAdmin={isAdmin} />)}
+                : holCamps.map(camp => <CampCard key={camp.id} camp={camp} userId={user.id} userLoc={userLoc} allLocs={allLocs} kids={kids} filter={filter} campBookings={campBookings} setCampBookings={setCampBookings} CT={CT} fmtDate={fmtDate} onBookingChange={load} isAdmin={isAdmin} />)}
               </div>
             });
           })()}

@@ -98,14 +98,30 @@ export async function au(a, b) {
 }
 
 // ── Database (PostgREST) ──
+function appendQueryParam(params, raw) {
+  const eq = raw.indexOf("=");
+  if (eq === -1) {
+    params.append(raw, "");
+    return;
+  }
+  let value = raw.slice(eq + 1);
+  try {
+    value = decodeURIComponent(value);
+  } catch (e) {
+    // Keep malformed legacy filter text as-is; URLSearchParams will still encode it safely.
+  }
+  params.append(raw.slice(0, eq), value);
+}
+
 export async function db(t, m, o = {}) {
   let u = SB + "/rest/v1/" + t;
-  const p = [];
-  if (o.select) p.push("select=" + encodeURIComponent(o.select));
-  if (o.filters) o.filters.forEach(f => p.push(f));
-  if (o.order) p.push("order=" + o.order);
-  if (o.limit) p.push("limit=" + o.limit);
-  if (p.length) u += "?" + p.join("&");
+  const p = new URLSearchParams();
+  if (o.select) p.set("select", o.select);
+  if (o.filters) o.filters.forEach(f => appendQueryParam(p, f));
+  if (o.order) p.set("order", o.order);
+  if (o.limit != null) p.set("limit", String(o.limit));
+  const q = p.toString();
+  if (q) u += "?" + q;
   if (m === "DELETE" && (!o.filters || o.filters.length === 0)) {
     console.error("db() DELETE blocked — no filters");
     return null;

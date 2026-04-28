@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ocv-v2';
+const CACHE_NAME = 'ocv-v3';
 const OFFLINE_URLS = [
   '/',
   '/index.html',
@@ -40,6 +40,8 @@ self.addEventListener('fetch', event => {
       .then(response => {
         // Cache successful responses for static assets
         if (response.ok && (event.request.url.endsWith('.html') || 
+            event.request.url.endsWith('.js') ||
+            event.request.url.endsWith('.css') ||
             event.request.url.endsWith('.png') || 
             event.request.url.endsWith('.svg') ||
             event.request.url.endsWith('.json') ||
