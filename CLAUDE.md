@@ -1,17 +1,60 @@
 # OneClubView — Claude Code Context
 
 ## What is this?
-Family activity management app for Irish parents. Manages kids' extracurricular schedules, camps, clubs, fees, and school holidays. Single-page React app served from `public/index.html`.
+Family activity management app for Irish parents. Manages kids' extracurricular schedules, camps, clubs, fees, and school holidays.
 
 ## Architecture
-- **Frontend**: Single HTML file with inline React/Babel (`public/index.html`)
+- **Frontend**: React 19 + Vite 8 SPA with component-based structure in `src/`
+- **Entry point**: `index.html` (root) loads `src/main.jsx`
 - **Backend**: Supabase (Postgres + Auth + Edge Functions + RLS)
 - **Hosting**: Netlify (auto-deploys from `main` branch)
+- **Mobile**: Capacitor 8 (iOS + Android shells scaffolded)
+- **Monitoring**: Sentry (via `VITE_SENTRY_DSN` env var)
 - **Domain**: oneclubview.com
 
+## Key Source Structure
+```
+src/
+  main.jsx            — Entry point (Sentry init, Capacitor setup, PWA)
+  App.jsx             — Screen router (landing/auth/onboard/hub/admin)
+  pages/
+    Landing.jsx       — Marketing landing page
+    Auth.jsx          — Login/signup
+    OnboardKids.jsx   — Onboarding step 1
+    OnboardClubs.jsx  — Onboarding step 2
+    Hub.jsx           — Main app shell with tab bar + FAB
+    AdminDashboard.jsx — Site admin (hello@oneclubview.com only)
+    tabs/             — Overview, Schedule, Money, Explore, Settings
+  components/
+    modals/           — 15 modals (OcvModal wrapper pattern)
+    hub/              — WeekGrid, CampCard, NearbyClubs, ThingsToDo, DiscoverResults
+    ErrorBoundary.jsx, Logo.jsx, SchoolPicker.jsx, CancelFeedback.jsx
+  contexts/
+    HubDataContext.jsx — Shared data layer (kids, clubs, pays, members)
+  hooks/
+    useHubData.js     — Hook to consume HubDataContext
+  lib/
+    supabase.js       — Auth + DB helpers (au, db, SB, SK, tokens)
+    utils.js          — track(), showToast(), calcKm(), getAge(), etc.
+    constants.js      — COLS (colors), category lists
+    cache.js          — 5-min TTL cache for camps/categories
+    icons.jsx         — SVG icon components
+    global.css        — Design system (CSS vars, dark mode, animations)
+public/
+  index.html          — OLD monolithic app (3700+ lines, legacy, NOT the live app)
+  blog/               — Blog pages
+  sw.js, robots.txt, sitemap.xml, llms.txt
+```
+
 ## Deploy Flow
-Push to `main` → Netlify auto-builds → live at oneclubview.com
-**Both Claude Code and Claude Chat deploy the same way: `git push origin main`**
+Push to `main` -> Netlify runs `vite build` -> publishes `dist/` -> live at oneclubview.com
+
+## Build & Test
+```bash
+npm run build     # Vite production build
+npm test          # Vitest (15 tests across 3 files)
+npm run dev       # Local dev server on port 3000
+```
 
 ## IDs and Config
 - **Supabase project**: `uqihwazheypvmrcrqklg`
@@ -21,30 +64,28 @@ Push to `main` → Netlify auto-builds → live at oneclubview.com
 
 ## Credentials
 All credentials are stored as Supabase Edge Function secrets and env vars.
-- **GitHub PAT**: Ask Dave or check password manager
-- **Anthropic key**: Set as `ANTHROPIC_API_KEY` in Supabase secrets (used in scrape-local)
-- **Resend key**: Set as `RESEND_API_KEY` in Supabase secrets
-- **Stripe webhook secret**: Set as `STRIPE_WEBHOOK_SECRET` in Supabase secrets
+- **Anthropic key**: `ANTHROPIC_API_KEY` in Supabase secrets (used in scrape-local)
+- **Resend key**: `RESEND_API_KEY` in Supabase secrets
+- **Stripe webhook secret**: `STRIPE_WEBHOOK_SECRET` in Supabase secrets
 - **Supabase service role key**: Auto-available as `SUPABASE_SERVICE_ROLE_KEY` in edge functions
-
-## Supabase Anon Key
-The anon key is in `public/index.html` as the `SK` constant. It's public by design.
+- **Supabase anon key**: In `src/lib/supabase.js` as `SK` constant (public by design)
 
 ## Edge Functions (12 total)
-| Function | JWT | Status | Purpose |
-|---|---|---|---|
-| scrape-local | false | v14 | AI-powered local data scraper (camps/clubs/things). Rate-limited 5/hr/IP. |
-| auth-signup | false | v1 | Creates user with auto-confirmed email (bypasses broken SMTP) |
-| send-invite | true | v6 | Sends family invite emails via Resend |
-| parse-schedule | true | v4 | AI parses pasted club schedules |
-| email-sequence | false | v3 | Queue-based welcome email sequence |
-| inbound-email | false | v6 | Processes forwarded club emails |
-| stripe-billing | true | v3 | Subscription management |
-| stripe-webhook | false | v4 | Stripe event handler |
-| scrape-camps | false | v3 | Camp provider scraper (AI-based, unreliable) |
-| weekly-digest | false | v2 | DISABLED |
-| sync-ical-feed | false | v2 | iCal feed sync |
-| discover-nearby | false | v6 | Not used by frontend |
+| Function | JWT | Purpose |
+|---|---|---|
+| scrape-local | false | AI-powered local data scraper. Rate-limited 5/hr/IP. |
+| auth-signup | false | Creates user with auto-confirmed email |
+| send-invite | true | Sends family invite emails via Resend |
+| parse-schedule | true | AI parses pasted club schedules |
+| email-sequence | false | Queue-based welcome email sequence |
+| inbound-email | false | Processes forwarded club emails |
+| stripe-billing | true | Subscription management |
+| stripe-webhook | false | Stripe event handler |
+| scrape-camps | false | Camp provider scraper (AI-based, unreliable) |
+| weekly-digest | false | DISABLED |
+| sync-ical-feed | false | iCal feed sync |
+| discover-nearby | false | Not used by frontend |
+| delete-account | false | GDPR account deletion |
 
 ## Database Key Tables
 - `profiles` — users, with `family_role` (admin/carer/viewer), `family_id` for sharing
@@ -68,49 +109,43 @@ The anon key is in `public/index.html` as the `SK` constant. It's public by desi
 - Sensitive data scoped to `auth.uid()` or family via `get_my_family_user_ids()`
 - No secrets in frontend code (only Supabase anon key which is public)
 - Rate limiting on scrape-local (5 calls/IP/hour)
+- Admin dashboard hardcoded to hello@oneclubview.com only
+
+## Pricing (as of Aug 2026)
+- Standard: EUR 4.99/mo (2 adults, 3 kids)
+- Family+: EUR 7.99/mo (4 adults, 6 kids)
+- 14-day free trial
+NOTE: The structured data in index.html still shows old pricing (7.99/14.99) — needs fixing.
 
 ## Key Users
 - Dave (dav3y.fay@gmail.com) — admin, account owner
 - Liza (lizagrennan@gmail.com) — admin, family member
-- OneClubView (hello@oneclubview.com) — admin, test account
+- OneClubView (hello@oneclubview.com) — admin, test account + site admin
 
-## CURRENT PRIORITIES (as of Mar 21 2026)
+## God Nodes (most connected code)
+1. `db()` (56 edges) — Supabase query helper, used everywhere
+2. `showToast()` (33 edges) — Toast notifications
+3. `track()` (19 edges) — Analytics tracking
+4. `OcvModal()` (15 edges) — Modal wrapper component
+5. `useHubData()` (15 edges) — Shared data hook
 
-### DONE (Mar 21 2026) — scrape-local geocoding
-✅ `geocodeNewItems()` auto-geocodes clubs/camps/things after every scrape-local insert. Uses Nominatim with viewbox bias (works globally, not just Ireland). 111 existing bad-coord clubs fixed, ~25 "Multiple Dublin Locations" clubs nulled. Distance check removed — always updates from Nominatim.
-
-### DONE (Mar 21 2026) — Calendar view
-✅ Full month calendar with colored event dots for all days (recurring + manual). Day tap opens slide-up panel with event details. Month prev/next navigation. "Skip this week" adds to excluded_dates. Timeline hidden when in calendar mode.
-
-### DONE (Mar 21 2026) — Family roles
-✅ Signup checks family_invites and assigns correct role (admin/carer/viewer) + links family_id. InviteAdultModal has role picker. Mark paid / Add payment buttons defense-in-depth gated with isAdmin. Admin dashboard checks family_role (was checking wrong field).
-
-### DONE (Mar 21 2026) — QA bug fixes
-✅ Token refresh (sessions survive 1hr expiry). Driver field saved in AddEventModal. calcKm null checks. Trial banner no negative days. Camp booking duplicate guard. ThingsToDoSection extracted to top-level component. Dead code removed (STRIPE_PK, discoverSearch, fake rating). Account deletion emails admin with honest 30-day messaging.
-
-### HIGH — Remaining items
-- Account deletion needs real server-side data removal (currently just emails admin)
-- Admin dashboard queries leak data — need proper RLS gating
-- Need testing with real carer (grandparent) login
-- "Skip this week" excluded_dates need UI to undo
-- scrape-local edge function still has the coord bug at source (frontend geocoding compensates)
-
-## COMPILE CHECK — Run before every deploy
-```bash
-python3 -c "
-with open('public/index.html','r') as f: c=f.read()
-s=c.find('<script type=\"text/babel\">')+len('<script type=\"text/babel\">')
-e=c.rfind('</script>', 0, c.rfind('</script>'))
-with open('/tmp/test.jsx','w') as f: f.write(c[s:e].strip())
-"
-npx @babel/core @babel/preset-react -e "const b=require('@babel/core'),f=require('fs');try{b.transformSync(f.readFileSync('/tmp/test.jsx','utf8'),{presets:['@babel/preset-react'],filename:'t.jsx'});console.log('Compiles OK')}catch(e){console.log('FAIL',e.message)}"
-```
+## ADMIN DASHBOARD WARNING
+NEVER conflate `family_role` (admin/carer/viewer = parent role within a family) with site admin.
+The admin dashboard is gated to `hello@oneclubview.com` specifically. Do NOT change this gating
+without explicit approval from Dave.
 
 ## RULES
-1. NEVER deploy without compile check
-2. NEVER deploy without tracing the actual user flow (not just checking strings exist)
-3. Always git pull origin main before making changes (chat may have pushed)
+1. NEVER deploy without running `npm run build` successfully
+2. NEVER deploy without tracing the actual user flow
+3. Always `git pull origin main` before making changes
 4. Test with real data — verify DB queries return expected results
-5. The file is big (200KB+) — make targeted edits not full rewrites
-6. RLS is critical — never add USING(true) policies on sensitive tables
-7. When editing public/index.html be very careful with str_replace — the file is dense
+5. RLS is critical — never add USING(true) policies on sensitive tables
+6. Make targeted edits, not full rewrites
+7. The old `public/index.html` is legacy — the live app is in `src/`
+
+## graphify
+This project has a knowledge graph at graphify-out/.
+- For codebase questions, run `graphify query "<question>"` when graphify-out/graph.json exists
+- Use `graphify path "<A>" "<B>"` for relationships
+- Use `graphify explain "<concept>"` for focused concepts
+- After modifying code, run `graphify update .` to keep the graph current
