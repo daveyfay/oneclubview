@@ -195,6 +195,108 @@ export function HubDataProvider({ user, profile, children }) {
     return evts.sort((a, b) => a.date - b.date || (a.time || "").localeCompare(b.time || ""));
   }, [recs, mans, pays, wd, clubMap, clubTermMap, kidMap, profile]);
 
+  // Centralized alerts — consumed by OverviewTab via AlertCallout
+  const alerts = useMemo(() => {
+    const al = [];
+    const now = new Date();
+    const todayStr = now.toISOString().split("T")[0];
+
+    // Fee alerts (admin only)
+    if (isAdmin) {
+      (pays || []).filter(p => !p.paid && p.status !== "not_renewing" && p.due_date).forEach(p => {
+        const due = new Date(p.due_date);
+        const days = Math.ceil((due - now) / 86400000);
+        if (days < 0) al.push({ id: "fee-overdue-" + p.id, type: "fee", severity: "urgent", text: p.description + " is \u20AC" + parseFloat(p.amount).toFixed(0) + " overdue (" + Math.abs(days) + " days)", action: { label: "View fees", tab: "money" }, tab: "money", dismissible: true, adminOnly: true });
+        else if (days <= 3) al.push({ id: "fee-soon-" + p.id, type: "fee", severity: "warn", text: p.description + " \u2014 \u20AC" + parseFloat(p.amount).toFixed(0) + " due in " + days + " day" + (days !== 1 ? "s" : ""), action: { label: "View fees", tab: "money" }, tab: "money", dismissible: true, adminOnly: true });
+        else if (days <= 7) al.push({ id: "fee-week-" + p.id, type: "fee", severity: "info", text: p.description + " \u2014 \u20AC" + parseFloat(p.amount).toFixed(0) + " due in " + days + " days", action: { label: "View fees", tab: "money" }, tab: "money", dismissible: true, adminOnly: true });
+      });
+    }
+
+    // Clash today (urgent): two events overlap in time for different members
+    const activeWeekEvts = weekEvts.filter(e => !e.skipped);
+    const todayEvts = activeWeekEvts.filter(e => {
+      const d = e.date;
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate() && e.time;
+    });
+    for (let i = 0; i < todayEvts.length; i++) {
+      for (let j = i + 1; j < todayEvts.length; j++) {
+        const a = todayEvts[i], b = todayEvts[j];
+        if (a.memberId === b.memberId) continue;
+        if ((a.time < (b.endTime || "23:59")) && (b.time < (a.endTime || "23:59"))) {
+          al.push({ id: "clash-" + a.id + "-" + b.id, type: "clash", severity: "urgent", text: "Clash today: " + a.member + " (" + a.title + " " + a.time + ") overlaps " + b.member + " (" + b.title + " " + b.time + ")", action: { label: "View schedule", tab: "week" }, tab: "week", dismissible: false, adminOnly: false });
+        }
+      }
+    }
+
+    // No driver (info): today's recurring event has no driver
+    todayEvts.filter(e => !e.driver && e.source_type === "recurring").forEach(e => {
+      al.push({ id: "nodriver-" + e.id, type: "no_driver", severity: "info", text: "No driver set for " + e.member + "'s " + e.title + " at " + e.time, action: { label: "View schedule", tab: "week" }, tab: "week", dismissible: true, adminOnly: false });
+    });
+
+    // No end time (info): events this week missing endTime
+    const noEnd = weekEvts.filter(e => e.time && !e.endTime);
+    if (noEnd.length > 0) {
+      al.push({ id: "noend-" + todayStr, type: "no_end_time", severity: "info", text: noEnd.length + " event" + (noEnd.length > 1 ? "s" : "") + " this week with no end time \u2014 makes pickup planning harder", action: { label: "View schedule", tab: "week" }, tab: "week", dismissible: true, adminOnly: false });
+    }
+
+    // Holiday uncovered (warn): school holiday within 21 days, kid has no camp booked but suitable camps exist
+    if (camps && camps.length > 0 && kids.length > 0) {
+      const nextHol = (holidays || []).find(h => {
+        const holEnd = new Date(h.end_date + "T23:59:59");
+        const holStart = new Date(h.start_date + "T00:00:00");
+        return holEnd >= now && (holStart - now) / 86400000 <= 21;
+      });
+      if (nextHol) {
+        const holStart = new Date(nextHol.start_date + "T00:00:00"), holEnd = new Date(nextHol.end_date + "T23:59:59");
+        kids.forEach(kid => {
+          const age = getAge(kid.date_of_birth);
+          const suitableCamps = (camps || []).filter(ca => {
+            if (ca.age_min && age < ca.age_min) return false;
+            if (ca.age_max && age > ca.age_max) return false;
+            const cs = new Date(ca.start_date + "T00:00:00");
+            if (cs < holStart || cs > holEnd) return false;
+            return true;
+          });
+          const booked = (campBookings || []).filter(b => {
+            if (b.dependant_id !== kid.id) return false;
+            const camp = (camps || []).find(c => c.id === b.camp_id);
+            if (!camp) return false;
+            const cs = new Date(camp.start_date + "T00:00:00");
+            return cs >= holStart && cs <= holEnd;
+          });
+          if (suitableCamps.length > 0 && booked.length === 0) {
+            al.push({ id: "holcover-" + kid.id + "-" + nextHol.id, type: "holiday_uncovered", severity: "warn", text: kid.first_name + " has no camp booked for " + nextHol.name + ". " + suitableCamps.length + " camp" + (suitableCamps.length > 1 ? "s" : "") + " suit" + (suitableCamps.length === 1 ? "s" : "") + " their age.", action: { label: "View camps", tab: "explore", subaction: "camps" }, tab: "explore", dismissible: true, adminOnly: false });
+          }
+        });
+      }
+    }
+
+    // Weekend gap (info): Saturday or Sunday with no events
+    wd.forEach(d => {
+      const dow = d.getDay();
+      if (dow === 0 || dow === 6) {
+        const dayEvts = activeWeekEvts.filter(e => e.date.getFullYear() === d.getFullYear() && e.date.getMonth() === d.getMonth() && e.date.getDate() === d.getDate());
+        if (dayEvts.length === 0) {
+          const dayName = dow === 6 ? "Saturday" : "Sunday";
+          al.push({ id: "wkndgap-" + d.toISOString().split("T")[0], type: "weekend_gap", severity: "info", text: dayName + " has no events \u2014 free day or something to plan?", action: { label: "View schedule", tab: "week" }, tab: "week", dismissible: true, adminOnly: false });
+        }
+      }
+    });
+
+    // Camp recommendation (admin only, info)
+    if (isAdmin && campBookings) {
+      (campBookings || []).filter(b => b.status === "recommended").forEach(b => {
+        const camp = (camps || []).find(c => c.id === b.camp_id);
+        if (camp) al.push({ id: "camprec-" + b.id, type: "camp_recommendation", severity: "info", text: "A carer recommended " + camp.title + " \u2014 tap to review", action: { label: "View camps", tab: "explore", subaction: "camps" }, tab: "explore", dismissible: true, adminOnly: true });
+      });
+    }
+
+    // Sort by severity: urgent first, then warn, then info
+    const sevOrder = { urgent: 0, warn: 1, info: 2 };
+    al.sort((a, b) => (sevOrder[a.severity] ?? 9) - (sevOrder[b.severity] ?? 9));
+    return al;
+  }, [isAdmin, pays, weekEvts, kids, camps, campBookings, holidays, wd, kidMap]);
+
   const value = useMemo(() => ({
     // Raw data
     kids, clubs, recs, mans, pays, camps, campBookings,
@@ -202,7 +304,7 @@ export function HubDataProvider({ user, profile, children }) {
     familyMembers, notifications, localEvents, actCats,
     loading, userLoc, isAdmin,
     // Computed
-    members, wd, clubMap, clubTermMap, kidMap, weekEvts,
+    members, wd, clubMap, clubTermMap, kidMap, weekEvts, alerts,
     // Actions
     load, getMemberCol,
     // Setters needed by modals/tabs
@@ -214,7 +316,7 @@ export function HubDataProvider({ user, profile, children }) {
     holidays, userHolidays, schoolLocs, familyLocs,
     familyMembers, notifications, localEvents, actCats,
     loading, userLoc, isAdmin,
-    members, wd, clubMap, clubTermMap, kidMap, weekEvts,
+    members, wd, clubMap, clubTermMap, kidMap, weekEvts, alerts,
     load, getMemberCol, user, profile,
   ]);
 

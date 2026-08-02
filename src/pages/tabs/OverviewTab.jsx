@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useHubData } from '../../hooks/useHubData';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import AlertCallout from '../../components/AlertCallout';
 import { COLS } from '../../lib/constants';
 import { getAge, isToday, calcKm, fmtDate } from '../../lib/utils';
 
@@ -10,7 +11,7 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
     holidays, userHolidays, familyMembers,
     isAdmin, members, wd, clubMap, clubTermMap, kidMap,
     getMemberCol, user, profile, load, loading,
-    userLoc, familyLocs, schoolLocs, weekEvts,
+    userLoc, familyLocs, schoolLocs, weekEvts, alerts,
   } = useHubData();
 
   if (loading) return (
@@ -42,119 +43,21 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
     <ErrorBoundary label="Overview">
       <div>
       {/* SMART ALERTS */}
-      {(() => {
-        const alerts = [];
-        const now = new Date();
-
-        // Fee alerts (admin only)
-        if (isAdmin) { pays.filter(p => !p.paid && p.status !== "not_renewing").forEach(p => {
-          const due = new Date(p.due_date);
-          const days = Math.ceil((due - now) / (86400000));
-          if (days < 0) alerts.push({ type: "urgent", icon: "\u{1F6A8}", text: p.description + " is \u20AC" + parseFloat(p.amount).toFixed(0) + " overdue (" + Math.abs(days) + " days)", action: "money" });
-          else if (days <= 3) alerts.push({ type: "warn", icon: "\u{1F4B3}", text: p.description + " \u2014 \u20AC" + parseFloat(p.amount).toFixed(0) + " due in " + days + " day" + (days !== 1 ? "s" : ""), action: "money" });
-        }); }
-
-        // Uncovered holiday weeks
-        if (camps && camps.length > 0 && kids.length > 0) {
-          const nextHol = (holidays || []).find(h => new Date(h.end_date) >= now);
-          if (nextHol) {
-            kids.forEach(kid => {
-              const age = getAge(kid.date_of_birth);
-              const holStart = new Date(nextHol.start_date + "T00:00:00"), holEnd = new Date(nextHol.end_date + "T23:59:59");
-              const suitableCamps = (camps || []).filter(ca => {
-                if (ca.age_min && age < ca.age_min) return false;
-                if (ca.age_max && age > ca.age_max) return false;
-                const cs = new Date(ca.start_date + "T00:00:00");
-                if (cs < holStart || cs > holEnd) return false;
-                if (allLocs.length > 0 && ca.latitude) {
-                  const cLat = Number(ca.latitude), cLng = Number(ca.longitude);
-                  const nearAny = allLocs.some(loc => calcKm(loc.lat, loc.lng, cLat, cLng) <= loc.radius);
-                  if (!nearAny) return false;
-                }
-                return true;
-              });
-              const booked = (campBookings || []).filter(b => {
-                if (b.dependant_id !== kid.id) return false;
-                const camp = (camps || []).find(c => c.id === b.camp_id);
-                if (!camp) return false;
-                const cs = new Date(camp.start_date + "T00:00:00");
-                return cs >= holStart && cs <= holEnd;
-              });
-              if (suitableCamps.length > 0 && booked.length === 0) {
-                alerts.push({ type: "info", icon: "\u{1F3D5}\uFE0F", text: kid.first_name + " has no camp booked for " + nextHol.name + ". " + suitableCamps.length + " camp" + (suitableCamps.length > 1 ? "s" : "") + " suit" + (suitableCamps.length === 1 ? "s" : "") + " their age.", action: "explore", subaction: "camps" });
-              }
-            });
+      <AlertCallout
+        alerts={(alerts || []).filter(a => !a.adminOnly || isAdmin)}
+        max={5}
+        onAction={(alert) => {
+          if (alert.action?.tab) {
+            if (alert.action.subaction) onChangeTab(alert.action.tab, alert.action.subaction);
+            else onChangeTab(alert.action.tab);
           }
-        }
-
-        // Clash today
-        const todayEvts = activeWeekEvts.filter(e => isToday(e.date) && e.time);
-        for (let i = 0; i < todayEvts.length; i++) {
-          for (let j = i + 1; j < todayEvts.length; j++) {
-            const a = todayEvts[i], b = todayEvts[j];
-            if (a.memberId === b.memberId) continue;
-            if ((a.time < (b.endTime || "23:59")) && (b.time < (a.endTime || "23:59"))) {
-              alerts.push({ type: "urgent", icon: "\u26A0\uFE0F", text: "Clash today: " + a.member + " (" + a.title + " " + a.time + ") overlaps " + b.member + " (" + b.title + " " + b.time + ")", action: "week", day: new Date() });
-            }
-          }
-        }
-
-        // No driver assigned for today's events
-        todayEvts.filter(e => !e.driver).forEach(e => {
-          alerts.push({ type: "info", icon: "", text: "No driver set for " + e.member + "'s " + e.title + " at " + e.time, action: "week" });
-        });
-
-        // Events with no end time
-        const noEnd = weekEvts.filter(e => e.time && !e.endTime);
-        if (noEnd.length > 0) {
-          alerts.push({ type: "info", icon: "\u23F0", text: noEnd.length + " event" + (noEnd.length > 1 ? "s" : "") + " this week with no end time \u2014 makes pickup planning harder", action: "week" });
-        }
-
-        // Camp recommendations from carers
-        if (isAdmin && campBookings) {
-          const recs2 = (campBookings || []).filter(b => b.status === "recommended");
-          recs2.forEach(b => {
-            const camp = (camps || []).find(c => c.id === b.camp_id);
-            if (camp) alerts.push({ type: "info", icon: "\u{1F4A1}", text: "A carer recommended " + camp.title + " \u2014 tap to review", action: "explore", subaction: "camps" });
-          });
-        }
-
-        if (alerts.length === 0) return null;
-
-        const colors = { urgent: { bg: "var(--color-danger-bg, #fef2f2)", border: "var(--color-danger-border, #fecaca)", text: "var(--color-danger)" }, warn: { bg: "var(--color-accent-bg)", border: "#f8c4bc", text: "var(--color-accent)" }, info: { bg: "var(--color-primary-bg)", border: "#c8dce8", text: "var(--color-primary-light)" } };
-        return <div style={{ marginBottom: 14 }}>
-          {alerts.slice(0, 5).map((a, i) => {
-            const col = colors[a.type] || colors.info;
-            return <div key={i} onClick={() => { if (a.action) { onChangeTab(a.action, a.subaction); if (a.day) { /* day selection handled by parent */ } window.scrollTo(0, 0) } }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: col.bg, border: "1px solid " + col.border, marginBottom: 6, cursor: a.action ? "pointer" : "default" }} onTouchStart={ev => { if (a.action) ev.currentTarget.style.opacity = ".7" }} onTouchEnd={ev => { ev.currentTarget.style.opacity = "1" }}>
-              <span style={{ fontSize: 16, flexShrink: 0 }}>{a.icon}</span>
-              <span style={{ flex: 1, fontSize: 12, color: col.text, fontWeight: 600, lineHeight: 1.4 }}>{a.text}</span>
-              {a.action && <span style={{ flexShrink: 0, color: col.text, opacity: .5, fontSize: 14 }}>{"\u203A"}</span>}
-            </div>;
-          })}
-        </div>;
-      })()}
-        {/* CLASH DETECTION */}
-        {(() => {
-          const clashes = [];
-          wd.forEach(d => {
-            const dayEvts = activeWeekEvts.filter(e => e.date.getFullYear() === d.getFullYear() && e.date.getMonth() === d.getMonth() && e.date.getDate() === d.getDate() && e.time);
-            for (let i = 0; i < dayEvts.length; i++) {
-              for (let j = i + 1; j < dayEvts.length; j++) {
-                const a = dayEvts[i], b = dayEvts[j];
-                if (a.memberId === b.memberId) continue;
-                const aStart = a.time, aEnd = a.endTime || "23:59", bStart = b.time, bEnd = b.endTime || "23:59";
-                if (aStart < bEnd && bStart < aEnd) clashes.push({ day: d, a, b });
-              }
-            }
-          });
-          if (clashes.length === 0) return null;
-          return <div style={{ background: "var(--color-danger-bg, #fef2f2)", border: "1.5px solid var(--color-danger-border, #fecaca)", borderRadius: 16, padding: 14, marginBottom: 14, boxShadow: "var(--shadow)" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-danger)", marginBottom: 6 }}>{"\u26A0\uFE0F"} {clashes.length} clash{clashes.length > 1 ? "es" : ""} this week</div>
-            {clashes.map((cl, i) => <div key={i} onClick={() => { onChangeTab("week"); window.scrollTo(0, 0) }} style={{ fontSize: 12, color: "var(--color-danger)", marginBottom: 2, cursor: "pointer", padding: "4px 0", borderRadius: 6 }}>
-              {fmtDate(cl.day)}: {cl.a.member} ({cl.a.title} {cl.a.time}) overlaps {cl.b.member} ({cl.b.title} {cl.b.time}) {"\u2192"}
-            </div>)}
-          </div>;
-        })()}
+        }}
+        onDismiss={(id) => {
+          const dismissed = JSON.parse(localStorage.getItem("ocv-dismissed-alerts") || "{}");
+          dismissed[id] = Date.now() + 86400000;
+          localStorage.setItem("ocv-dismissed-alerts", JSON.stringify(dismissed));
+        }}
+      />
 
         {/* THIS WEEK STATS */}
         <div className="stagger-card" style={{ animationDelay: "0ms", background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
