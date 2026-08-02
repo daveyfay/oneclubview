@@ -6,9 +6,9 @@
 (function () {
   "use strict";
 
-  /* ───── PART A: LANDING PAGE ENHANCEMENTS ───── */
-  /* Disabled — hero mockup, reassurance text, and sticky CTA are now
-     rendered by React in Landing.jsx. Only Part B (card tinting) remains. */
+  /* ───── PART A: CLEANUP ───── */
+  /* Remove legacy injected elements if a stale service worker served the old enhance.js */
+  document.querySelectorAll('.ocv-mockup-wrap,.ocv-reassure,.ocv-sticky-bar').forEach(el => el.remove());
 
   /* ───── PART B: IN-APP CARD TINTING ───── */
   /* Makes activity cards vibrant by reading each card's colour strip

@@ -198,6 +198,10 @@ function detectCountry() {
 const USER_COUNTRY = detectCountry();
 
 function Landing({ onGo, onLogin }) {
+  // Clean up legacy enhance.js injections (stale service worker may serve old version)
+  React.useEffect(() => {
+    document.querySelectorAll('.ocv-mockup-wrap,.ocv-reassure,.ocv-sticky-bar').forEach(el => el.remove());
+  }, []);
   return (
     <div style={{ minHeight: '100vh' }}>
       <style>{`
