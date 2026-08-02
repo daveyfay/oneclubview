@@ -1,5 +1,9 @@
 # OneClubView — Claude Code Context
 
+## Before You Start
+- Read `LESSONS.md` before working on edge functions, landing page, or service workers.
+- Query `information_schema.columns` for every DB table before writing edge function code.
+
 ## What is this?
 Family activity management app for Irish parents. Manages kids' extracurricular schedules, camps, clubs, fees, and school holidays.
 
@@ -65,7 +69,7 @@ npm run dev       # Local dev server on port 3000
 ## Credentials
 All credentials are stored as Supabase Edge Function secrets and env vars.
 - **Anthropic key**: `ANTHROPIC_API_KEY` in Supabase secrets (used in scrape-local)
-- **Resend key**: `RESEND_API_KEY` in Supabase secrets
+- **Resend key**: `RESEND_KEY` in Supabase secrets (NOT RESEND_API_KEY)
 - **Stripe webhook secret**: `STRIPE_WEBHOOK_SECRET` in Supabase secrets
 - **Supabase service role key**: Auto-available as `SUPABASE_SERVICE_ROLE_KEY` in edge functions
 - **Supabase anon key**: In `src/lib/supabase.js` as `SK` constant (public by design)
