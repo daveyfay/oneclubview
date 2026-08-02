@@ -31,7 +31,7 @@ export function HubDataProvider({ user, profile, children }) {
     const cachedActCats = cacheGet('actCats');
     const[k,c,r,m,p,ca,hols,userHols,cBooks,lEvts,aCats]=await Promise.all([
       db("dependants","GET",{filters:[pidFilter],order:"created_at.asc"}),
-      db("hub_subscriptions","GET",{select:"id,club_id,dependant_id,colour,nickname,clubs(id,name,address,location,phone,rating,term_start,term_end)",filters:[uidFilter]}),
+      db("hub_subscriptions","GET",{select:"id,club_id,dependant_id,colour,nickname,clubs(id,name,address,location,phone,rating,term_start,term_end,category)",filters:[uidFilter]}),
       db("recurring_events","GET",{filters:[uidFilter]}),
       db("manual_events","GET",{filters:[uidFilter]}),
       db("payment_reminders","GET",{filters:[uidFilter],order:"due_date.asc"}),
@@ -53,7 +53,7 @@ export function HubDataProvider({ user, profile, children }) {
       const sch=await db("schools","GET",{select:"name,latitude,longitude",filters:["or=("+schoolQ+")","latitude=not.is.null"],limit:20});
       setSchoolLocs((sch||[]).filter(s=>s.latitude).map(s=>({lat:Number(s.latitude),lng:Number(s.longitude),name:s.name})));
     }
-    setClubs((c||[]).map(s=>({...s,club_id:s.club_id||s.clubs?.id,club_name:s.clubs?.name||"?",club_addr:s.clubs?.address,term_start:s.clubs?.term_start||null,term_end:s.clubs?.term_end||null})));
+    setClubs((c||[]).map(s=>({...s,club_id:s.club_id||s.clubs?.id,club_name:s.clubs?.name||"?",club_addr:s.clubs?.address,category:s.clubs?.category||null,term_start:s.clubs?.term_start||null,term_end:s.clubs?.term_end||null})));
     setRecs(r||[]);setMans(m||[]);setPays(p||[]);setCamps(ca||[]);setHolidays(hols||[]);setUserHolidays(userHols||[]);setCampBookings(cBooks||[]);setLocalEvents(lEvts||[]);setActCats(aCats||[]);
     // Load family locations
     const fLocs=await db("family_locations","GET",{filters:["user_id=eq."+user.id,"active=eq.true"],order:"label.asc"});
@@ -169,7 +169,7 @@ export function HubDataProvider({ user, profile, children }) {
           const kid = re.dependant_id ? kidMap.get(re.dependant_id) : null;
           evts.push({ id: re.id + d.toISOString(), source_id: re.id, source_type: "recurring", title: re.title, date: d, time: re.start_time?.slice(0, 5) || "",
             endTime: re.start_time && re.duration_minutes ? ((() => { const t = parseInt(re.start_time.slice(0, 2)) * 60 + parseInt(re.start_time.slice(3, 5)) + re.duration_minutes; return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0") })()) : "",
-            club: cl?.nickname || cl?.club_name || "", colour: cl?.colour || "#999", member: kid?.first_name || (profile?.first_name || "You"), memberId: re.dependant_id || "self", driver: re.driver || null, skipped: isSkipped, location: re.location || cl?.club_addr || null });
+            club: cl?.nickname || cl?.club_name || "", colour: cl?.colour || "#999", member: kid?.first_name || (profile?.first_name || "You"), memberId: re.dependant_id || "self", driver: re.driver || null, skipped: isSkipped, location: re.location || cl?.club_addr || null, category: cl?.category || "other" });
         }
       });
     });
@@ -182,7 +182,7 @@ export function HubDataProvider({ user, profile, children }) {
         const mTime = d.toTimeString().slice(0, 5);
         const mEnd = me.duration_minutes && mTime ? ((() => { const t = parseInt(mTime.slice(0, 2)) * 60 + parseInt(mTime.slice(3, 5)) + (me.duration_minutes || 60); return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0") })()) : "";
         const mAtt = me.description && me.description.startsWith("Going: ") ? me.description.replace("Going: ", "").split(", ").filter(Boolean) : [];
-        evts.push({ id: me.id, source_id: me.id, source_type: "manual", title: me.title, date: d, time: mTime, endTime: mEnd, club: cl?.nickname || cl?.club_name || "", colour: me.colour || cl?.colour || "#999", member: kid?.first_name || (profile?.first_name || "You"), memberId: me.dependant_id || "self", attendees: mAtt, location: me.location || null });
+        evts.push({ id: me.id, source_id: me.id, source_type: "manual", title: me.title, date: d, time: mTime, endTime: mEnd, club: cl?.nickname || cl?.club_name || "", colour: me.colour || cl?.colour || "#999", member: kid?.first_name || (profile?.first_name || "You"), memberId: me.dependant_id || "self", attendees: mAtt, location: me.location || null, category: cl?.category || "other" });
       }
     });
     (pays || []).filter(p => !p.paid && p.status !== "not_renewing" && p.due_date).forEach(p => {
