@@ -50,6 +50,25 @@ export default function SettingsTab({ onLogout, darkMode, setDarkMode, onClose, 
               <div style={{ width: 22, height: 22, borderRadius: 11, background: "#fff", position: "absolute", top: 3, left: darkMode ? 23 : 3, transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.2)" }} />
             </button>
           </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderTop: "1px solid var(--color-border)" }}>
+            <div>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text)" }}>Weekly digest email</span>
+              <div style={{ fontSize: 11, color: "var(--color-muted)", marginTop: 2 }}>Schedule + suggestions every Sunday</div>
+            </div>
+            <button
+              role="switch"
+              aria-checked={!profile?.digest_opt_out}
+              onClick={async () => {
+                const newVal = !profile?.digest_opt_out;
+                await db("profiles", "PATCH", { filters: ["id=eq." + user.id], body: { digest_opt_out: newVal } });
+                showToast(newVal ? "Digest disabled" : "Digest enabled");
+                load();
+              }}
+              style={{ width: 48, height: 28, borderRadius: 14, background: !profile?.digest_opt_out ? "var(--color-accent)" : "var(--color-border)", cursor: "pointer", position: "relative", transition: "background .2s", border: "none", padding: 0, minWidth: 48, minHeight: 28 }}
+            >
+              <div style={{ width: 22, height: 22, borderRadius: 11, background: "#fff", position: "absolute", top: 3, left: !profile?.digest_opt_out ? 23 : 3, transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.2)" }} />
+            </button>
+          </div>
           <div style={{ borderTop: "1px solid var(--color-border)", marginTop: 4, paddingTop: 4 }}>
             <button onClick={() => setShowDeleteAcct(true)} style={{ width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-danger)", fontFamily: "var(--font-sans)", textAlign: "left", borderRadius: 8, display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F5D1}\uFE0F"} Delete Account</button>
             <button onClick={() => { onClose(); onLogout() }} style={{ width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-danger)", fontFamily: "var(--font-sans)", textAlign: "left", borderRadius: 8, display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F6AA}"} Log out</button>
