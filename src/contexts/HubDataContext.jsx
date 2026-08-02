@@ -141,7 +141,7 @@ export function HubDataProvider({ user, profile, children }) {
   const clubTermMap=useMemo(()=>{const m=new Map();(clubs||[]).forEach(c=>{if(c.term_start&&c.term_end)m.set(c.club_id,{start:new Date(c.term_start+"T00:00:00"),end:new Date(c.term_end+"T23:59:59")})});return m},[clubs]);
   const kidMap=useMemo(()=>{const m=new Map();(kids||[]).forEach(k=>m.set(k.id,k));return m},[kids]);
 
-  const isAdmin=(profile?.family_role||"admin")==="admin";
+  const isAdmin=profile?.family_role==="admin";
 
   // Helper: get member colour (kid index-based from COLS, or fallback)
   function getMemberCol(memberId,fallback){
