@@ -51,8 +51,8 @@ export default function ScheduleTab({ filter }) {
         {/* WEEK/MONTH HEADER + DAY PILLS */}
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
           <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 20, fontWeight: 800, color: "var(--color-primary)" }}>This week</h2>
-          <div style={{ display: "flex", gap: 6 }}>
-            {["grid", "list", "calendar"].map(v => <button key={v} onClick={() => { track("view_toggle", { view: v }); setWeekView(v); setSelectedDay(null) }} style={{ fontSize: 11, fontWeight: 600, color: weekView === v ? "var(--color-accent)" : "var(--color-muted)", background: weekView === v ? "var(--color-accent-bg)" : "none", border: weekView === v ? "1px solid var(--color-accent)" : "1px solid transparent", borderRadius: 8, padding: "3px 8px", cursor: "pointer", fontFamily: "var(--font-sans)", textTransform: "capitalize" }}>{v}</button>)}
+          <div style={{ display: "flex", background: "var(--color-primary-bg)", borderRadius: 10, padding: 2, border: "1px solid var(--color-border)" }}>
+            {["grid", "list", "calendar"].map(v => <button key={v} onClick={() => { track("view_toggle", { view: v }); setWeekView(v); setSelectedDay(null) }} style={{ fontSize: 11, fontWeight: 600, color: weekView === v ? "#fff" : "var(--color-muted)", background: weekView === v ? "var(--color-primary)" : "transparent", border: "none", borderRadius: 8, padding: "5px 10px", cursor: "pointer", fontFamily: "var(--font-sans)", textTransform: "capitalize", transition: "background .2s, color .2s" }}>{v}</button>)}
           </div>
         </div>
 
@@ -65,7 +65,9 @@ export default function ScheduleTab({ filter }) {
             return <div key={d.toISOString()} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, minWidth: 44, padding: "6px 4px", borderRadius: 12, background: today ? "var(--color-primary)" : sel ? "var(--color-primary-bg)" : "transparent", cursor: "pointer", border: sel && !today ? "1.5px solid var(--color-primary)" : "1.5px solid transparent" }} onClick={() => setSelectedDay(sel ? null : d)}>
               <span style={{ fontSize: 10, fontWeight: 700, color: today ? "rgba(255,255,255,.7)" : "var(--color-muted)", textTransform: "uppercase" }}>{d.toLocaleDateString("en-IE", { weekday: "short" }).slice(0, 3)}</span>
               <span style={{ fontSize: 16, fontWeight: 800, color: today ? "#fff" : "var(--color-text)" }}>{d.getDate()}</span>
-              {dayEvts.length > 0 && <div style={{ width: 14, height: 3, borderRadius: 2, background: today ? "rgba(255,255,255,.35)" : "var(--color-accent)", marginTop: 1 }} />}
+              {dayEvts.length > 0 && <div style={{ display: "flex", gap: 2, justifyContent: "center", marginTop: 1 }}>
+                {dayEvts.filter(e => !e.skipped).slice(0, 3).map((e, j) => <div key={j} style={{ width: 4, height: 4, borderRadius: "50%", background: today ? "rgba(255,255,255,.6)" : getMemberCol(e.memberId, e.colour) }} />)}
+              </div>}
             </div>;
           })}
         </div>}
