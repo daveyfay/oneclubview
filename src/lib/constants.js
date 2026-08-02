@@ -38,3 +38,45 @@ export const CAT_NAMES = {
   academic: "Academic", stem: "STEM", swimming: "Swimming",
   martial_arts: "Martial Arts", outdoors: "Outdoors", other: "Other"
 };
+
+// ── Club category icons + colors ──
+export const CLUB_ICONS = {
+  gaa: { emoji: "🏑", label: "GAA", color: "#2d7cb5" },
+  soccer: { emoji: "⚽", label: "Soccer", color: "#22c55e" },
+  rugby: { emoji: "🏉", label: "Rugby", color: "#2d5a3f" },
+  swimming: { emoji: "🏊", label: "Swimming", color: "#0ea5e9" },
+  athletics: { emoji: "🏃", label: "Athletics", color: "#e85d4a" },
+  tennis: { emoji: "🎾", label: "Tennis", color: "#84cc16" },
+  gymnastics: { emoji: "🤸", label: "Gymnastics", color: "#d946ef" },
+  dance: { emoji: "💃", label: "Dance", color: "#ec4899" },
+  arts: { emoji: "🎨", label: "Arts", color: "#f59e0b" },
+  music: { emoji: "🎵", label: "Music", color: "#8b5cf6" },
+  stem: { emoji: "🔬", label: "STEM", color: "#06b6d4" },
+  hockey: { emoji: "🏑", label: "Hockey", color: "#14b8a6" },
+  basketball: { emoji: "🏀", label: "Basketball", color: "#f97316" },
+  cricket: { emoji: "🏏", label: "Cricket", color: "#65a30d" },
+  scouts: { emoji: "⚜️", label: "Scouts", color: "#7c3aed" },
+  martial_arts: { emoji: "🥋", label: "Martial Arts", color: "#dc2626" },
+  water_sports: { emoji: "🚣", label: "Water Sports", color: "#0284c7" },
+  horse_riding: { emoji: "🐎", label: "Horse Riding", color: "#92400e" },
+  multi_sport: { emoji: "🏅", label: "Multi-Sport", color: "#1a2a3a" },
+  golf: { emoji: "⛳", label: "Golf", color: "#15803d" },
+  yoga: { emoji: "🧘", label: "Yoga", color: "#a855f7" },
+  indoor: { emoji: "🎳", label: "Indoor", color: "#6366f1" },
+  other: { emoji: "✨", label: "Other", color: "#6b7280" },
+};
+
+// ── Things to Do category icons + colors ──
+export const TTD_ICONS = {
+  nature: { emoji: "🌿", label: "Nature", color: "#15803d" },
+  cultural: { emoji: "🏛️", label: "Cultural", color: "#7c3aed" },
+  outdoor: { emoji: "☀️", label: "Outdoor", color: "#ea580c" },
+  adventure: { emoji: "🧗", label: "Adventure", color: "#dc2626" },
+  farm: { emoji: "🐄", label: "Farm", color: "#92400e" },
+  beach: { emoji: "🏖️", label: "Beach", color: "#0ea5e9" },
+  indoor: { emoji: "🎭", label: "Indoor", color: "#6366f1" },
+  playground: { emoji: "🛝", label: "Playground", color: "#22c55e" },
+  water_sports: { emoji: "🚣", label: "Water Sports", color: "#0284c7" },
+  cycling: { emoji: "🚲", label: "Cycling", color: "#65a30d" },
+  community: { emoji: "🤝", label: "Community", color: "#f59e0b" },
+};
