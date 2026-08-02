@@ -51,11 +51,14 @@ OneClubView is a family activity management app for Irish parents. The Explore t
 - Curated/verified items show a subtle checkmark badge
 - Implementation: add `verified` boolean column to clubs, camps, things_to_do tables (default false)
 
+### Location Picker Scope
+The sidebar location picker filters **Camps** and **Discover** sections (distance-based content). **My Clubs** always shows all subscribed clubs regardless of distance (they're the user's clubs, not discovery).
+
 ### Files to Create/Modify
 - Create: `src/components/explore/ExploreSidebar.jsx` — desktop sidebar with nav + location picker
-- Create: `src/components/explore/AlertCallout.jsx` — reusable alert callout component
 - Modify: `src/pages/tabs/ExploreTab.jsx` — restructure layout, add sidebar on desktop, add alert callouts
 - Modify: `src/lib/global.css` — add `.explore-layout`, `.explore-sidebar`, `.alert-callout` styles with responsive breakpoints
+- Note: Alert callouts use the shared `src/components/AlertCallout.jsx` from System 2 (not a separate component)
 
 ---
 
@@ -63,16 +66,18 @@ OneClubView is a family activity management app for Irish parents. The Explore t
 
 ### Alert Types and Triggers
 
-| Alert | Trigger | Severity | Location |
-|-------|---------|----------|----------|
-| Fee due (7 days) | `payment_reminders.due_date` within 7 days, not paid | info | OverviewTab, Money tab |
-| Fee due (3 days) | `payment_reminders.due_date` within 3 days, not paid | warn | OverviewTab, Money tab |
-| Fee overdue | `payment_reminders.due_date` in past, not paid | urgent | OverviewTab, Money tab |
-| Camp closing soon | Suitable camp `start_date` within 14 days, not booked | info | OverviewTab, Explore/Camps |
-| Holiday uncovered | School holiday within 21 days, no camp booked for kid | warn | OverviewTab, Explore/Camps |
-| Weekend gap | Saturday or Sunday with no events for any kid | info | OverviewTab, Explore/Discover |
-| Clash today | Two events overlap in time today | urgent | OverviewTab, Schedule tab |
-| No driver | Today's event has no driver assigned | info | OverviewTab, Schedule tab |
+| Alert | Trigger | Severity | Location | Visibility |
+|-------|---------|----------|----------|------------|
+| Fee due (7 days) | `payment_reminders.due_date` within 7 days, not paid | info | OverviewTab, Money tab | admin only |
+| Fee due (3 days) | `payment_reminders.due_date` within 3 days, not paid | warn | OverviewTab, Money tab | admin only |
+| Fee overdue | `payment_reminders.due_date` in past, not paid | urgent | OverviewTab, Money tab | admin only |
+| Camp closing soon | Suitable camp `start_date` within 14 days, not booked | info | OverviewTab, Explore/Camps | all roles |
+| Holiday uncovered | School holiday within 21 days, no camp booked for kid | warn | OverviewTab, Explore/Camps | all roles |
+| Weekend gap | Saturday or Sunday with no events for any kid | info | OverviewTab, Explore/Discover | all roles |
+| Clash today | Two events overlap in time today | urgent | OverviewTab, Schedule tab | all roles |
+| No driver | Today's event has no driver assigned | info | OverviewTab, Schedule tab | all roles |
+| No end time | Events this week with no end time set | info | OverviewTab | all roles |
+| Camp recommendation | Carer recommended a camp (status=recommended) | info | OverviewTab | admin only |
 
 ### Alert Rendering
 - Subtle left-border callout style (consistent with Explore tab callouts)
@@ -83,9 +88,11 @@ OneClubView is a family activity management app for Irish parents. The Explore t
 
 ### Alert Computation
 - Computed in `HubDataContext` as a memoized `alerts` array
-- Each alert: `{ id, type, severity, text, action, tab, dismissible }`
+- Each alert: `{ id, type, severity, text, action, tab, dismissible, adminOnly }`
 - Consumed by OverviewTab (aggregated) and individual tabs (filtered by `tab` field)
 - Weekend gap alerts require checking `weekEvts` for Saturday/Sunday entries
+- **Refactoring note:** The existing inline alert logic in OverviewTab (lines ~45-135) must be extracted and moved into this new `alerts` computation in HubDataContext. The old inline code should be removed and replaced with consumption of the `alerts` array from context. This includes the existing "no end time" and "camp recommendation" alert types which are preserved in the alert table above.
+- The existing standalone clash detection card in OverviewTab (lines ~137-157) should be **removed** — clash information will be shown via AlertCallout only, avoiding duplication.
 
 ### Files to Create/Modify
 - Create: `src/components/AlertCallout.jsx` — shared alert callout component (used by both Explore and other tabs)
@@ -169,7 +176,9 @@ Supabase pg_cron (Sunday 18:00 UTC)
 - **Fallback:** If API fails, show suggestions without weather bias
 
 ### Weekend Suggestion Algorithm
-1. Find Saturday and Sunday slots with no events in `weekEvts`
+Note: The edge function runs server-side and cannot access the React client's `weekEvts`. It must query `recurring_events` and `manual_events` tables directly to build the week's schedule.
+
+1. Find Saturday and Sunday slots with no events (query DB directly)
 2. For each open day:
    - Query `things_to_do` within radius of user's primary location
    - Filter by kids' age range (youngest to oldest)
@@ -181,14 +190,14 @@ Supabase pg_cron (Sunday 18:00 UTC)
 
 ### Edge Function: `weekly-digest`
 - **JWT:** false (invoked by cron, not user)
-- **Trigger:** pg_cron schedule: `0 18 * * 0` (Sunday 18:00 UTC = 19:00 Irish Summer Time)
+- **Trigger:** pg_cron schedule: `0 18 * * 0` (Sunday 18:00 UTC = 19:00 IST summer / 18:00 GMT winter — both acceptable "Sunday evening" times)
 - **Process:**
   1. Fetch all profiles where `subscription_status` in ('active', 'trial') and `email` is not null
   2. For family groups: send one email per user (both parents get their own copy)
   3. For each user, gather: week events, fees, camps, weather, suggestions
   4. Render HTML email from template
   5. Send via Resend API (batch, rate-limited)
-  6. Log send status to `email_queue` table
+  6. Log send status to `email_queue` table (existing table — add `type='digest'` to distinguish from welcome sequence emails)
 - **Unsubscribe:** Add `digest_opt_out` boolean to `profiles` table (default false). Check before sending. Unsubscribe link in email sets this flag via a simple edge function.
 
 ### Files to Create/Modify
@@ -207,6 +216,11 @@ Supabase pg_cron (Sunday 18:00 UTC)
 - `clubs.verified` — boolean, default false
 - `camps.verified` — boolean, default false
 - `things_to_do.verified` — boolean, default false
+
+### Existing Schema Assumptions
+The `things_to_do` table is confirmed to have: `category` (text), `latitude` (numeric), `longitude` (numeric), `age_min` (int), `age_max` (int), `cost_eur` (numeric), `description` (text), `website_url` (text), `seasonal` (boolean), `event_date` (date). These are used by the weekend suggestion algorithm.
+
+The `email_queue` table exists with at minimum: `id`, `user_id`, `type`, `status`, `created_at`. No schema changes needed.
 
 ### Migration SQL
 ```sql
