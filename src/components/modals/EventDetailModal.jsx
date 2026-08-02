@@ -122,7 +122,11 @@ export default function EventDetailModal({event,open,onClose,onDelete,onDriverCh
             Restore this week
           </button>
         )}
-        {(isManual||(isRecurring&&!event.skipped))&&<button onClick={()=>{onDelete(event);onClose()}} style={{flex:0,padding:"14px 20px",borderRadius:"var(--radius)",border:"1.5px solid #dc2626",background:"none",color:"#dc2626",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--font-sans)",minHeight:48,whiteSpace:"nowrap"}}>{isRecurring?"Skip this week":"Remove"}</button>}
+        {(isManual||(isRecurring&&!event.skipped))&&<button onClick={()=>{
+  if(window.confirm(isRecurring?"Skip this week?":"Remove this event? This can't be undone.")){
+    onDelete(event);onClose();
+  }
+}} style={{flex:0,padding:"14px 20px",borderRadius:"var(--radius)",border:"1.5px solid #dc2626",background:"none",color:"#dc2626",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--font-sans)",minHeight:48,whiteSpace:"nowrap"}}>{isRecurring?"Skip this week":"Remove"}</button>}
       </div>
     }
   >
