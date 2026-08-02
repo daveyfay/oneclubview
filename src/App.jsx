@@ -20,6 +20,29 @@ export default function App() {
   const [showRecoveryPw, setShowRecoveryPw] = useState(false);
   const [recoveryToken, setRecoveryToken] = useState(null);
 
+  // Hash-based routing for back button support
+  useEffect(() => {
+    const screenToHash = { landing: '', auth_signup: 'signup', auth_login: 'login', onboard_kids: 'onboard', hub: 'app' };
+    const hash = screenToHash[screen];
+    if (hash !== undefined && window.location.hash !== '#/' + hash) {
+      window.history.pushState(null, '', hash ? '#/' + hash : window.location.pathname);
+    }
+  }, [screen]);
+
+  useEffect(() => {
+    const onPop = () => {
+      const hash = window.location.hash.replace('#/', '');
+      if (hash === 'app') setScreen('hub');
+      else if (hash === 'login') setScreen('auth_login');
+      else if (hash === 'signup') setScreen('auth_signup');
+      else if (hash === '' || !hash) {
+        if (screen !== 'loading') setScreen('landing');
+      }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [screen]);
+
   useEffect(() => {
     // Handle password recovery redirect from email link
     const hash = window.location.hash;
