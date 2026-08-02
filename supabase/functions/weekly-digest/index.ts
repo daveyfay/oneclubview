@@ -61,7 +61,7 @@ serve(async (_req) => {
 
   // Skip test emails
   const realUsers = users.filter((u: any) => !u.email?.includes("@example.com"));
-  let sent = 0, failed = 0;
+  let sent = 0, failed = 0, lastError = "";
 
   for (const user of realUsers) {
     try {
@@ -124,7 +124,7 @@ serve(async (_req) => {
       const { data: feesRaw } = await sb.from("payment_reminders").select("description, amount, due_date").in("user_id", mids).eq("paid", false).neq("status", "not_renewing");
       const fees = (feesRaw || []) as Array<{ description: string; amount: number; due_date: string }>;
 
-      // Weather
+      // Weather (fault-tolerant — uses user's profile lat/lng or Dublin fallback)
       let weather: { code: number; tempMax: number } | null = null;
       const lat = Number(user.latitude) || 53.35;
       const lng = Number(user.longitude) || -6.26;
@@ -138,52 +138,65 @@ serve(async (_req) => {
         }
       } catch { /* weather is optional */ }
 
-      // Weekend suggestions
+      // Weekend suggestions (fault-tolerant)
       const satHas = events.some(e => e.day === "Saturday");
       const sunHas = events.some(e => e.day === "Sunday");
       let suggestions: Array<{ title: string; distance: string; detail: string }> = [];
 
-      if (!satHas || !sunHas) {
-        const isRainy = weather !== null && weather.code >= 51;
-        const ages = kids.map(k => Math.floor((Date.now() - new Date(k.date_of_birth).getTime()) / (365.25 * 86400000))).filter(a => a > 0);
-        const minAge = ages.length ? Math.min(...ages) : 0;
-        const maxAge = ages.length ? Math.max(...ages) : 99;
+      try {
+        if (!satHas || !sunHas) {
+          const isRainy = weather !== null && weather.code >= 51;
+          const ages = kids.map(k => Math.floor((Date.now() - new Date(k.date_of_birth).getTime()) / (365.25 * 86400000))).filter(a => a > 0);
+          const minAge = ages.length ? Math.min(...ages) : 0;
+          const maxAge = ages.length ? Math.max(...ages) : 99;
 
-        const { data: ttd } = await sb.from("things_to_do").select("title, category, latitude, longitude, cost_eur, age_min, age_max, location_name").eq("status", "active").limit(100);
+          const { data: ttd } = await sb.from("things_to_do").select("title, category, latitude, longitude, cost_eur, age_min, age_max, location_name").eq("status", "active").limit(100);
 
-        if (ttd && ttd.length > 0) {
-          const scored = (ttd as any[])
-            .filter(t => (!t.age_min || t.age_min <= maxAge) && (!t.age_max || t.age_max >= minAge))
-            .map(t => {
-              const d = t.latitude && t.longitude ? haversineKm(lat, lng, Number(t.latitude), Number(t.longitude)) : 999;
-              const wm = isRainy ? INDOOR_CATS.includes(t.category) : OUTDOOR_CATS.includes(t.category);
-              return { ...t, dist: d, weatherMatch: wm };
-            })
-            .filter(t => t.dist <= 25)
-            .sort((a, b) => { if (a.weatherMatch !== b.weatherMatch) return a.weatherMatch ? -1 : 1; return a.dist - b.dist; })
-            .slice(0, 3);
+          if (ttd && ttd.length > 0) {
+            const scored = (ttd as any[])
+              .filter(t => (!t.age_min || t.age_min <= maxAge) && (!t.age_max || t.age_max >= minAge))
+              .map(t => {
+                const d = t.latitude && t.longitude ? haversineKm(lat, lng, Number(t.latitude), Number(t.longitude)) : 999;
+                const wm = isRainy ? INDOOR_CATS.includes(t.category) : OUTDOOR_CATS.includes(t.category);
+                return { ...t, dist: d, weatherMatch: wm };
+              })
+              .filter(t => t.dist <= 25)
+              .sort((a, b) => { if (a.weatherMatch !== b.weatherMatch) return a.weatherMatch ? -1 : 1; return a.dist - b.dist; })
+              .slice(0, 3);
 
-          suggestions = scored.map(t => ({
-            title: t.title,
-            distance: `${t.dist.toFixed(0)}km`,
-            detail: [t.age_min || t.age_max ? `Ages ${t.age_min || "?"}-${t.age_max || "?"}` : null, t.cost_eur ? `\u20AC${t.cost_eur}` : "Free", t.category].filter(Boolean).join(" \u00B7 "),
-          }));
-        }
-      }
-
-      // Camp alerts
-      const campAlerts: Array<{ kidName: string; holName: string; count: number }> = [];
-      const { data: hols } = await sb.from("school_holidays").select("name, start_date, end_date").gte("end_date", monIso).order("start_date");
-      if (hols) {
-        for (const h of hols as any[]) {
-          const away = (new Date(h.start_date).getTime() - Date.now()) / 86400000;
-          if (away > 21 || away < 0) continue;
-          for (const kid of kids) {
-            const { count } = await sb.from("camp_bookings").select("id", { count: "exact", head: true }).eq("dependant_id", kid.id);
-            if (!count) campAlerts.push({ kidName: kid.first_name, holName: h.name || "school holiday", count: 0 });
+            suggestions = scored.map(t => ({
+              title: t.title,
+              distance: `${t.dist.toFixed(0)}km`,
+              detail: [t.age_min || t.age_max ? `Ages ${t.age_min || "?"}-${t.age_max || "?"}` : null, t.cost_eur ? `\u20AC${t.cost_eur}` : "Free", t.category].filter(Boolean).join(" \u00B7 "),
+            }));
           }
         }
-      }
+      } catch (sugErr) { console.warn("Suggestions failed:", sugErr); }
+
+      // Camp alerts (fault-tolerant — check both school_holidays and user_school_holidays)
+      const campAlerts: Array<{ kidName: string; holName: string; count: number }> = [];
+      try {
+        // Try user_school_holidays first (user-specific), fall back to school_holidays (global)
+        let hols: any[] | null = null;
+        const { data: userHols } = await sb.from("user_school_holidays").select("name, start_date, end_date").eq("user_id", uid).gte("end_date", monIso).order("start_date");
+        if (userHols && userHols.length > 0) {
+          hols = userHols;
+        } else {
+          const { data: globalHols } = await sb.from("school_holidays").select("name, start_date, end_date").gte("end_date", monIso).order("start_date");
+          hols = globalHols;
+        }
+        if (hols) {
+          for (const h of hols) {
+            const away = (new Date(h.start_date).getTime() - Date.now()) / 86400000;
+            if (away > 21 || away < 0) continue;
+            for (const kid of kids) {
+              // Check if kid has ANY camp booking (simple check)
+              const { count } = await sb.from("camp_bookings").select("id", { count: "exact", head: true }).eq("dependant_id", kid.id);
+              if (!count) campAlerts.push({ kidName: kid.first_name, holName: h.name || "school holiday", count: 0 });
+            }
+          }
+        }
+      } catch (campErr) { console.warn("Camp alerts failed:", campErr); }
 
       // Build + send
       const unsub = `${supabaseUrl}/functions/v1/digest-unsubscribe?uid=${uid}`;
@@ -196,17 +209,20 @@ serve(async (_req) => {
       });
 
       const body = await resp.json().catch(() => ({}));
-      await sb.from("email_queue").insert({
-        user_id: uid, email_to: email, email_key: "weekly_digest",
-        subject: `Your week ahead \u2014 ${label}`,
-        status: resp.status === 200 ? "sent" : "failed",
-        error: resp.status !== 200 ? JSON.stringify(body) : null,
-        sent_at: resp.status === 200 ? new Date().toISOString() : null,
-      }).catch(() => {});
+      try {
+        await sb.from("email_queue").insert({
+          user_id: uid, email_to: email, email_key: "weekly_digest",
+          subject: `Your week ahead \u2014 ${label}`,
+          body_html: "digest", send_at: new Date().toISOString(),
+          status: resp.status === 200 ? "sent" : "failed",
+          error: resp.status !== 200 ? JSON.stringify(body) : null,
+          sent_at: resp.status === 200 ? new Date().toISOString() : null,
+        });
+      } catch { /* logging is optional */ }
 
       if (resp.status === 200) sent++; else { failed++; console.error(`Resend failed for ${email}:`, body); }
-    } catch (e) { console.error(`Digest error for ${user.id}:`, e); failed++; }
+    } catch (e: any) { console.error(`Digest error for ${user.id}:`, e); failed++; lastError = e?.message || String(e); }
   }
 
-  return new Response(JSON.stringify({ status: "done", sent, failed }), { headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify({ status: "done", sent, failed, lastError }), { headers: { "Content-Type": "application/json" } });
 });
