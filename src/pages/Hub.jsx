@@ -8,6 +8,7 @@ import CancelFeedback from '../components/CancelFeedback';
 import AddEventModal from '../components/modals/AddEventModal';
 import AddPaymentModal from '../components/modals/AddPaymentModal';
 import AddPlaydateModal from '../components/modals/AddPlaydateModal';
+import AddClubModal from '../components/modals/AddClubModal';
 import { HubDataProvider } from '../contexts/HubDataContext';
 import { useHubData } from '../hooks/useHubData';
 
@@ -52,6 +53,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
   const [showPaste, setShowPaste] = useState(false);
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [showAddPlaydate, setShowAddPlaydate] = useState(false);
+  const [showAddClub, setShowAddClub] = useState(false);
 
   // Pull-to-refresh
   const [ptrState, setPtrState] = useState("");
@@ -222,32 +224,32 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
             <Logo />
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ position: "relative", cursor: "pointer" }} onClick={() => setShowNotifs(!showNotifs)}>
+              <button aria-label="Notifications" onClick={() => setShowNotifs(!showNotifs)} style={{ position: "relative", cursor: "pointer", background: "none", border: "none", padding: 8, minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-muted)" }}><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
                 {notifications.filter(n => !n.read_at).length > 0 && <div style={{ position: "absolute", top: -3, right: -5, width: 14, height: 14, borderRadius: "50%", background: "var(--color-accent)", color: "#fff", fontSize: 8, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{notifications.filter(n => !n.read_at).length}</div>}
-              </div>
-              <button onClick={() => setShowProfile(!showProfile)} style={{ width: 30, height: 30, borderRadius: 10, background: "var(--color-primary)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer" }}>{(profile?.first_name || "U")[0]}</button>
+              </button>
+              <button aria-label="Settings" onClick={() => setShowProfile(!showProfile)} style={{ width: 44, height: 44, borderRadius: 10, background: "var(--color-primary)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer" }}>{(profile?.first_name || "U")[0]}</button>
             </div>
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", paddingBottom: 6 }}>
-            {members.map(m => <button key={m.id} onClick={() => setFilter(m.id)} className={"pill " + (filter === m.id ? "pill-active" : "pill-inactive")} style={{ flexShrink: 0 }}>{m.type !== "all" && <span style={{ width: 7, height: 7, borderRadius: "50%", background: m.type === "kid" ? COLS[members.indexOf(m) % COLS.length] : m.type === "adult" ? "#8b5cf6" : "var(--color-primary)", flexShrink: 0 }} />}{m.type === "all" ? "\u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}" : ""} {m.name}{m.age != null && <span style={{ opacity: .5, marginLeft: 2 }}>({m.age})</span>}</button>)}
+            {members.map(m => <button key={m.id} aria-pressed={filter === m.id} onClick={() => setFilter(m.id)} className={"pill " + (filter === m.id ? "pill-active" : "pill-inactive")} style={{ flexShrink: 0 }}>{m.type !== "all" && <span style={{ width: 7, height: 7, borderRadius: "50%", background: m.type === "kid" ? COLS[members.indexOf(m) % COLS.length] : m.type === "adult" ? "#8b5cf6" : "var(--color-primary)", flexShrink: 0 }} />}{m.type === "all" ? "\u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}" : ""} {m.name}{m.age != null && <span style={{ opacity: .5, marginLeft: 2 }}>({m.age})</span>}</button>)}
           </div>
         </div>
-        <div style={{ maxWidth: 520, margin: "0 auto", display: "flex" }}>
-          {tabs.map(t => <button key={t.id} onClick={() => { setTab(t.id); track("tab_view", { tab: t.id }); window.__haptic && window.__haptic() }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: "8px 0 6px", fontSize: 10, fontWeight: 600, border: "none", borderBottom: tab === t.id ? "2.5px solid var(--color-primary)" : "2.5px solid transparent", cursor: "pointer", background: "none", color: tab === t.id ? "var(--color-primary)" : "var(--color-muted)", fontFamily: "var(--font-sans)", transition: "color .15s" }}><span style={{ display: "flex" }}>{t.i}</span><span>{t.l}</span></button>)}
+        <div role="tablist" aria-label="Main navigation" style={{ maxWidth: 520, margin: "0 auto", display: "flex" }}>
+          {tabs.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => { setTab(t.id); track("tab_view", { tab: t.id }); window.__haptic && window.__haptic() }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: "10px 0 8px", fontSize: 11, fontWeight: 600, border: "none", borderBottom: tab === t.id ? "2.5px solid var(--color-primary)" : "2.5px solid transparent", cursor: "pointer", background: "none", color: tab === t.id ? "var(--color-primary)" : "var(--color-muted)", fontFamily: "var(--font-sans)", transition: "color .15s" }}><span style={{ display: "flex" }}>{t.i}</span><span>{t.l}</span></button>)}
         </div>
       </div>
 
       <div key={tab} className="tab-content" style={{ maxWidth: 520, margin: "0 auto", padding: "16px 20px", paddingBottom: 100 }}>
 
         {/* ONBOARDING NUDGE */}
-        {clubs.length === 0 && kids.length === 0 && <div style={{ background: "var(--color-accent-bg)", border: "1px solid #f0d078", borderRadius: 16, padding: 20, marginBottom: 16, textAlign: "center" }}>
+        {clubs.length === 0 && kids.length === 0 && <div style={{ background: "var(--color-accent-bg)", border: "1px solid var(--color-warning-border)", borderRadius: 16, padding: 20, marginBottom: 16, textAlign: "center" }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>{"\u{1F44B}"}</div>
           <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 17, fontWeight: 700, color: "var(--color-primary)", marginBottom: 6 }}>Welcome! Let's get you set up</h3>
           <p style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 14 }}>Start by adding your kids, then search for their clubs.</p>
           <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
             <button onClick={() => setShowAddKid(true)} className="btn btn-primary" style={{ fontSize: 13 }}>+ Add a child</button>
-            <button onClick={() => onRefresh("clubs")} className="btn btn-secondary" style={{ fontSize: 13 }}>+ Add a club</button>
+            <button onClick={() => setShowAddClub(true)} className="btn btn-secondary" style={{ fontSize: 13 }}>+ Add a club</button>
           </div>
         </div>}
 
@@ -265,7 +267,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
           <div style={{ fontSize: 28, marginBottom: 6 }}>{"\u{1F3E0}"}</div>
           <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)", marginBottom: 4 }}>Add your first club</div>
           <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 10 }}>Add clubs to see schedules, fees, and nearby options</p>
-          <button onClick={() => onRefresh("clubs")} className="btn btn-primary" style={{ padding: "10px 24px", fontSize: 13 }}>+ Add a club</button>
+          <button onClick={() => setShowAddClub(true)} className="btn btn-primary" style={{ padding: "10px 24px", fontSize: 13 }}>+ Add a club</button>
         </div>}
 
         {/* TAB CONTENT */}
@@ -312,7 +314,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
             <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-primary)", display: "block" }}>Event</span>
             <span style={{ fontSize: 9, fontWeight: 500, color: "var(--color-muted)", display: "block", marginTop: 2 }}>Session or match</span>
           </div>
-          <div onClick={() => { setShowFab(false); onRefresh("clubs") }} style={{ padding: "14px 8px", borderRadius: 14, border: "2px solid var(--color-border)", background: "var(--color-card)", cursor: "pointer", textAlign: "center", transition: "all .15s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--color-primary)"; e.currentTarget.style.background = "var(--color-primary-bg)" }} onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--color-border)"; e.currentTarget.style.background = "var(--color-card)" }}>
+          <div onClick={() => { setShowFab(false); setShowAddClub(true) }} style={{ padding: "14px 8px", borderRadius: 14, border: "2px solid var(--color-border)", background: "var(--color-card)", cursor: "pointer", textAlign: "center", transition: "all .15s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--color-primary)"; e.currentTarget.style.background = "var(--color-primary-bg)" }} onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--color-border)"; e.currentTarget.style.background = "var(--color-card)" }}>
             <span style={{ fontSize: 22, display: "block", marginBottom: 4 }}>{"\u{1F3E0}"}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-primary)", display: "block" }}>Club</span>
             <span style={{ fontSize: 9, fontWeight: 500, color: "var(--color-muted)", display: "block", marginTop: 2 }}>Regular activity</span>
@@ -346,6 +348,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
 
       {/* FAB Modals — small/frequent ones kept static */}
       {showAddEv && <AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={() => setShowAddEv(false)} onSaved={() => { setShowAddEv(false); window.__hapticSuccess && window.__hapticSuccess(); load() }} />}
+      {showAddClub && <AddClubModal userId={user.id} kids={kids} profile={profile} onClose={() => setShowAddClub(false)} onSaved={() => { setShowAddClub(false); load(); }} />}
       {showAddPay && <AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={() => setShowAddPay(false)} onSaved={() => { setShowAddPay(false); window.__hapticSuccess && window.__hapticSuccess(); load() }} />}
       {showAddPlaydate && <AddPlaydateModal userId={user.id} profile={profile} kids={kids} onClose={() => setShowAddPlaydate(false)} onSaved={() => { track("add_playdate"); setShowAddPlaydate(false); window.__hapticSuccess && window.__hapticSuccess(); load() }} />}
       {/* Lazy-loaded heavy modals */}

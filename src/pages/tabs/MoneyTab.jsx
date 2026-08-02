@@ -89,7 +89,7 @@ export default function MoneyTab({ filter }) {
             <div style={{ fontSize: 10, fontWeight: 600, color: "var(--color-muted)", marginTop: 2 }}>Total tracked</div>
           </div>
           <div style={{ background: "var(--color-card)", borderRadius: 14, padding: 12, border: "1px solid var(--color-border)", textAlign: "center", boxShadow: "var(--shadow)" }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#16a34a", fontFamily: "var(--font-serif)" }}>{"\u20AC"}{filtPays.filter(p => p.paid).reduce((s, p) => s + parseFloat(p.amount || 0), 0).toFixed(0)}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--color-success)", fontFamily: "var(--font-serif)" }}>{"\u20AC"}{filtPays.filter(p => p.paid).reduce((s, p) => s + parseFloat(p.amount || 0), 0).toFixed(0)}</div>
             <div style={{ fontSize: 10, fontWeight: 600, color: "var(--color-muted)", marginTop: 2 }}>Paid</div>
           </div>
           <div style={{ background: "var(--color-card)", borderRadius: 14, padding: 12, border: "1px solid var(--color-border)", textAlign: "center", boxShadow: "var(--shadow)" }}>
@@ -110,16 +110,6 @@ export default function MoneyTab({ filter }) {
             </div>
           </div>;
         })()}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
-          <div style={{ background: "var(--color-accent-bg)", borderRadius: 14, padding: 16, border: "1px solid #f0d078" }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#c44030", fontFamily: "var(--font-serif)" }}>{"\u20AC"}{totalDue.toFixed(0)}</div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#a68600", marginTop: 2 }}>Outstanding</div>
-          </div>
-          <div style={{ background: "var(--color-primary-bg)", borderRadius: 14, padding: 16, border: "1px solid #c8e6c9" }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "var(--color-primary)", fontFamily: "var(--font-serif)" }}>{"\u20AC"}{totalPaid.toFixed(0)}</div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--color-primary-light)", marginTop: 2 }}>Paid</div>
-          </div>
-        </div>
         {filtPays.length === 0 ? <div style={{ textAlign: "center", padding: "40px 0", color: "var(--color-muted)" }}><div style={{ fontSize: 36, marginBottom: 8 }}>{"\u{1F4B3}"}</div><p style={{ fontSize: 14 }}>No payment reminders yet</p></div>
         : filtPays.map(p => {
           const overdue = !p.paid && new Date(p.due_date) < new Date();

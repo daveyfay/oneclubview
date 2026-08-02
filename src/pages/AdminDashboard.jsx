@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db, rpc } from '../lib/supabase';
 import { showToast } from '../lib/utils';
 
-export default function AdminDashboard({user,onBack}){
+export default function AdminDashboard({user,onBack,onLogout}){
   const[stats,setStats]=useState(null);const[tickets,setTickets]=useState([]);const[loading,setLoading]=useState(true);
   const[users,setUsers]=useState([]);const[drilldown,setDrilldown]=useState(null);
   const[allSubs,setAllSubs]=useState([]);const[allKids,setAllKids]=useState([]);
@@ -10,8 +10,8 @@ export default function AdminDashboard({user,onBack}){
   useEffect(()=>{
     async function loadAdmin(){
       // Verify admin role server-side (don't trust client profile)
-      const profileCheck=await db("profiles","GET",{filters:["id=eq."+user.id],select:"family_role"});
-      if(!profileCheck?.[0]||profileCheck[0].family_role!=="admin"){
+      const profileCheck=await db("profiles","GET",{filters:["id=eq."+user.id],select:"family_role,email"});
+      if(!profileCheck?.[0]||profileCheck[0].family_role!=="admin"||user?.email!=="hello@oneclubview.com"){
         showToast("Access denied","err");
         onBack();
         return;
@@ -155,13 +155,13 @@ export default function AdminDashboard({user,onBack}){
       const churned=users.filter(u=>u.subscription_status==="churned");
       content=<div>
         <div style={{background:"var(--color-sage)",borderRadius:14,padding:16,marginBottom:12}}>
-          <div style={{fontSize:28,fontWeight:800,color:"var(--color-primary)",fontFamily:"var(--font-serif)"}}>€{(active.length*4.99).toFixed(2)}</div>
+          <div style={{fontSize:28,fontWeight:800,color:"var(--color-primary)",fontFamily:"var(--font-serif)"}}>€{stats?.mrr||"0.00"}</div>
           <div style={{fontSize:13,color:"var(--color-primary-light)",fontWeight:600}}>Monthly Recurring Revenue</div>
-          <div style={{fontSize:12,color:"var(--color-muted)",marginTop:4}}>{active.length} active subscriber{active.length!==1?"s":""} × €4.99</div>
+          <div style={{fontSize:12,color:"var(--color-muted)",marginTop:4}}>{active.length} active subscriber{active.length!==1?"s":""}</div>
         </div>
         <h4 style={{fontSize:14,fontWeight:700,color:"var(--color-primary)",margin:"16px 0 8px"}}>Active Subscribers ({active.length})</h4>
         {active.map(u=><div key={u.id} style={{background:"var(--color-card)",borderRadius:10,border:"1px solid var(--color-border)",padding:10,marginBottom:4,fontSize:13,display:"flex",justifyContent:"space-between"}}>
-          <span>{u.first_name} ({u.email})</span><span style={{fontWeight:700,color:"var(--color-primary-light)"}}>€4.99/mo</span>
+          <span>{u.first_name} ({u.email})</span><span style={{fontWeight:700,color:"var(--color-primary-light)"}}>Subscribed</span>
         </div>)}
         <h4 style={{fontSize:14,fontWeight:700,color:"#f0a500",margin:"16px 0 8px"}}>On Trial ({trial.length})</h4>
         {trial.map(u=><div key={u.id} style={{background:"var(--color-card)",borderRadius:10,border:"1px solid var(--color-border)",padding:10,marginBottom:4,fontSize:13}}>
@@ -210,7 +210,7 @@ export default function AdminDashboard({user,onBack}){
   return <div style={{minHeight:"100vh",background:"var(--bg)"}}>
     <div style={{background:"var(--color-primary)",padding:"20px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
       <h1 style={{fontFamily:"var(--font-serif)",fontSize:20,fontWeight:700,color:"#fff"}}>Admin Dashboard</h1>
-      <button onClick={onBack} style={{background:"rgba(255,255,255,.15)",border:"none",color:"#fff",fontSize:12,fontWeight:700,padding:"8px 14px",borderRadius:8,cursor:"pointer",fontFamily:"var(--font-sans)"}}>Logout</button>
+      <button onClick={onLogout||onBack} style={{background:"rgba(255,255,255,.15)",border:"none",color:"#fff",fontSize:12,fontWeight:700,padding:"8px 14px",borderRadius:8,cursor:"pointer",fontFamily:"var(--font-sans)"}}>Logout</button>
     </div>
     <div style={{maxWidth:600,margin:"0 auto",padding:16}}>
 

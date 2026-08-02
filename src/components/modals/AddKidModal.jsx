@@ -89,7 +89,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
             return;
           }
         }
-      } catch (e) {}
+      } catch (e) { console.error("AddKidModal error:", e); }
       let fid = profile?.family_id;
       if (!fid) {
         const fam = await db("families", "POST", {
@@ -127,7 +127,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
               site_url: window.location.origin,
             }),
           });
-        } catch (e) {}
+        } catch (e) { console.error("AddKidModal error:", e); }
       }
       setSv(false);
       setDone(true);
@@ -199,7 +199,7 @@ function AddKidModal({ userId, onClose, onSaved, editKid, profile, kids }) {
           return;
         }
       }
-    } catch (e) {}
+    } catch (e) { console.error("AddKidModal error:", e); }
     const body = {
       first_name: name.trim(),
       date_of_birth: dob || null,

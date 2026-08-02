@@ -136,20 +136,21 @@ export function HubDataProvider({ user, profile, children }) {
     return m;
   },[kids,profile,familyMembers]);
 
-  const wd=useMemo(()=>weekDates(),[]);
+  const today=new Date().toISOString().split("T")[0];
+  const wd=useMemo(()=>weekDates(),[today]);
   const clubMap=useMemo(()=>{const m=new Map();(clubs||[]).forEach(c=>m.set(c.club_id,c));return m},[clubs]);
   const clubTermMap=useMemo(()=>{const m=new Map();(clubs||[]).forEach(c=>{if(c.term_start&&c.term_end)m.set(c.club_id,{start:new Date(c.term_start+"T00:00:00"),end:new Date(c.term_end+"T23:59:59")})});return m},[clubs]);
   const kidMap=useMemo(()=>{const m=new Map();(kids||[]).forEach(k=>m.set(k.id,k));return m},[kids]);
 
-  const isAdmin=(profile?.family_role||"admin")==="admin";
+  const isAdmin=profile?.family_role==="admin";
 
   // Helper: get member colour (kid index-based from COLS, or fallback)
-  function getMemberCol(memberId,fallback){
+  const getMemberCol=useCallback((memberId,fallback)=>{
     const kidIdx=kids.findIndex(k=>k.id===memberId);
     if(kidIdx>=0)return COLS[kidIdx%COLS.length];
     if(memberId==="self")return "var(--color-primary)";
     return fallback||"#999";
-  }
+  },[kids]);
 
   // Computed weekly events — single source of truth used by Overview, Schedule, Money tabs
   const weekEvts = useMemo(() => {
@@ -214,7 +215,7 @@ export function HubDataProvider({ user, profile, children }) {
     familyMembers, notifications, localEvents, actCats,
     loading, userLoc, isAdmin,
     members, wd, clubMap, clubTermMap, kidMap, weekEvts,
-    load, user, profile,
+    load, getMemberCol, user, profile,
   ]);
 
   return (

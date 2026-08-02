@@ -118,9 +118,7 @@ function Auth({ onAuth, mode: im }) {
             });
             const fid = await rpc.json();
             if (fid) assignFamilyId = fid;
-          } catch (e) {
-            // Silently fail if family creation fails
-          }
+          } catch (e) { console.error("Family creation failed:", e); }
         }
 
         await db('profiles', 'POST', {
@@ -314,7 +312,7 @@ function Auth({ onAuth, mode: im }) {
                   <p
                     style={{
                       fontSize: 11,
-                      color: '#dc2626',
+                      color: 'var(--color-danger)',
                       marginTop: 4,
                     }}
                   >
@@ -325,7 +323,7 @@ function Auth({ onAuth, mode: im }) {
                   <p
                     style={{
                       fontSize: 11,
-                      color: '#16a34a',
+                      color: 'var(--color-success)',
                       marginTop: 4,
                     }}
                   >

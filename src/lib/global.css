@@ -23,6 +23,15 @@
   --card-padding: 18px;
   --card-gap: 12px;
   --color-danger: #dc2626;
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-success: #16a34a;
+  --color-success-bg: #f0fdf4;
+  --color-warning: #c4960c;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #f0d078;
+  --goldl: #fffbeb;
+  --bg: var(--color-warm);
 }
 
 /* Reset */
@@ -76,6 +85,18 @@ input:focus, select:focus {
 select {
   -webkit-appearance: none;
   appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237c8590' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.pill:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 /* Modal backdrop */
@@ -399,6 +420,15 @@ select {
   --shadow-xl: 0 20px 50px rgba(0,0,0,.4);
   --color-danger: #ef4444;
   --font-mono: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  --color-danger-bg: #1f1215;
+  --color-danger-border: #5c2020;
+  --color-success: #4ade80;
+  --color-success-bg: #0f1f15;
+  --color-warning: #f0d078;
+  --color-warning-bg: #1f1a0f;
+  --color-warning-border: #5c4a1a;
+  --goldl: #1f1a0f;
+  --bg: var(--color-warm);
 }
 [data-theme="dark"] input,
 [data-theme="dark"] select,
@@ -442,4 +472,12 @@ select {
 @media (min-width: 900px) {
   body { display: flex; justify-content: center; }
   #root { max-width: 600px; width: 100%; position: relative; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
