@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import { isToday, colourToGrad } from '../../lib/utils';
 
+function getHolidayIcon(name) {
+  const n = (name || "").toLowerCase();
+  if (n.includes("summer")) return "\u2600\uFE0F";
+  if (n.includes("easter")) return "\uD83D\uDC23";
+  if (n.includes("christmas")) return "\uD83C\uDF84";
+  if (n.includes("mid-term") || n.includes("midterm")) return "\uD83C\uDFEB";
+  if (n.includes("halloween")) return "\uD83C\uDF83";
+  if (n.includes("bank holiday")) return "\uD83C\uDFD6\uFE0F";
+  return "\uD83C\uDF34";
+}
+
 export default function WeekGrid({ weekDays, events, holidays, onTapEvent, kids }) {
   // Split 7 days into pages of 4 (page 0 = days 0-3, page 1 = days 3-6)
   // Use overlapping pages so swipe feels natural
@@ -103,7 +114,7 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, kids 
                     minHeight: 56, display: "flex", flexDirection: "column",
                     justifyContent: "center", alignItems: "center"
                   }}>
-                    <span style={{ fontSize: 16 }}>🌴</span>
+                    <span style={{ fontSize: 16 }}>{getHolidayIcon(holName(d))}</span>
                     <span style={{ fontSize: 8, fontWeight: 600, color: "#b8860b", marginTop: 2 }}>
                       {holName(d).split(" ")[0]}
                     </span>
