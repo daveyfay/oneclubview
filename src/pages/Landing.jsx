@@ -199,8 +199,13 @@ const USER_COUNTRY = detectCountry();
 
 function Landing({ onGo, onLogin }) {
   // Clean up legacy enhance.js injections (stale service worker may serve old version)
+  // Uses MutationObserver because the old enhance.js polls and re-injects after mount
   React.useEffect(() => {
-    document.querySelectorAll('.ocv-mockup-wrap,.ocv-reassure,.ocv-sticky-bar').forEach(el => el.remove());
+    const clean = () => document.querySelectorAll('.ocv-mockup-wrap,.ocv-reassure,.ocv-sticky-bar').forEach(el => el.remove());
+    clean();
+    const obs = new MutationObserver(clean);
+    obs.observe(document.body, { childList: true, subtree: true });
+    return () => obs.disconnect();
   }, []);
   return (
     <div style={{ minHeight: '100vh' }}>
