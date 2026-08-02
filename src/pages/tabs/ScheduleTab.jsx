@@ -88,7 +88,7 @@ export default function ScheduleTab({ filter }) {
             <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)" }}>{selectedDay.toLocaleDateString("en-IE", { weekday: "long", day: "numeric", month: "long" })}</div>
-                {isHol && <div style={{ fontSize: 11, color: "#b8860b", fontWeight: 600 }}>{holName}</div>}
+                {isHol && <div style={{ fontSize: 11, color: "var(--color-warning)", fontWeight: 600 }}>{holName}</div>}
               </div>
               <button onClick={() => setSelectedDay(null)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "var(--color-muted)", padding: "4px" }}>{"\u2715"}</button>
             </div>
@@ -224,7 +224,7 @@ export default function ScheduleTab({ filter }) {
                 <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)" }}>{selectedDay.toLocaleDateString("en-IE", { weekday: "long", day: "numeric", month: "long" })}</div>
-                    {isHol && <div style={{ fontSize: 11, color: "#b8860b", fontWeight: 600 }}>{holName}</div>}
+                    {isHol && <div style={{ fontSize: 11, color: "var(--color-warning)", fontWeight: 600 }}>{holName}</div>}
                   </div>
                   <button onClick={() => setSelectedDay(null)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "var(--color-muted)", padding: "4px" }}>{"\u2715"}</button>
                 </div>
