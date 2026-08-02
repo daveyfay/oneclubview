@@ -50,7 +50,7 @@ serve(async (req) => {
     if (deleteErr) console.error("Auth delete failed:", deleteErr);
 
     // Send confirmation email via Resend
-    const resendKey = Deno.env.get("RESEND_API_KEY");
+    const resendKey = Deno.env.get("RESEND_KEY");
     if (resendKey && userEmail) {
       await fetch("https://api.resend.com/emails", {
         method: "POST",
