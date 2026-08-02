@@ -8,6 +8,7 @@ import CancelFeedback from '../components/CancelFeedback';
 import AddEventModal from '../components/modals/AddEventModal';
 import AddPaymentModal from '../components/modals/AddPaymentModal';
 import AddPlaydateModal from '../components/modals/AddPlaydateModal';
+import AddClubModal from '../components/modals/AddClubModal';
 import { HubDataProvider } from '../contexts/HubDataContext';
 import { useHubData } from '../hooks/useHubData';
 
@@ -52,6 +53,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
   const [showPaste, setShowPaste] = useState(false);
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [showAddPlaydate, setShowAddPlaydate] = useState(false);
+  const [showAddClub, setShowAddClub] = useState(false);
 
   // Pull-to-refresh
   const [ptrState, setPtrState] = useState("");
@@ -247,7 +249,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
           <p style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 14 }}>Start by adding your kids, then search for their clubs.</p>
           <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
             <button onClick={() => setShowAddKid(true)} className="btn btn-primary" style={{ fontSize: 13 }}>+ Add a child</button>
-            <button onClick={() => onRefresh("clubs")} className="btn btn-secondary" style={{ fontSize: 13 }}>+ Add a club</button>
+            <button onClick={() => setShowAddClub(true)} className="btn btn-secondary" style={{ fontSize: 13 }}>+ Add a club</button>
           </div>
         </div>}
 
@@ -265,7 +267,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
           <div style={{ fontSize: 28, marginBottom: 6 }}>{"\u{1F3E0}"}</div>
           <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-primary)", marginBottom: 4 }}>Add your first club</div>
           <p style={{ fontSize: 12, color: "var(--color-muted)", marginBottom: 10 }}>Add clubs to see schedules, fees, and nearby options</p>
-          <button onClick={() => onRefresh("clubs")} className="btn btn-primary" style={{ padding: "10px 24px", fontSize: 13 }}>+ Add a club</button>
+          <button onClick={() => setShowAddClub(true)} className="btn btn-primary" style={{ padding: "10px 24px", fontSize: 13 }}>+ Add a club</button>
         </div>}
 
         {/* TAB CONTENT */}
@@ -312,7 +314,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
             <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-primary)", display: "block" }}>Event</span>
             <span style={{ fontSize: 9, fontWeight: 500, color: "var(--color-muted)", display: "block", marginTop: 2 }}>Session or match</span>
           </div>
-          <div onClick={() => { setShowFab(false); onRefresh("clubs") }} style={{ padding: "14px 8px", borderRadius: 14, border: "2px solid var(--color-border)", background: "var(--color-card)", cursor: "pointer", textAlign: "center", transition: "all .15s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--color-primary)"; e.currentTarget.style.background = "var(--color-primary-bg)" }} onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--color-border)"; e.currentTarget.style.background = "var(--color-card)" }}>
+          <div onClick={() => { setShowFab(false); setShowAddClub(true) }} style={{ padding: "14px 8px", borderRadius: 14, border: "2px solid var(--color-border)", background: "var(--color-card)", cursor: "pointer", textAlign: "center", transition: "all .15s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--color-primary)"; e.currentTarget.style.background = "var(--color-primary-bg)" }} onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--color-border)"; e.currentTarget.style.background = "var(--color-card)" }}>
             <span style={{ fontSize: 22, display: "block", marginBottom: 4 }}>{"\u{1F3E0}"}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-primary)", display: "block" }}>Club</span>
             <span style={{ fontSize: 9, fontWeight: 500, color: "var(--color-muted)", display: "block", marginTop: 2 }}>Regular activity</span>
@@ -346,6 +348,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
 
       {/* FAB Modals — small/frequent ones kept static */}
       {showAddEv && <AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={() => setShowAddEv(false)} onSaved={() => { setShowAddEv(false); window.__hapticSuccess && window.__hapticSuccess(); load() }} />}
+      {showAddClub && <AddClubModal userId={user.id} kids={kids} profile={profile} onClose={() => setShowAddClub(false)} onSaved={() => { setShowAddClub(false); load(); }} />}
       {showAddPay && <AddPaymentModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={() => setShowAddPay(false)} onSaved={() => { setShowAddPay(false); window.__hapticSuccess && window.__hapticSuccess(); load() }} />}
       {showAddPlaydate && <AddPlaydateModal userId={user.id} profile={profile} kids={kids} onClose={() => setShowAddPlaydate(false)} onSaved={() => { track("add_playdate"); setShowAddPlaydate(false); window.__hapticSuccess && window.__hapticSuccess(); load() }} />}
       {/* Lazy-loaded heavy modals */}
