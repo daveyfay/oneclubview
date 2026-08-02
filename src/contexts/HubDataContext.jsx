@@ -95,7 +95,9 @@ export function HubDataProvider({ user, profile, children }) {
       navigator.geolocation.getCurrentPosition(pos=>{
         const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};
         setUserLoc(loc);
-        db("profiles","PATCH",{filters:["id=eq."+user.id],body:{latitude:loc.lat,longitude:loc.lng}}).catch(e=>console.error("Profile location update failed:",e));
+        // NOTE: Do NOT save GPS to profile — it's unreliable (VPN, bad fix, WiFi triangulation).
+        // Family locations (Home, Work) are the source of truth for distance calculations.
+        // Live GPS is only used for the "Current" location pill in the Explore tab.
         // Check if this area has been scraped recently — if not, fire ONE scrape
         rpc("needs_scrape",{lat:loc.lat,lng:loc.lng}).then(needed=>{
           if(needed){
@@ -103,13 +105,13 @@ export function HubDataProvider({ user, profile, children }) {
           }
         }).catch(e=>console.error("needs_scrape check failed:",e));
       },()=>{
-        // Geolocation denied — use saved profile location
-        db("profiles","GET",{filters:["id=eq."+user.id],select:"latitude,longitude"}).then(p=>{
-          if(p&&p[0]&&p[0].latitude){
-            const loc={lat:Number(p[0].latitude),lng:Number(p[0].longitude)};
+        // Geolocation denied — use Home family location as fallback (more reliable than profile GPS)
+        db("family_locations","GET",{filters:["user_id=eq."+user.id,"active=eq.true"],order:"label.asc",limit:1}).then(locs=>{
+          if(locs&&locs[0]&&locs[0].latitude){
+            const loc={lat:Number(locs[0].latitude),lng:Number(locs[0].longitude)};
             setUserLoc(loc);
           }
-        }).catch(e=>console.error("Profile location fallback failed:",e));
+        }).catch(e=>console.error("Family location fallback failed:",e));
       },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
     }
   },[]);

@@ -124,10 +124,11 @@ serve(async (_req) => {
       const { data: feesRaw } = await sb.from("payment_reminders").select("description, amount, due_date").in("user_id", mids).eq("paid", false).neq("status", "not_renewing");
       const fees = (feesRaw || []) as Array<{ description: string; amount: number; due_date: string }>;
 
-      // Weather (fault-tolerant — uses user's profile lat/lng or Dublin fallback)
+      // Weather — use Home family location (reliable), fall back to Dublin
       let weather: { code: number; tempMax: number } | null = null;
-      const lat = Number(user.latitude) || 53.35;
-      const lng = Number(user.longitude) || -6.26;
+      let lat = 53.35, lng = -6.26; // Dublin fallback
+      const { data: homeLoc } = await sb.from("family_locations").select("latitude, longitude").eq("user_id", uid).eq("active", true).order("label").limit(1).maybeSingle();
+      if (homeLoc?.latitude && homeLoc?.longitude) { lat = Number(homeLoc.latitude); lng = Number(homeLoc.longitude); }
       try {
         const wx = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=weathercode,temperature_2m_max&timezone=Europe%2FDublin&forecast_days=7`);
         if (wx.ok) {
