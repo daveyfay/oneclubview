@@ -39,10 +39,16 @@ export default function SettingsTab({ onLogout, darkMode, setDarkMode, onClose, 
           <button onClick={() => { onClose(); setShowFamily(true) }} style={{ width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-text)", fontFamily: "var(--font-sans)", textAlign: "left", borderRadius: 8, display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}"} Family Members</button>
           <a href="/privacy" style={{ width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-text)", fontFamily: "var(--font-sans)", textAlign: "left", borderRadius: 8, display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>{"\u{1F512}"} Privacy & Data</a>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderTop: "1px solid var(--color-border)" }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text)" }}>Dark mode</span>
-            <div onClick={() => setDarkMode(!darkMode)} style={{ width: 48, height: 28, borderRadius: 14, background: darkMode ? "var(--color-accent)" : "var(--color-border)", cursor: "pointer", position: "relative", transition: "background .2s" }}>
+            <span id="dark-mode-label" style={{ fontSize: 14, fontWeight: 600, color: "var(--color-text)" }}>Dark mode</span>
+            <button
+              role="switch"
+              aria-checked={darkMode}
+              aria-labelledby="dark-mode-label"
+              onClick={() => setDarkMode(!darkMode)}
+              style={{ width: 48, height: 28, borderRadius: 14, background: darkMode ? "var(--color-accent)" : "var(--color-border)", cursor: "pointer", position: "relative", transition: "background .2s", border: "none", padding: 0, minWidth: 48, minHeight: 28 }}
+            >
               <div style={{ width: 22, height: 22, borderRadius: 11, background: "#fff", position: "absolute", top: 3, left: darkMode ? 23 : 3, transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.2)" }} />
-            </div>
+            </button>
           </div>
           <div style={{ borderTop: "1px solid var(--color-border)", marginTop: 4, paddingTop: 4 }}>
             <button onClick={() => setShowDeleteAcct(true)} style={{ width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--color-danger)", fontFamily: "var(--font-sans)", textAlign: "left", borderRadius: 8, display: "flex", alignItems: "center", gap: 8 }}>{"\u{1F5D1}\uFE0F"} Delete Account</button>
