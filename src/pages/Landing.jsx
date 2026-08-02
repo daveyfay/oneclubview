@@ -201,14 +201,25 @@ function Landing({ onGo, onLogin }) {
   return (
     <div style={{ minHeight: '100vh' }}>
       <style>{`
-        .ocv-section{max-width:520px;margin:0 auto}
+        .ocv-section{max-width:520px;margin:0 auto;padding-left:24px;padding-right:24px}
+        .ocv-nav{max-width:520px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+        .ocv-hero-layout{max-width:520px;margin:0 auto}
+        .ocv-hero-mockup{margin-top:32px}
         @media(min-width:900px){
-          .ocv-section{max-width:960px}
-          .ocv-hero-inner{max-width:640px}
-          .ocv-feature-grid{grid-template-columns:repeat(4,1fr) !important}
-          .ocv-pricing-grid{max-width:640px;margin:0 auto}
+          .ocv-section{max-width:1080px;padding-left:40px;padding-right:40px}
+          .ocv-nav{max-width:1080px;padding:0 40px}
+          .ocv-hero-layout{max-width:1080px;display:flex;align-items:center;gap:60px;padding:0 40px}
+          .ocv-hero-text{flex:1;max-width:540px}
+          .ocv-hero-mockup{flex:1;margin-top:0;display:flex;justify-content:center}
+          .ocv-feature-grid{grid-template-columns:repeat(3,1fr) !important}
+          .ocv-pricing-grid{max-width:680px;margin:0 auto}
           .ocv-screenshots{gap:32px !important}
           .ocv-screenshots>div>div:first-child{width:260px !important}
+          .ocv-how-grid{display:grid !important;grid-template-columns:1fr 1fr;gap:20px 40px}
+          .ocv-classmate-inner{max-width:640px}
+        }
+        @media(min-width:1200px){
+          .ocv-feature-grid{grid-template-columns:repeat(4,1fr) !important}
         }
         @media(max-width:520px){
           .ocv-pricing-grid{grid-template-columns:1fr !important;gap:16px !important}
@@ -227,8 +238,8 @@ function Landing({ onGo, onLogin }) {
       <div style={{ background: 'linear-gradient(135deg, #1a2a3a 0%, #2d4a5f 50%, #1a3a4a 100%)', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: -100, right: -100, width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle,rgba(232,93,74,.15) 0%,transparent 70%)' }} />
         <div style={{ position: 'absolute', bottom: -60, left: -60, width: 250, height: 250, borderRadius: '50%', background: 'radial-gradient(circle,rgba(255,255,255,.04) 0%,transparent 70%)' }} />
-        <div className="ocv-hero-inner" style={{ maxWidth: 520, margin: '0 auto', padding: '60px 24px 48px', position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 48 }}>
+        <div style={{ padding: '24px 24px 0', position: 'relative' }}>
+          <div className="ocv-nav" style={{ marginBottom: 48 }}>
             <Logo dark />
             <button
               onClick={onLogin}
@@ -247,6 +258,9 @@ function Landing({ onGo, onLogin }) {
               Log in
             </button>
           </div>
+        </div>
+        <div className="ocv-hero-layout" style={{ padding: '0 24px 48px', position: 'relative' }}>
+          <div className="ocv-hero-text">
           <div className="anim-rise" style={{ marginBottom: 12 }}>
             <span style={{ display: 'inline-block', padding: '5px 14px', borderRadius: 100, background: 'rgba(232,93,74,.15)', color: '#e85d4a', fontSize: 12, fontWeight: 700, letterSpacing: 0.5 }}>
               FOR BUSY PARENTS
@@ -295,7 +309,45 @@ function Landing({ onGo, onLogin }) {
               I have an account
             </button>
           </div>
-        </div>
+          <p className="anim-rise-4" style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', marginTop: 16 }}>
+            14 days free · Cancel anytime · 2 minutes to set up
+          </p>
+          </div>{/* end ocv-hero-text */}
+          <div className="ocv-hero-mockup anim-rise-3">
+            <div style={{ width: 280, borderRadius: 28, border: '4px solid #1a1a1a', overflow: 'hidden', background: '#f8f6f3', boxShadow: '0 20px 60px rgba(0,0,0,.3)' }}>
+              <div style={{ width: 70, height: 16, background: '#1a1a1a', borderRadius: '0 0 12px 12px', margin: '0 auto' }} />
+              <div style={{ padding: '10px 14px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ fontFamily: 'var(--font-serif)', fontSize: 11, fontWeight: 800, color: 'var(--color-primary)' }}>This Week</span>
+                  <span style={{ fontSize: 9, color: 'var(--color-muted)' }}>The O'Brien Family</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginBottom: 6 }}>
+                  {['Mon','Tue','Wed','Thu','Fri'].map((d,i) => (
+                    <div key={d} style={{ textAlign: 'center', padding: '3px 0', borderRadius: 6, background: i===2 ? 'var(--color-primary)' : 'transparent' }}>
+                      <div style={{ fontSize: 7, fontWeight: 700, color: i===2 ? 'rgba(255,255,255,.7)' : 'var(--color-muted)' }}>{d}</div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: i===2 ? '#fff' : 'var(--color-text)' }}>{24+i}</div>
+                    </div>
+                  ))}
+                </div>
+                {[
+                  { c: '#2d5a3f', name: 'Swimming', who: 'Ella', t: '16:00' },
+                  { c: '#e85d4a', name: 'GAA', who: 'Sam', t: '16:30' },
+                  { c: '#8b5cf6', name: 'Piano', who: 'Ella', t: '17:00' },
+                  { c: '#2d7cb5', name: 'Art Camp', who: 'Both', t: '09:00' },
+                ].map((ev,i) => (
+                  <div key={i} style={{ background: '#fff', borderRadius: 8, padding: '6px 8px', borderLeft: `3px solid ${ev.c}`, marginBottom: 4, boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: ev.c }}>{ev.name}</div>
+                    <div style={{ fontSize: 8, color: 'var(--color-muted)' }}>{ev.who} · {ev.t}</div>
+                  </div>
+                ))}
+                <div style={{ background: '#fef2f2', borderRadius: 8, padding: '6px 8px', marginTop: 6 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: '#dc2626' }}>💳 March fees</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: '#dc2626', textAlign: 'right' }}>€187</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>{/* end ocv-hero-layout */}
       </div>
       {/* SOCIAL PROOF */}
       <div style={{ background: '#fff', padding: '20px 24px', borderBottom: '1px solid var(--color-border)' }}>
@@ -407,13 +459,14 @@ function Landing({ onGo, onLogin }) {
           <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 32 }}>
             Up and running in 2 minutes
           </h2>
+          <div className="ocv-how-grid">
           {[
             { n: '1', t: 'Add your kids', d: 'Name, age, school — that\'s it.' },
             { n: '2', t: 'Find their clubs', d: 'Search our database or add your own.' },
             { n: '3', t: 'See your week', d: 'One view. Clashes flagged. Fees tracked.' },
             { n: '4', t: 'Invite your partner', d: 'They see everything. Mental load: shared.' }
           ].map((s, i) => (
-            <div key={i} style={{ display: 'flex', gap: 16, marginBottom: i < 3 ? 28 : 0 }}>
+            <div key={i} style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
               <div style={{ width: 40, height: 40, borderRadius: 12, background: i === 3 ? '#e85d4a' : 'var(--color-primary)', color: '#fff', fontFamily: "var(--font-serif)", fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {s.n}
               </div>
@@ -423,6 +476,7 @@ function Landing({ onGo, onLogin }) {
               </div>
             </div>
           ))}
+          </div>
         </div>
       </section>
       {/* APP MOCKUPS */}
@@ -668,7 +722,7 @@ function Landing({ onGo, onLogin }) {
       </section>
       {/* CLASSMATE FEATURE */}
       <section style={{ background: 'linear-gradient(135deg, #1a2a3a, #2d4a5f)', padding: '56px 24px', color: '#fff' }}>
-        <div className="ocv-section" style={{ margin: '0 auto', textAlign: 'center' }}>
+        <div className="ocv-section ocv-classmate-inner" style={{ margin: '0 auto', textAlign: 'center' }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>🏫</div>
           <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 24, fontWeight: 800, marginBottom: 12 }}>The classmate feature</h2>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,.6)', marginBottom: 20, lineHeight: 1.6 }}>
