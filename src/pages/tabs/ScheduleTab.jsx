@@ -331,7 +331,7 @@ export default function ScheduleTab({ filter }) {
         </div>
 
         {/* EventDetailModal */}
-        <EventDetailModal event={tapEvent} open={!!tapEvent} onClose={() => setTapEvent(null)} load={load}
+        <EventDetailModal event={tapEvent} open={!!tapEvent} onClose={() => setTapEvent(null)} load={load} getMemberCol={getMemberCol}
           adults={[...new Set([profile?.first_name || "Me", ...familyMembers.filter(m => m.id !== user.id && !kids.find(k => k.first_name === m.first_name)).map(m => m.first_name)].filter(Boolean))]}
           familyAll={[...new Set([profile?.first_name || "Me", ...kids.map(k => k.first_name), ...familyMembers.filter(m => m.id !== user.id).map(m => m.first_name)].filter(Boolean))]}
           onDriverChange={async (ev, driver) => {

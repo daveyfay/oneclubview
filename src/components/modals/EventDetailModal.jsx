@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import ICN from '../../lib/icons';
-import { COLS } from '../../lib/constants';
+import { COLS, CLUB_ICONS } from '../../lib/constants';
 import OcvModal from './OcvModal';
 import { db } from '../../lib/supabase';
-import { showToast } from '../../lib/utils';
+import { showToast, colourToGrad } from '../../lib/utils';
 
 const COLOUR_OPTIONS = [...COLS, "#999", "#1a2a3a", "#dc2626", "#c4960c"];
 
-export default function EventDetailModal({event,open,onClose,onDelete,onDriverChange,onAttendeesChange,onMarkPaid,onColourChange,adults,familyAll,load}){
+export default function EventDetailModal({event,open,onClose,onDelete,onDriverChange,onAttendeesChange,onMarkPaid,onColourChange,adults,familyAll,load,getMemberCol}){
   const[going,setGoing]=useState([]);
   const[marking,setMarking]=useState(false);
   const[showColours,setShowColours]=useState(false);
@@ -92,18 +92,24 @@ export default function EventDetailModal({event,open,onClose,onDelete,onDriverCh
   }
 
   // Regular event detail view
+  const icon = CLUB_ICONS[event.category] || CLUB_ICONS.other;
+  const grad = colourToGrad(event.colour);
+  const memberCol = getMemberCol ? getMemberCol(event.memberId, event.colour) : event.colour || "#999";
+  const typeLabel = isRecurring ? "Recurring weekly" : isCamp ? "Camp booking" : "One-off event";
+  const tintBg = (event.colour || "#999") + "14";
+
   return <OcvModal
     open={true}
     onClose={onClose}
-    title={event.member+" \u2014 "+(event.club||event.title||"Event")}
+    title=""
     width={400}
     footer={
       <div style={{display:"flex",gap:10}}>
-        <button onClick={onClose} className="btn btn-primary" style={{flex:1}}>Done</button>
-        {event.skipped && event.source_type === "recurring" && (
+        <button onClick={onClose} style={{flex:0,padding:"14px 20px",borderRadius:"var(--radius)",border:"1px solid var(--color-border)",background:"var(--color-card)",color:"var(--color-text)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--font-sans)",minHeight:48}}>Close</button>
+        {event.skipped && isRecurring && (
           <button
             className="btn btn-primary"
-            style={{flex:0,whiteSpace:"nowrap"}}
+            style={{flex:1}}
             onClick={async () => {
               const dateStr = event.date.toISOString().split("T")[0];
               const rec = await db("recurring_events", "GET", { filters: ["id=eq." + event.source_id] });
@@ -122,41 +128,59 @@ export default function EventDetailModal({event,open,onClose,onDelete,onDriverCh
             Restore this week
           </button>
         )}
-        {(isManual||(isRecurring&&!event.skipped))&&<button onClick={()=>{
-  if(window.confirm(isRecurring?"Skip this week?":"Remove this event? This can't be undone.")){
-    onDelete(event);onClose();
-  }
-}} style={{flex:0,padding:"14px 20px",borderRadius:"var(--radius)",border:"1.5px solid #dc2626",background:"none",color:"#dc2626",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--font-sans)",minHeight:48,whiteSpace:"nowrap"}}>{isRecurring?"Skip this week":"Remove"}</button>}
+        {isManual && !event.skipped && <button onClick={()=>{
+          if(window.confirm("Remove this event? This can't be undone.")){
+            onDelete(event);onClose();
+          }
+        }} style={{flex:0,padding:"14px 20px",borderRadius:"var(--radius)",border:"1px solid #fca5a5",background:"#fef2f2",color:"#ef4444",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--font-sans)",minHeight:48,whiteSpace:"nowrap"}}>Remove</button>}
+        {isRecurring && !event.skipped && <button onClick={()=>{
+          if(window.confirm("Skip this week?")){
+            onDelete(event);onClose();
+          }
+        }} style={{flex:0,padding:"14px 20px",borderRadius:"var(--radius)",border:"none",background:"#f1f5f9",color:"#64748b",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"var(--font-sans)",minHeight:48,whiteSpace:"nowrap"}}>Skip week</button>}
       </div>
     }
   >
-    <div style={{borderTop:"1px solid var(--color-border)",borderBottom:"1px solid var(--color-border)",padding:"16px 0",marginBottom:16}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0"}}>
-        <span style={{fontSize:14,color:"var(--color-muted)"}}>Time</span>
-        <span style={{fontSize:14,fontWeight:700,color:"var(--color-text)"}}>{event.time||"\u2014"}{event.endTime?"\u2013"+event.endTime:""}</span>
-      </div>
-      {(event.club||event.title)&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderTop:"1px solid var(--color-border)"}}>
-        <span style={{fontSize:14,color:"var(--color-muted)"}}>{isManual?"Event":"Club"}</span>
-        <span style={{fontSize:14,fontWeight:700,color:"var(--color-text)"}}>{event.club||event.title}</span>
-      </div>}
-      {event.location&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderTop:"1px solid var(--color-border)"}}>
-        <span style={{fontSize:14,color:"var(--color-muted)"}}>Location</span>
-        <span style={{fontSize:14,fontWeight:600,color:"var(--color-text)",textAlign:"right",maxWidth:"60%"}}>{event.location}</span>
-      </div>}
-      {/* Colour row — only for one-off/manual events; recurring events inherit club colour */}
-      {isManual&&<><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderTop:"1px solid var(--color-border)"}}>
-        <span style={{fontSize:14,color:"var(--color-muted)"}}>Colour</span>
-        <div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>setShowColours(!showColours)}>
-          <div style={{width:20,height:20,borderRadius:6,background:event.colour||"#999",border:"2px solid var(--color-border)"}}/>
-          <span style={{fontSize:12,color:"var(--color-muted)"}}>{showColours?"\u25B2":"\u25BC"}</span>
+    {/* Rich header band */}
+    <div style={{background:event.skipped?"linear-gradient(135deg,#94a3b8,#64748b)":grad,padding:"20px 16px",color:"#fff",borderRadius:"12px 12px 0 0",margin:"-16px -16px 16px -16px"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+        <div style={{width:40,height:40,background:"rgba(255,255,255,.2)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{icon.emoji}</div>
+        <div>
+          <div style={{fontSize:16,fontWeight:700}}>{event.club||event.title||"Event"}</div>
+          <div style={{fontSize:12,opacity:.8}}>{icon.label} &middot; {typeLabel}</div>
         </div>
       </div>
-      {showColours&&<div style={{display:"flex",gap:6,flexWrap:"wrap",padding:"8px 0"}}>
-        {COLOUR_OPTIONS.map(c=><div key={c} onClick={()=>{if(onColourChange)onColourChange(event,c);setShowColours(false)}} style={{width:28,height:28,borderRadius:8,background:c,cursor:"pointer",border:event.colour===c?"3px solid var(--color-primary)":"2px solid var(--color-border)",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.85)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}/>)}
-      </div>}</>}
+      <div style={{display:"flex",alignItems:"center",gap:6}}>
+        <div style={{width:8,height:8,borderRadius:"50%",background:memberCol,border:"1.5px solid rgba(255,255,255,.5)"}}/>
+        <span style={{fontSize:13,fontWeight:600}}>{event.member}</span>
+      </div>
     </div>
 
-    {/* Who's going — for manual events, show all family members */}
+    {/* Time + Location info cards */}
+    <div style={{display:"flex",gap:12,marginBottom:16}}>
+      <div style={{flex:1,background:tintBg,borderRadius:10,padding:10,textAlign:"center"}}>
+        <div style={{fontSize:10,color:"var(--color-muted)",textTransform:"uppercase",marginBottom:2}}>Time</div>
+        <div style={{fontSize:15,fontWeight:700,color:"var(--color-text)"}}>{event.time||"\u2014"}{event.endTime?"\u2013"+event.endTime:""}</div>
+      </div>
+      {event.location && <div style={{flex:1,background:tintBg,borderRadius:10,padding:10,textAlign:"center"}}>
+        <div style={{fontSize:10,color:"var(--color-muted)",textTransform:"uppercase",marginBottom:2}}>Location</div>
+        <div style={{fontSize:13,fontWeight:600,color:"var(--color-text)"}}>{event.location}</div>
+      </div>}
+    </div>
+
+    {/* Colour row — only for one-off/manual events */}
+    {isManual&&<><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderTop:"1px solid var(--color-border)"}}>
+      <span style={{fontSize:14,color:"var(--color-muted)"}}>Colour</span>
+      <div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>setShowColours(!showColours)}>
+        <div style={{width:20,height:20,borderRadius:6,background:event.colour||"#999",border:"2px solid var(--color-border)"}}/>
+        <span style={{fontSize:12,color:"var(--color-muted)"}}>{showColours?"\u25B2":"\u25BC"}</span>
+      </div>
+    </div>
+    {showColours&&<div style={{display:"flex",gap:6,flexWrap:"wrap",padding:"8px 0"}}>
+      {COLOUR_OPTIONS.map(c=><div key={c} onClick={()=>{if(onColourChange)onColourChange(event,c);setShowColours(false)}} style={{width:28,height:28,borderRadius:8,background:c,cursor:"pointer",border:event.colour===c?"3px solid var(--color-primary)":"2px solid var(--color-border)",transition:"transform .1s"}} onTouchStart={ev=>ev.currentTarget.style.transform="scale(.85)"} onTouchEnd={ev=>ev.currentTarget.style.transform=""}/>)}
+    </div>}</>}
+
+    {/* Who's going — for manual events */}
     {isManual&&allFamily.length>0&&<div style={{marginBottom:20}}>
       <div style={{fontSize:11,fontWeight:700,color:"var(--color-muted)",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Who's going?</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
@@ -167,16 +191,13 @@ export default function EventDetailModal({event,open,onClose,onDelete,onDriverCh
       </div>
     </div>}
 
-    {/* Driver picker — adults only */}
+    {/* Driver picker — adults only, uses club color for selected state */}
     {isRecurring&&driverOptions.length>0&&<div style={{marginBottom:20}}>
       <div style={{fontSize:11,fontWeight:700,color:"var(--color-muted)",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Who's driving?</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         {driverOptions.map(a=><button key={a} onClick={()=>{if(onDriverChange)onDriverChange(event,a)}}
-          style={{padding:"8px 16px",borderRadius:12,border:event.driver===a?"2px solid var(--color-primary)":"1.5px solid var(--color-border)",background:event.driver===a?"var(--color-primary-bg)":"#fff",fontSize:13,fontWeight:event.driver===a?700:500,color:event.driver===a?"var(--color-primary)":"var(--color-text)",cursor:"pointer",fontFamily:"var(--font-sans)",display:"flex",alignItems:"center",gap:6}}><span style={{display:"flex"}}>{ICN.car}</span> {a}</button>)}
+          style={{padding:"8px 16px",borderRadius:12,border:event.driver===a?`2px solid ${event.colour||"var(--color-primary)"}`:"1.5px solid var(--color-border)",background:event.driver===a?tintBg:"#fff",fontSize:13,fontWeight:event.driver===a?700:500,color:event.driver===a?(event.colour||"var(--color-primary)"):"var(--color-text)",cursor:"pointer",fontFamily:"var(--font-sans)",display:"flex",alignItems:"center",gap:6}}><span style={{display:"flex"}}>{ICN.car}</span> {a}{event.driver===a?" \u2713":""}</button>)}
       </div>
     </div>}
-
-    {isCamp&&<div style={{fontSize:13,color:"var(--color-muted)",fontStyle:"italic",marginBottom:16}}>This is a camp booking</div>}
-    {isRecurring&&<div style={{fontSize:13,color:"var(--color-muted)",fontStyle:"italic",marginBottom:16}}>Recurring weekly activity</div>}
   </OcvModal>;
 }
