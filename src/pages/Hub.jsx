@@ -220,7 +220,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
       </div>
       {/* Header */}
       <div style={{ background: "var(--color-card)", borderBottom: "1px solid var(--color-border)" }}>
-        <div style={{ maxWidth: 520, margin: "0 auto", padding: "12px 20px 6px" }}>
+        <div style={{ maxWidth: tab === "explore" ? 960 : 520, margin: "0 auto", padding: "12px 20px 6px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
             <Logo />
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -235,12 +235,12 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
             {members.map(m => <button key={m.id} aria-pressed={filter === m.id} onClick={() => setFilter(m.id)} className={"pill " + (filter === m.id ? "pill-active" : "pill-inactive")} style={{ flexShrink: 0 }}>{m.type !== "all" && <span style={{ width: 7, height: 7, borderRadius: "50%", background: m.type === "kid" ? COLS[members.indexOf(m) % COLS.length] : m.type === "adult" ? "#8b5cf6" : "var(--color-primary)", flexShrink: 0 }} />}{m.type === "all" ? "\u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}" : ""} {m.name}{m.age != null && <span style={{ opacity: .5, marginLeft: 2 }}>({m.age})</span>}</button>)}
           </div>
         </div>
-        <div role="tablist" aria-label="Main navigation" style={{ maxWidth: 520, margin: "0 auto", display: "flex" }}>
+        <div role="tablist" aria-label="Main navigation" style={{ maxWidth: tab === "explore" ? 960 : 520, margin: "0 auto", display: "flex" }}>
           {tabs.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => { setTab(t.id); track("tab_view", { tab: t.id }); window.__haptic && window.__haptic() }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: "10px 0 8px", fontSize: 11, fontWeight: 600, border: "none", borderBottom: tab === t.id ? "2.5px solid var(--color-primary)" : "2.5px solid transparent", cursor: "pointer", background: "none", color: tab === t.id ? "var(--color-primary)" : "var(--color-muted)", fontFamily: "var(--font-sans)", transition: "color .15s" }}><span style={{ display: "flex" }}>{t.i}</span><span>{t.l}</span></button>)}
         </div>
       </div>
 
-      <div key={tab} className="tab-content" style={{ maxWidth: 520, margin: "0 auto", padding: "16px 20px", paddingBottom: 100 }}>
+      <div key={tab} className="tab-content" style={{ maxWidth: tab === "explore" ? "none" : 520, margin: "0 auto", padding: "16px 20px", paddingBottom: 100 }}>
 
         {/* ONBOARDING NUDGE */}
         {clubs.length === 0 && kids.length === 0 && <div style={{ background: "var(--color-accent-bg)", border: "1px solid var(--color-warning-border)", borderRadius: 16, padding: 20, marginBottom: 16, textAlign: "center" }}>
