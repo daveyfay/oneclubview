@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useHubData } from '../../hooks/useHubData';
+import AlertCallout from '../../components/AlertCallout';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import WeekGrid from '../../components/hub/WeekGrid';
 import EventDetailModal from '../../components/modals/EventDetailModal';
@@ -11,7 +12,7 @@ import { db } from '../../lib/supabase';
 export default function ScheduleTab({ filter }) {
   const {
     kids, clubs, recs, mans, pays, camps, campBookings,
-    holidays, userHolidays,
+    holidays, userHolidays, alerts,
     isAdmin, members, wd, clubMap, clubTermMap, kidMap,
     getMemberCol, user, profile, load, loading, familyMembers, weekEvts,
   } = useHubData();
@@ -41,6 +42,12 @@ export default function ScheduleTab({ filter }) {
   return (
     <ErrorBoundary label="Schedule">
       <div>
+        {/* Contextual schedule alerts */}
+        <AlertCallout
+          alerts={(alerts || []).filter(a => a.tab === "week").slice(0, 2)}
+          onAction={() => window.scrollTo(0, 0)}
+        />
+
         {/* WEEK/MONTH HEADER + DAY PILLS */}
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
           <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 20, fontWeight: 800, color: "var(--color-primary)" }}>This week</h2>

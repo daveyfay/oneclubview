@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useHubData } from '../../hooks/useHubData';
+import AlertCallout from '../../components/AlertCallout';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import AddPaymentModal from '../../components/modals/AddPaymentModal';
 import { showToast, isToday } from '../../lib/utils';
@@ -7,7 +8,7 @@ import { db } from '../../lib/supabase';
 
 export default function MoneyTab({ filter }) {
   const {
-    kids, clubs, pays, holidays,
+    kids, clubs, pays, holidays, alerts,
     isAdmin, wd, clubMap, clubTermMap, kidMap,
     getMemberCol, user, profile, load, loading, recs, mans, weekEvts,
   } = useHubData();
@@ -32,6 +33,12 @@ export default function MoneyTab({ filter }) {
   return (
     <ErrorBoundary label="Money">
       <div>
+        {/* Contextual fee alerts */}
+        <AlertCallout
+          alerts={(alerts || []).filter(a => a.tab === "money").slice(0, 2)}
+          onAction={() => window.scrollTo(0, 0)}
+        />
+
         {/* WEEK/MONTH HEADER */}
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
           <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 20, fontWeight: 800, color: "var(--color-primary)" }}>This week</h2>
