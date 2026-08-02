@@ -475,6 +475,28 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   .app-shell { max-width: 600px; margin: 0 auto; }
 }
 
+/* Explore tab layout */
+.explore-layout { display: flex; gap: 0; }
+.explore-sidebar { display: none; }
+.explore-content { flex: 1; min-width: 0; }
+.explore-mobile-pills { display: flex; }
+
+@media (min-width: 900px) {
+  .explore-sidebar {
+    display: block;
+    width: 220px;
+    flex-shrink: 0;
+    padding: 0 16px 0 0;
+    border-right: 1px solid var(--color-border);
+    margin-right: 20px;
+    position: sticky;
+    top: 0;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+  .explore-mobile-pills { display: none !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

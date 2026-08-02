@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useHubData } from '../../hooks/useHubData';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import ExploreSidebar from '../../components/explore/ExploreSidebar';
+import AlertCallout from '../../components/AlertCallout';
 import CampCard from '../../components/hub/CampCard';
 import NearbyClubsSection from '../../components/hub/NearbyClubsSection';
 import ThingsToDoSection from '../../components/hub/ThingsToDoSection';
@@ -16,7 +18,7 @@ import { db } from '../../lib/supabase';
 export default function ExploreTab({ filter, onRefresh }) {
   const {
     kids, clubs, camps, campBookings, holidays, userHolidays,
-    schoolLocs, familyLocs, isAdmin,
+    schoolLocs, familyLocs, isAdmin, alerts,
     clubTermMap, kidMap, user, profile, load, loading, userLoc,
     setFamilyLocs, setCampBookings,
   } = useHubData();
@@ -69,13 +71,30 @@ export default function ExploreTab({ filter, onRefresh }) {
 
   return (
     <ErrorBoundary label="Explore">
-      <div>
-        {/* Sub-tabs */}
-        <div style={{ display: "flex", gap: 0, marginBottom: 12, borderBottom: "1px solid var(--color-border)" }}>
-          {["clubs", "camps", "discover"].map(st => <button key={st} onClick={() => setExploreTab(st)} style={{ padding: "8px 14px", fontSize: 12, fontWeight: 600, color: exploreTab === st ? "var(--color-primary)" : "var(--color-muted)", border: "none", background: "none", cursor: "pointer", fontFamily: "var(--font-sans)", borderBottom: exploreTab === st ? "2px solid var(--color-accent)" : "2px solid transparent", textTransform: "capitalize" }}>{st === "clubs" ? "My Clubs" : st === "camps" ? "Camps" : "Discover"}</button>)}
-        </div>
+      <>
+      <div className="explore-layout">
+        <ExploreSidebar
+          activeSection={exploreTab}
+          onSectionChange={setExploreTab}
+          locations={allLocs}
+          activeLocation={campLoc}
+          onLocationChange={setCampLoc}
+        />
+        <div className="explore-content">
+          <AlertCallout
+            alerts={(alerts || []).filter(a => a.tab === "explore").slice(0, 2)}
+            onAction={(alert) => {
+              if (alert.action?.subaction) setExploreTab(alert.action.subaction);
+            }}
+          />
+          <div className="explore-mobile-pills">
+            {/* Sub-tabs */}
+            <div style={{ display: "flex", gap: 0, marginBottom: 12, borderBottom: "1px solid var(--color-border)", width: "100%" }}>
+              {["clubs", "camps", "discover"].map(st => <button key={st} onClick={() => setExploreTab(st)} style={{ padding: "8px 14px", fontSize: 12, fontWeight: 600, color: exploreTab === st ? "var(--color-primary)" : "var(--color-muted)", border: "none", background: "none", cursor: "pointer", fontFamily: "var(--font-sans)", borderBottom: exploreTab === st ? "2px solid var(--color-accent)" : "2px solid transparent", textTransform: "capitalize" }}>{st === "clubs" ? "My Clubs" : st === "camps" ? "Camps" : "Discover"}</button>)}
+            </div>
+          </div>
 
-        {/* My Clubs sub-tab */}
+          {/* My Clubs sub-tab */}
         {exploreTab === "clubs" && <div>
           {(() => {
             const grouped = {};
@@ -203,6 +222,9 @@ export default function ExploreTab({ filter, onRefresh }) {
           <ThingsToDoSection allLocs={allLocs} kids={kids} userLoc={userLoc} userId={user.id} onEventAdded={() => load()} />
         </div>}
 
+        </div>{/* end explore-content */}
+      </div>{/* end explore-layout */}
+
         {/* Manage Locations Modal */}
         {showLocations && <div onClick={() => setShowLocations(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(10,15,20,.4)", zIndex: 70 }} />}
         {showLocations && <div style={{ position: "fixed", top: "5vh", left: 12, right: 12, zIndex: 71, background: "var(--color-card)", borderRadius: 20, boxShadow: "0 12px 40px rgba(0,0,0,.15)", padding: 20, maxHeight: "85vh", overflowY: "auto", maxWidth: 440, margin: "0 auto" }}>
@@ -269,7 +291,7 @@ export default function ExploreTab({ filter, onRefresh }) {
         {editClub && <EditClubModal club={editClub} kids={kids} profile={profile} userId={user.id} onClose={() => setEditClub(null)} onSaved={() => { setEditClub(null); load() }} onDelete={() => { setEditClub(null); load() }} />}
         {editHol && <EditHolidayModal holiday={editHol} userId={user.id} onClose={() => setEditHol(null)} onSaved={() => { setEditHol(null); load() }} />}
         {showAddHol && <AddHolidayModal userId={user.id} onClose={() => setShowAddHol(false)} onSaved={() => { setShowAddHol(false); load() }} />}
-      </div>
+      </>
     </ErrorBoundary>
   );
 }
