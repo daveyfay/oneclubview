@@ -473,6 +473,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   body { display: flex; justify-content: center; }
   #root { width: 100%; position: relative; }
   .app-shell { max-width: 600px; margin: 0 auto; }
+  .app-shell.app-shell--wide { max-width: 960px; }
 }
 
 /* Explore tab layout */
@@ -486,9 +487,9 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
     display: block;
     width: 220px;
     flex-shrink: 0;
-    padding: 0 16px 0 0;
+    padding: 0 20px 0 0;
     border-right: 1px solid var(--color-border);
-    margin-right: 20px;
+    margin-right: 24px;
     position: sticky;
     top: 0;
     max-height: calc(100vh - 120px);

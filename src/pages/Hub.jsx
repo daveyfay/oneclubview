@@ -213,7 +213,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
   function ptrTouchEnd() { if (ptrState === "ready") { setPtrState("refreshing"); window.__hapticSuccess && window.__hapticSuccess(); load().finally(() => { setPtrState(""); ptrStart.current = 0; }); } else { setPtrState(""); ptrStart.current = 0; } }
 
   return (
-    <div className="anim-fade app-shell" style={{ background: "var(--color-warm)", minHeight: "100vh" }} onTouchStart={ptrTouchStart} onTouchMove={ptrTouchMove} onTouchEnd={ptrTouchEnd}>
+    <div className={"anim-fade app-shell" + (tab === "explore" ? " app-shell--wide" : "")} style={{ background: "var(--color-warm)", minHeight: "100vh" }} onTouchStart={ptrTouchStart} onTouchMove={ptrTouchMove} onTouchEnd={ptrTouchEnd}>
       {/* Pull-to-refresh indicator */}
       <div className={"ptr-indicator" + (ptrState === "ready" || ptrState === "refreshing" ? " visible" : "")}>
         {ptrState === "refreshing" ? "Refreshing\u2026" : "\u2193 Pull to refresh"}
