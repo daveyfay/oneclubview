@@ -118,9 +118,7 @@ function Auth({ onAuth, mode: im }) {
             });
             const fid = await rpc.json();
             if (fid) assignFamilyId = fid;
-          } catch (e) {
-            // Silently fail if family creation fails
-          }
+          } catch (e) { console.error("Family creation failed:", e); }
         }
 
         await db('profiles', 'POST', {

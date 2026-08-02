@@ -60,7 +60,7 @@ export async function refreshToken() {
         localStorage.setItem("ocv_rt", _rt);
         return true;
       }
-    } catch (e) { /* noop */ }
+    } catch (e) { console.error("Token refresh failed:", e); }
     return false;
   })();
   const ok = await _refreshing;
