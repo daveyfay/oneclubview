@@ -85,6 +85,37 @@ export function pwStrength(pw) {
   return score; // 0-5
 }
 
+// -- Club colour gradients --
+const GRADS = [
+  "linear-gradient(135deg,#3b82f6,#2563eb)",
+  "linear-gradient(135deg,#22c55e,#16a34a)",
+  "linear-gradient(135deg,#a855f7,#9333ea)",
+  "linear-gradient(135deg,#ec4899,#db2777)",
+  "linear-gradient(135deg,#14b8a6,#0d9488)",
+  "linear-gradient(135deg,#f59e0b,#d97706)",
+  "linear-gradient(135deg,#6366f1,#4f46e5)",
+  "linear-gradient(135deg,#ef4444,#dc2626)",
+];
+
+export function colourToGrad(hex) {
+  if (!hex || hex === "#999") return "linear-gradient(135deg,#94a3b8,#64748b)";
+  const h = hex.replace("#", "").toLowerCase();
+  const map = {
+    "2d7cb5": GRADS[0], "3b82f6": GRADS[0], "2563eb": GRADS[0],
+    "2d5a3f": GRADS[1], "22c55e": GRADS[1], "16a34a": GRADS[1],
+    "9b4dca": GRADS[2], "a855f7": GRADS[2], "9333ea": GRADS[2],
+    "e84393": GRADS[3], "ec4899": GRADS[3], "db2777": GRADS[3],
+    "1a8a7d": GRADS[4], "14b8a6": GRADS[4], "0d9488": GRADS[4],
+    "c4960c": GRADS[5], "f59e0b": GRADS[5], "d97706": GRADS[5],
+    "e67e22": GRADS[5],
+    "6366f1": GRADS[6], "4f46e5": GRADS[6],
+    "d64545": GRADS[7], "ef4444": GRADS[7], "dc2626": GRADS[7],
+    "e85d4a": GRADS[7],
+  };
+  if (map[h]) return map[h];
+  return `linear-gradient(135deg,${hex},${hex}dd)`;
+}
+
 // ── Geocoding helper ──
 export async function geocodeNewItems(scrapeLat, scrapeLng, db) {
   const threshold = 0.005;
