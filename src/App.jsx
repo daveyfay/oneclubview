@@ -146,12 +146,12 @@ export default function App() {
   if (screen === "landing") {
     return <Landing onGo={() => { track("cta_signup_clicked"); setScreen("auth_signup"); }} onLogin={() => { track("cta_login_clicked"); setScreen("auth_login"); }} />;
   }
-  if (screen === "auth_signup") return <Auth onAuth={onAuth} mode="signup" />;
-  if (screen === "auth_login") return <Auth onAuth={onAuth} mode="login" />;
-  if (screen === "onboard_kids") return <OnboardKids userId={user.id} onDone={afterKids} onLogout={logout} />;
-  if (screen === "onboard_clubs") return <OnboardClubs userId={user.id} kids={kids} email={user?.email || profile?.email} onDone={() => setScreen("hub")} onLogout={logout} />;
+  if (screen === "auth_signup") return <div className="app-shell"><Auth onAuth={onAuth} mode="signup" /></div>;
+  if (screen === "auth_login") return <div className="app-shell"><Auth onAuth={onAuth} mode="login" /></div>;
+  if (screen === "onboard_kids") return <div className="app-shell"><OnboardKids userId={user.id} onDone={afterKids} onLogout={logout} /></div>;
+  if (screen === "onboard_clubs") return <div className="app-shell"><OnboardClubs userId={user.id} kids={kids} email={user?.email || profile?.email} onDone={() => setScreen("hub")} onLogout={logout} /></div>;
   if (screen === "hub" && user?.email === "hello@oneclubview.com" && profile?.family_role === "admin") {
-    return <AdminDashboard user={user} profile={profile} onBack={() => setScreen("hub_force")} onLogout={logout} />;
+    return <div className="app-shell"><AdminDashboard user={user} profile={profile} onBack={() => setScreen("hub_force")} onLogout={logout} /></div>;
   }
   if (screen === "hub" || screen === "hub_force") return <ErrorBoundary><Hub user={user} profile={profile} onRefresh={(s) => { if (s === "clubs") setScreen("onboard_clubs"); }} onLogout={logout} /></ErrorBoundary>;
 

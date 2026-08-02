@@ -468,10 +468,11 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   color: #e8e6e3;
 }
 
-/* Responsive — laptop sidebar */
+/* Responsive — laptop: constrain app views, let landing go wide */
 @media (min-width: 900px) {
   body { display: flex; justify-content: center; }
-  #root { max-width: 600px; width: 100%; position: relative; }
+  #root { width: 100%; position: relative; }
+  .app-shell { max-width: 600px; margin: 0 auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {

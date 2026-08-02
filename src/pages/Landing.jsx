@@ -201,6 +201,15 @@ function Landing({ onGo, onLogin }) {
   return (
     <div style={{ minHeight: '100vh' }}>
       <style>{`
+        .ocv-section{max-width:520px;margin:0 auto}
+        @media(min-width:900px){
+          .ocv-section{max-width:960px}
+          .ocv-hero-inner{max-width:640px}
+          .ocv-feature-grid{grid-template-columns:repeat(4,1fr) !important}
+          .ocv-pricing-grid{max-width:640px;margin:0 auto}
+          .ocv-screenshots{gap:32px !important}
+          .ocv-screenshots>div>div:first-child{width:260px !important}
+        }
         @media(max-width:520px){
           .ocv-pricing-grid{grid-template-columns:1fr !important;gap:16px !important}
           .ocv-feature-grid{grid-template-columns:1fr 1fr !important;gap:12px !important}
@@ -218,7 +227,7 @@ function Landing({ onGo, onLogin }) {
       <div style={{ background: 'linear-gradient(135deg, #1a2a3a 0%, #2d4a5f 50%, #1a3a4a 100%)', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: -100, right: -100, width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle,rgba(232,93,74,.15) 0%,transparent 70%)' }} />
         <div style={{ position: 'absolute', bottom: -60, left: -60, width: 250, height: 250, borderRadius: '50%', background: 'radial-gradient(circle,rgba(255,255,255,.04) 0%,transparent 70%)' }} />
-        <div style={{ maxWidth: 520, margin: '0 auto', padding: '60px 24px 48px', position: 'relative' }}>
+        <div className="ocv-hero-inner" style={{ maxWidth: 520, margin: '0 auto', padding: '60px 24px 48px', position: 'relative' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 48 }}>
             <Logo dark />
             <button
@@ -290,7 +299,7 @@ function Landing({ onGo, onLogin }) {
       </div>
       {/* SOCIAL PROOF */}
       <div style={{ background: '#fff', padding: '20px 24px', borderBottom: '1px solid var(--color-border)' }}>
-        <div className="ocv-social-proof" style={{ maxWidth: 520, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, fontSize: 12, color: 'var(--color-muted)' }}>
+        <div className="ocv-social-proof ocv-section" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, fontSize: 12, color: 'var(--color-muted)' }}>
           <span>
             <strong style={{ color: 'var(--color-text)' }}>Schedule</strong> every club
           </span>
@@ -306,7 +315,7 @@ function Landing({ onGo, onLogin }) {
       </div>
       {/* PROBLEM */}
       <section style={{ padding: '56px 24px' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto' }}>
+        <div className="ocv-section" style={{ margin: '0 auto' }}>
           <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 8 }}>
             Sound familiar?
           </h2>
@@ -384,7 +393,7 @@ function Landing({ onGo, onLogin }) {
       </section>
       {/* SOLUTION */}
       <section style={{ background: 'linear-gradient(135deg, #1a2a3a 0%, #2d4a5f 100%)', padding: '56px 24px' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto' }}>
+        <div className="ocv-section" style={{ margin: '0 auto' }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: '#e85d4a', textTransform: 'uppercase', letterSpacing: 1 }}>The fix</span>
           <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: '#fff', margin: '8px 0 32px' }}>
             One screen. Whole family.
@@ -394,7 +403,7 @@ function Landing({ onGo, onLogin }) {
       </section>
       {/* HOW IT WORKS */}
       <section style={{ padding: '56px 24px' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto' }}>
+        <div className="ocv-section" style={{ margin: '0 auto' }}>
           <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 32 }}>
             Up and running in 2 minutes
           </h2>
@@ -418,7 +427,7 @@ function Landing({ onGo, onLogin }) {
       </section>
       {/* APP MOCKUPS */}
       <section style={{ padding: '56px 24px', background: 'var(--color-warm)', overflow: 'hidden' }}>
-        <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center' }}>
+        <div className="ocv-section" style={{ margin: '0 auto', textAlign: 'center' }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: '#e85d4a', textTransform: 'uppercase', letterSpacing: 1 }}>See it in action</span>
           <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--color-primary)', margin: '8px 0 32px' }}>
             Built for real family life
@@ -659,7 +668,7 @@ function Landing({ onGo, onLogin }) {
       </section>
       {/* CLASSMATE FEATURE */}
       <section style={{ background: 'linear-gradient(135deg, #1a2a3a, #2d4a5f)', padding: '56px 24px', color: '#fff' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto', textAlign: 'center' }}>
+        <div className="ocv-section" style={{ margin: '0 auto', textAlign: 'center' }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>🏫</div>
           <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 24, fontWeight: 800, marginBottom: 12 }}>The classmate feature</h2>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,.6)', marginBottom: 20, lineHeight: 1.6 }}>
@@ -675,7 +684,7 @@ function Landing({ onGo, onLogin }) {
       </section>
       {/* PRICING */}
       <section style={{ padding: '56px 24px', background: '#fff' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto' }}>
+        <div className="ocv-section" style={{ margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: '#e85d4a', textTransform: 'uppercase', letterSpacing: 1 }}>Simple pricing</span>
             <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 'clamp(24px,4vw,32px)', fontWeight: 800, color: 'var(--color-primary)', margin: '8px 0 4px' }}>
@@ -766,7 +775,7 @@ function Landing({ onGo, onLogin }) {
           </div>
         </div>
       </section>
-      <section style={{ padding: '48px 16px', background: 'var(--color-warm)', textAlign: 'center', maxWidth: 600, margin: '0 auto' }}>
+      <section style={{ padding: '48px 16px', background: 'var(--color-warm)', textAlign: 'center' }}><div className="ocv-section" style={{ margin: '0 auto' }}>
         <h2 style={{ fontFamily: "var(--font-serif)", fontSize: 22, color: 'var(--color-primary)', marginBottom: 12 }}>Built by a Dublin parent</h2>
         <p style={{ fontSize: 14, color: 'var(--color-text)', lineHeight: 1.7, marginBottom: 8 }}>
           OneClubView was built by Dave Fay — a Dublin dad juggling the same swimming terms, GAA schedules, and camp bookings as you. After one too many missed sessions and mystery fees, he decided to build the app he wished existed.
@@ -777,7 +786,7 @@ function Landing({ onGo, onLogin }) {
         <p style={{ fontSize: 13, color: 'var(--color-muted)', lineHeight: 1.6 }}>
           Questions? Suggestions? Reach out at <a href="mailto:hello@oneclubview.com" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>hello@oneclubview.com</a>.
         </p>
-      </section>
+      </div></section>
       <footer style={{ padding: '24px', background: 'var(--color-primary)', textAlign: 'center' }}>
         <Logo dark />
         <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
