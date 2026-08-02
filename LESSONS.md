@@ -19,3 +19,15 @@ Written by /aar-loop after each session's After Action Review. Read this file be
 - Actual: The .catch() call itself threw an error, which propagated up and killed the entire per-user email send.
 - Why: Supabase JS v2 query builders are thenable but do not expose .catch() directly. The .catch() pattern works in v1 but breaks in v2.
 - tags: supabase,edge-functions,javascript,gotcha
+
+## 2026-08-02 -- When a CSS class isn't taking effect on a React component, grep for inline style={{ maxWidth or style={{ width on the element and its parent wrappers before adding more CSS. Inline styles override class-based styles. In Hub.jsx, four hardcoded maxWidth:520 inline styles overrode the app-shell--wide CSS class entirely.
+- Expected: Adding .app-shell--wide { max-width: 960px } to global.css would widen the Explore tab on desktop.
+- Actual: Explore tab stayed at 520px because Hub.jsx had maxWidth:520 as inline styles on the header, tab bar, and content wrapper. The CSS class had no effect.
+- Why: CSS specificity: inline styles beat class selectors. The fix required changing the inline styles to be conditional on the active tab (maxWidth: tab === 'explore' ? 'none' : 520).
+- tags: css,inline-styles,react,hub
+
+## 2026-08-02 -- Never auto-save transient sensor data (browser GPS) to a permanent profile field. One bad reading (VPN, WiFi triangulation, cold GPS fix) corrupts the location permanently. Store live GPS in React state only. Use manually-confirmed family_locations (Home, Work) as the source of truth for distance calculations, weekly digest, and 'near you' features.
+- Expected: Profile lat/lng would reflect user's actual location in Wicklow.
+- Actual: Profile showed Castlebar, Mayo (250km away) because a previous bad browser geolocation reading was auto-saved to profiles.latitude/longitude. All distance-based features (clubs near you, digest suggestions) used the wrong location.
+- Why: HubDataContext line 98 ran db('profiles','PATCH',{body:{latitude,longitude}}) on every app load with whatever the browser returned. Browser geolocation is unreliable -- VPN exit nodes, WiFi triangulation errors, and cold GPS fixes can return coordinates hundreds of km away.
+- tags: location,gps,profiles,reliability,fix-applied
