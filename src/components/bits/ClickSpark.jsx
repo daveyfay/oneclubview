@@ -14,19 +14,17 @@ export default function ClickSpark({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const parent = canvas.parentElement;
-    if (!parent) return;
     const resize = () => {
-      const { width, height } = parent.getBoundingClientRect();
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width;
-        canvas.height = height;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
       }
     };
-    const ro = new ResizeObserver(resize);
-    ro.observe(parent);
     resize();
-    return () => ro.disconnect();
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
   }, []);
 
   const easeOut = useCallback(t => t * (2 - t), []);
@@ -66,9 +64,8 @@ export default function ClickSpark({
   const handleClick = e => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = e.clientX;
+    const y = e.clientY;
     const now = performance.now();
     sparksRef.current.push(
       ...Array.from({ length: sparkCount }, (_, i) => ({
@@ -78,8 +75,8 @@ export default function ClickSpark({
   };
 
   return (
-    <div style={{ position: 'relative' }} onClick={handleClick}>
-      <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', width: '100%', height: '100%' }} />
+    <div style={{ position: 'relative', display: 'inline-block' }} onClick={handleClick}>
+      <canvas ref={canvasRef} style={{ position: 'fixed', inset: 0, pointerEvents: 'none', width: '100vw', height: '100vh', zIndex: 9999 }} />
       {children}
     </div>
   );

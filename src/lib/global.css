@@ -496,12 +496,13 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
 
 /* ── React Bits — BlurText entrance ── */
 @keyframes blurIn {
-  0% { opacity: 0; filter: blur(8px); transform: translateY(6px); }
-  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+  0% { opacity: 0; filter: blur(12px); transform: translateY(8px) scale(.95); }
+  60% { opacity: 1; filter: blur(2px); transform: translateY(-1px) scale(1.01); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
 }
 .blur-text-word {
   display: inline-block;
-  animation: blurIn .5s ease-out both;
+  animation: blurIn .7s cubic-bezier(.22,.61,.36,1) both;
 }
 
 /* Responsive — laptop: constrain app views, let landing go wide */

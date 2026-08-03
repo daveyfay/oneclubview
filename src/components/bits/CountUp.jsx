@@ -4,7 +4,7 @@ function easeOutExpo(t) {
   return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
 }
 
-export default function CountUp({ to, from = 0, duration = 1.6, separator = '', className = '' }) {
+export default function CountUp({ to, from = 0, duration = 1.2, delay = 200, separator = '', className = '' }) {
   const ref = useRef(null);
   const [started, setStarted] = useState(false);
 
@@ -20,9 +20,10 @@ export default function CountUp({ to, from = 0, duration = 1.6, separator = '', 
 
   useEffect(() => {
     if (!started || !ref.current) return;
+    let raf;
+    const timer = setTimeout(() => {
     const startTime = performance.now();
     const ms = duration * 1000;
-    let raf;
     function tick(now) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / ms, 1);
@@ -37,8 +38,9 @@ export default function CountUp({ to, from = 0, duration = 1.6, separator = '', 
       if (progress < 1) raf = requestAnimationFrame(tick);
     }
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [started, to, from, duration, separator]);
+    }, delay);
+    return () => { clearTimeout(timer); cancelAnimationFrame(raf); };
+  }, [started, to, from, duration, delay, separator]);
 
   return <span className={className} ref={ref}>{from}</span>;
 }

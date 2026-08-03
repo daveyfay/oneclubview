@@ -64,7 +64,7 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
 
         {/* THIS WEEK STATS */}
         <SpotlightCard className="stagger-card" style={{ animationDelay: "0ms", background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
-          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", marginBottom: 10 }}><BlurText text="This week" /></h3>
+          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", marginBottom: 10 }}><BlurText text="This week" delay={150} /></h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div onClick={() => { onChangeTab("week"); window.scrollTo(0, 0) }} style={{ background: "var(--color-primary-bg)", borderRadius: 12, padding: 12, textAlign: "center", cursor: "pointer", transition: "transform .1s" }} onTouchStart={ev => ev.currentTarget.style.transform = "scale(.95)"} onTouchEnd={ev => ev.currentTarget.style.transform = ""}>
               <div style={{ fontFamily: "var(--font-serif)", fontSize: 22, fontWeight: 800, color: "var(--color-primary)" }}><CountUp to={activeWeekEvts.length} /></div>
@@ -87,7 +87,7 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
 
         {/* FAMILY SUMMARY */}
         <SpotlightCard id="family-section" className="stagger-card" style={{ animationDelay: "60ms", background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
-          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", marginBottom: 10 }}><BlurText text="Family" delay={100} /></h3>
+          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", marginBottom: 10 }}><BlurText text="Family" delay={150} /></h3>
           {kids.map((k, ki) => {
             const kidEvts = activeWeekEvts.filter(e => e.memberId === k.id);
             const kidClubs = [...new Set(kidEvts.map(e => e.club).filter(Boolean))];
@@ -141,7 +141,7 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
 
         {/* MY CLUBS */}
         {clubs.length > 0 && <SpotlightCard className="stagger-card" style={{ animationDelay: "180ms", background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
-          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", marginBottom: 10 }}><BlurText text="My Clubs" delay={100} /></h3>
+          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", marginBottom: 10 }}><BlurText text="My Clubs" delay={150} /></h3>
           {(() => {
             const grouped = {};
             clubs.forEach((c, i) => {
