@@ -140,7 +140,13 @@ function ClubsView({ allLocs, primaryLoc, primaryLabel, myClubs, kids, filter, u
 
   // Filter to nearby, exclude already-enrolled
   const nearby = useMemo(() => {
-    if (!primaryLoc || allClubs.length === 0) return [];
+    if (allClubs.length === 0) return [];
+    if (!primaryLoc) {
+      return allClubs
+        .filter(c => !myClubIds.has(c.id))
+        .slice(0, 50)
+        .map(c => ({ ...c, _dist: null }));
+    }
     const local = allClubs
       .filter(c => !myClubIds.has(c.id))
       .map(c => {
@@ -190,7 +196,7 @@ function ClubsView({ allLocs, primaryLoc, primaryLabel, myClubs, kids, filter, u
       <p style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 12 }}>
         {primaryLabel
           ? `Clubs within ${radius} km of ${primaryLabel}`
-          : 'Enable location to see clubs near you'}
+          : 'All clubs \u00B7 enable location for distance'}
       </p>
 
       {/* Category pills */}
@@ -257,9 +263,11 @@ function ClubsView({ allLocs, primaryLoc, primaryLabel, myClubs, kids, filter, u
 
               {/* Chips */}
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-                <Chip bg="var(--color-primary-bg)" color="var(--color-primary)">
-                  {fmtDist(club._dist)}
-                </Chip>
+                {club._dist !== null && club._dist !== undefined && (
+                  <Chip bg="var(--color-primary-bg)" color="var(--color-primary)">
+                    {fmtDist(club._dist)}
+                  </Chip>
+                )}
                 <Chip bg="var(--color-primary-bg)" color="var(--color-primary)">
                   {info.label}
                 </Chip>
