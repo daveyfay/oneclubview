@@ -108,7 +108,7 @@ export default function ScheduleTab({ filter }) {
             </div>
             <div style={{ padding: "8px 12px", maxHeight: 240, overflowY: "auto" }}>
               {dayEvts.length === 0 ? <div style={{ padding: "16px 0", textAlign: "center", color: "var(--color-muted)", fontSize: 13 }}>{isHol ? "School holiday \u2014 no activities" : "No activities this day"}</div>
-              : dayEvts.map((e, i) => <div key={e.id || i} className="stagger-card" style={{ animationDelay: (i * 50) + "ms", opacity: e.skipped ? .4 : 1 }} onClick={() => handleTapEvent(e)}>
+              : dayEvts.map((e, i) => <div key={e.id || i} className="stagger-card card-hover" style={{ animationDelay: (i * 50) + "ms", opacity: e.skipped ? .4 : 1 }} onClick={() => handleTapEvent(e)}>
                 <div style={{ display: "flex", alignItems: "stretch", gap: 0, borderRadius: 12, overflow: "hidden", background: "var(--bg)", border: "1px solid var(--color-border)", marginBottom: 6, cursor: "pointer", transition: "transform .1s" }} onTouchStart={ev => ev.currentTarget.style.transform = "scale(.98)"} onTouchEnd={ev => ev.currentTarget.style.transform = ""}>
                 <div style={{ width: 4, background: e.skipped ? "var(--color-border)" : getMemberCol(e.memberId, e.colour), flexShrink: 0 }} />
                 <div style={{ flex: 1, padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
@@ -295,7 +295,7 @@ export default function ScheduleTab({ filter }) {
                 {lanes.map((lane, li) => lane.events.map((e, ei) => {
                   const kidIdx = kids.findIndex(k => k.id === e.memberId);
                   const memberCol = kidIdx >= 0 ? COLS[kidIdx % COLS.length] : (e.colour || COLS[li % COLS.length]);
-                  return <div key={e.id || li + "-" + ei} className="stagger-card" style={{ animationDelay: (li * 50 + ei * 50) + "ms", display: "flex", alignItems: "stretch", gap: 0, borderRadius: 14, overflow: "hidden", background: e.skipped ? "var(--color-primary-bg)" : "var(--color-card)", border: "1px solid var(--color-border)", boxShadow: e.skipped ? "none" : "var(--shadow)", cursor: "pointer", opacity: e.skipped ? .4 : 1 }} onClick={() => handleTapEvent(e)}>
+                  return <div key={e.id || li + "-" + ei} className="stagger-card card-hover" style={{ animationDelay: (li * 50 + ei * 50) + "ms", display: "flex", alignItems: "stretch", gap: 0, borderRadius: 14, overflow: "hidden", background: e.skipped ? "var(--color-primary-bg)" : "var(--color-card)", border: "1px solid var(--color-border)", boxShadow: e.skipped ? "none" : "var(--shadow)", cursor: "pointer", opacity: e.skipped ? .4 : 1 }} onClick={() => handleTapEvent(e)}>
                     <div style={{ width: 5, background: e.skipped ? "var(--color-border)" : memberCol, flexShrink: 0 }} />
                     <div style={{ flex: 1, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                       <div style={{ minWidth: 0 }}>
