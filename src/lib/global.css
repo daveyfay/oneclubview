@@ -620,6 +620,42 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   .explore-mobile-pills { display: none !important; }
 }
 
+/* Explore v2 card grid */
+.explore2-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.explore2-action-btn:hover:not(:disabled) {
+  background: var(--color-primary-bg) !important;
+}
+
+/* Family tab grid */
+.family-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 768px) {
+  .explore2-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .explore2-action-btn {
+    width: auto !important;
+    align-self: flex-start;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+  .family-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
 /* -- Motion & Micro-interactions -- */
 
 @keyframes tabSlideInLeft {

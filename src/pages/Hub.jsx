@@ -22,7 +22,7 @@ const ScheduleTab = lazy(() => import('./tabs/ScheduleTab'));
 const WeekTab = lazy(() => import('./tabs/WeekTab'));
 const MoneyTab = lazy(() => import('./tabs/MoneyTab'));
 const MoneyTab2 = lazy(() => import('./tabs/MoneyTab2'));
-const ExploreTab = lazy(() => import('./tabs/ExploreTab'));
+const ExploreTab = lazy(() => import('./tabs/ExploreTab2'));
 const FamilyTab = lazy(() => import('./tabs/FamilyTab'));
 const SettingsTab = lazy(() => import('./tabs/SettingsTab'));
 
