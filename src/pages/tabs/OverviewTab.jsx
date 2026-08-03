@@ -4,6 +4,9 @@ import ErrorBoundary from '../../components/ErrorBoundary';
 import AlertCallout from '../../components/AlertCallout';
 import { COLS } from '../../lib/constants';
 import { getAge, isToday, calcKm, fmtDate } from '../../lib/utils';
+import CountUp from '../../components/bits/CountUp';
+import SpotlightCard from '../../components/bits/SpotlightCard';
+import BlurText from '../../components/bits/BlurText';
 
 export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
   const {
@@ -60,31 +63,31 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
       />
 
         {/* THIS WEEK STATS */}
-        <div className="stagger-card" style={{ animationDelay: "0ms", background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
-          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", marginBottom: 10 }}>This week</h3>
+        <SpotlightCard className="stagger-card" style={{ animationDelay: "0ms", background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
+          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", marginBottom: 10 }}><BlurText text="This week" /></h3>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div onClick={() => { onChangeTab("week"); window.scrollTo(0, 0) }} style={{ background: "var(--color-primary-bg)", borderRadius: 12, padding: 12, textAlign: "center", cursor: "pointer", transition: "transform .1s" }} onTouchStart={ev => ev.currentTarget.style.transform = "scale(.95)"} onTouchEnd={ev => ev.currentTarget.style.transform = ""}>
-              <div style={{ fontFamily: "var(--font-serif)", fontSize: 22, fontWeight: 800, color: "var(--color-primary)" }}>{activeWeekEvts.length}</div>
+              <div style={{ fontFamily: "var(--font-serif)", fontSize: 22, fontWeight: 800, color: "var(--color-primary)" }}><CountUp to={activeWeekEvts.length} /></div>
               <div style={{ fontSize: 10, fontWeight: 600, color: "var(--color-muted)", marginTop: 2 }}>Activities {"\u203A"}</div>
             </div>
             <div onClick={() => { onChangeTab("explore", "clubs"); window.scrollTo(0, 0) }} style={{ background: "var(--color-primary-bg)", borderRadius: 12, padding: 12, textAlign: "center", cursor: "pointer", transition: "transform .1s" }} onTouchStart={ev => ev.currentTarget.style.transform = "scale(.95)"} onTouchEnd={ev => ev.currentTarget.style.transform = ""}>
-              <div style={{ fontFamily: "var(--font-serif)", fontSize: 22, fontWeight: 800, color: "var(--color-primary)" }}>{new Set(activeWeekEvts.map(e => e.club).filter(Boolean)).size}</div>
+              <div style={{ fontFamily: "var(--font-serif)", fontSize: 22, fontWeight: 800, color: "var(--color-primary)" }}><CountUp to={new Set(activeWeekEvts.map(e => e.club).filter(Boolean)).size} /></div>
               <div style={{ fontSize: 10, fontWeight: 600, color: "var(--color-muted)", marginTop: 2 }}>Clubs {"\u203A"}</div>
             </div>
             {isAdmin && <div onClick={() => { onChangeTab("money"); window.scrollTo(0, 0) }} style={{ background: "var(--color-primary-bg)", borderRadius: 12, padding: 12, textAlign: "center", cursor: "pointer", transition: "transform .1s" }} onTouchStart={ev => ev.currentTarget.style.transform = "scale(.95)"} onTouchEnd={ev => ev.currentTarget.style.transform = ""}>
-              <div style={{ fontFamily: "var(--font-serif)", fontSize: 22, fontWeight: 800, color: totalDue > 0 ? "var(--color-accent)" : "var(--color-primary)" }}>{"\u20AC"}{totalDue.toFixed(0)}</div>
+              <div style={{ fontFamily: "var(--font-serif)", fontSize: 22, fontWeight: 800, color: totalDue > 0 ? "var(--color-accent)" : "var(--color-primary)" }}>{"\u20AC"}<CountUp to={parseFloat(totalDue.toFixed(0))} /></div>
               <div style={{ fontSize: 10, fontWeight: 600, color: "var(--color-muted)", marginTop: 2 }}>Due soon {"\u203A"}</div>
             </div>}
             <div onClick={() => { const el = document.getElementById("family-section"); if (el) el.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "var(--color-primary-bg)", borderRadius: 12, padding: 12, textAlign: "center", cursor: "pointer", transition: "transform .1s" }} onTouchStart={ev => ev.currentTarget.style.transform = "scale(.95)"} onTouchEnd={ev => ev.currentTarget.style.transform = ""}>
-              <div style={{ fontFamily: "var(--font-serif)", fontSize: 22, fontWeight: 800, color: "var(--color-primary)" }}>{kids.length}</div>
+              <div style={{ fontFamily: "var(--font-serif)", fontSize: 22, fontWeight: 800, color: "var(--color-primary)" }}><CountUp to={kids.length} /></div>
               <div style={{ fontSize: 10, fontWeight: 600, color: "var(--color-muted)", marginTop: 2 }}>Kids {"\u203A"}</div>
             </div>
           </div>
-        </div>
+        </SpotlightCard>
 
         {/* FAMILY SUMMARY */}
-        <div id="family-section" className="stagger-card" style={{ animationDelay: "60ms", background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
-          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", marginBottom: 10 }}>Family</h3>
+        <SpotlightCard id="family-section" className="stagger-card" style={{ animationDelay: "60ms", background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
+          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", marginBottom: 10 }}><BlurText text="Family" delay={100} /></h3>
           {kids.map((k, ki) => {
             const kidEvts = activeWeekEvts.filter(e => e.memberId === k.id);
             const kidClubs = [...new Set(kidEvts.map(e => e.club).filter(Boolean))];
@@ -107,7 +110,7 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
               </div>
             </div> : null;
           })()}
-        </div>
+        </SpotlightCard>
 
         {/* SPEND SNAPSHOT (admin only) */}
         {isAdmin && pays.length > 0 && <div className="stagger-card" style={{ animationDelay: "120ms", background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
@@ -137,8 +140,8 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
         </div>}
 
         {/* MY CLUBS */}
-        {clubs.length > 0 && <div className="stagger-card" style={{ animationDelay: "180ms", background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
-          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", marginBottom: 10 }}>My Clubs</h3>
+        {clubs.length > 0 && <SpotlightCard className="stagger-card" style={{ animationDelay: "180ms", background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
+          <h3 style={{ fontFamily: "var(--font-serif)", fontSize: 15, fontWeight: 700, color: "var(--color-primary)", marginBottom: 10 }}><BlurText text="My Clubs" delay={100} /></h3>
           {(() => {
             const grouped = {};
             clubs.forEach((c, i) => {
@@ -162,7 +165,7 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
           {isAdmin && <div style={{ textAlign: "center", marginTop: 8 }}>
             <span onClick={() => onRefresh("clubs")} style={{ fontSize: 11, fontWeight: 600, color: "var(--color-accent)", cursor: "pointer" }}>+ Add a club</span>
           </div>}
-        </div>}
+        </SpotlightCard>}
       </div>
     </ErrorBoundary>
   );

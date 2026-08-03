@@ -11,6 +11,7 @@ import AddPlaydateModal from '../components/modals/AddPlaydateModal';
 import AddClubModal from '../components/modals/AddClubModal';
 import { HubDataProvider } from '../contexts/HubDataContext';
 import { useHubData } from '../hooks/useHubData';
+import ClickSpark from '../components/bits/ClickSpark';
 
 // Lazy-loaded tabs
 const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
@@ -344,7 +345,9 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
           </button>)}
         </div>
       </div>}
-      <button onClick={() => { setShowFab(!showFab); window.__hapticMedium && window.__hapticMedium() }} className="fab-btn" style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", right: 20, width: 56, height: 56, borderRadius: "50%", background: showFab ? "var(--color-muted)" : "linear-gradient(135deg,var(--color-primary),var(--color-primary-light))", color: "#fff", border: "none", fontSize: 26, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(26,42,58,.3)", zIndex: 72, transition: "transform .2s cubic-bezier(.4,0,.2,1),background .15s", transform: showFab ? "rotate(45deg) scale(.9)" : "none" }}>+</button>
+      <ClickSpark sparkColor="#e85d4a" sparkRadius={20} sparkSize={12}>
+        <button onClick={() => { setShowFab(!showFab); window.__hapticMedium && window.__hapticMedium() }} className="fab-btn" style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", right: 20, width: 56, height: 56, borderRadius: "50%", background: showFab ? "var(--color-muted)" : "linear-gradient(135deg,var(--color-primary),var(--color-primary-light))", color: "#fff", border: "none", fontSize: 26, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(26,42,58,.3)", zIndex: 72, transition: "transform .2s cubic-bezier(.4,0,.2,1),background .15s", transform: showFab ? "rotate(45deg) scale(.9)" : "none" }}>+</button>
+      </ClickSpark>
 
       {/* FAB Modals — small/frequent ones kept static */}
       {showAddEv && <AddEventModal clubs={clubs} userId={user.id} kids={kids} profile={profile} onClose={() => setShowAddEv(false)} onSaved={() => { setShowAddEv(false); window.__hapticSuccess && window.__hapticSuccess(); load() }} />}
