@@ -2,8 +2,10 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useHubData } from '../../hooks/useHubData';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import ActivitySheet from '../../components/ActivitySheet';
 import { COLS, CC } from '../../lib/constants';
-import { isToday } from '../../lib/utils';
+import { isToday, showToast } from '../../lib/utils';
+import { db } from '../../lib/supabase';
 
 function minutesUntil(timeStr) {
   if (!timeStr) return Infinity;
@@ -148,6 +150,7 @@ export default function TodayTab({ filter, onChangeTab, onRefresh }) {
   const {
     kids, pays, weekEvts, profile, loading,
     isAdmin, getMemberCol, members,
+    familyMembers, user, load, recs,
   } = useHubData();
 
   const isDesktop = useIsDesktop();
@@ -215,9 +218,11 @@ export default function TodayTab({ filter, onChangeTab, onRefresh }) {
     return m > 0 ? `in ${h}h ${m}m` : `in ${h}h`;
   }, [heroEvt, now]);
 
+  const [sheetEvent, setSheetEvent] = useState(null);
+
   const handleTapEvent = useCallback((evt) => {
-    onChangeTab('week');
-  }, [onChangeTab]);
+    setSheetEvent(evt);
+  }, []);
 
   if (loading) return (
     <ErrorBoundary label="Today">
@@ -503,6 +508,35 @@ export default function TodayTab({ filter, onChangeTab, onRefresh }) {
           </svg>
         </div>
       )}
+      {/* Activity bottom sheet */}
+      <ActivitySheet
+        event={sheetEvent}
+        open={!!sheetEvent}
+        onClose={() => setSheetEvent(null)}
+        profile={profile}
+        load={load}
+        adults={[...new Set([profile?.first_name || 'Me', ...familyMembers.filter(m => m.id !== user?.id && !kids.find(k => k.first_name === m.first_name)).map(m => m.first_name)].filter(Boolean))]}
+        onDriverChange={async (ev, driver) => {
+          if (ev.source_type === 'recurring') {
+            await db('recurring_events', 'PATCH', { filters: ['id=eq.' + ev.source_id], body: { driver } });
+            load();
+          }
+        }}
+        onDelete={async (ev) => {
+          if (ev.source_type === 'manual') {
+            await db('manual_events', 'DELETE', { filters: ['id=eq.' + ev.source_id] });
+            showToast('Removed from schedule');
+            load();
+          } else if (ev.source_type === 'recurring') {
+            const dateStr = ev.date.toISOString().split('T')[0];
+            const rec = recs.find(r => r.id === ev.source_id);
+            const excluded = [...(rec?.excluded_dates || []), dateStr];
+            await db('recurring_events', 'PATCH', { filters: ['id=eq.' + ev.source_id], body: { excluded_dates: excluded } });
+            showToast('Skipped for this week');
+            load();
+          }
+        }}
+      />
     </ErrorBoundary>
   );
 }

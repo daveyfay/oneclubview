@@ -3,6 +3,7 @@ import { useHubData } from '../../hooks/useHubData';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import EventDetailModal from '../../components/modals/EventDetailModal';
+import ActivitySheet from '../../components/ActivitySheet';
 import ICN from '../../lib/icons';
 import { COLS } from '../../lib/constants';
 import { isToday, showToast } from '../../lib/utils';
@@ -155,6 +156,7 @@ export default function WeekTab({ filter }) {
   const isDesktop = useIsDesktop();
   const [localFilter, setLocalFilter] = useState(null);
   const [tapEvent, setTapEvent] = useState(null);
+  const [sheetEvent, setSheetEvent] = useState(null);
 
   const activeFilter = localFilter !== null ? localFilter : filter;
 
@@ -201,7 +203,13 @@ export default function WeekTab({ filter }) {
     return { totalActivities, daysWithEvents: daysWithEvents.size, clashCount };
   }, [filtEvts, wd, dayMap]);
 
-  const handleTapEvent = useCallback((e) => setTapEvent(e), []);
+  const handleTapEvent = useCallback((e) => {
+    if (e.source_type === 'payment' || e.isPayment) {
+      setTapEvent(e);
+    } else {
+      setSheetEvent(e);
+    }
+  }, []);
 
   /* ── Loading skeleton ── */
   if (loading) return (
@@ -447,7 +455,38 @@ export default function WeekTab({ filter }) {
           <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginTop: 8 }}>We auto-update your schedule, fees, and terms.</div>
         </div>
 
-        {/* EventDetailModal */}
+        {/* Activity bottom sheet (non-payment events) */}
+        <ActivitySheet
+          event={sheetEvent}
+          open={!!sheetEvent}
+          onClose={() => setSheetEvent(null)}
+          profile={profile}
+          load={load}
+          adults={[...new Set([profile?.first_name || 'Me', ...familyMembers.filter(m => m.id !== user.id && !kids.find(k => k.first_name === m.first_name)).map(m => m.first_name)].filter(Boolean))]}
+          onDriverChange={async (ev, driver) => {
+            if (ev.source_type === 'recurring') {
+              await db('recurring_events', 'PATCH', { filters: ['id=eq.' + ev.source_id], body: { driver } });
+              showToast(driver + ' is driving');
+              load();
+            }
+          }}
+          onDelete={async (ev) => {
+            if (ev.source_type === 'manual') {
+              await db('manual_events', 'DELETE', { filters: ['id=eq.' + ev.source_id] });
+              showToast('Removed from schedule');
+              load();
+            } else if (ev.source_type === 'recurring') {
+              const dateStr = ev.date.toISOString().split('T')[0];
+              const rec = recs.find(r => r.id === ev.source_id);
+              const excluded = [...(rec?.excluded_dates || []), dateStr];
+              await db('recurring_events', 'PATCH', { filters: ['id=eq.' + ev.source_id], body: { excluded_dates: excluded } });
+              showToast('Skipped for this week');
+              load();
+            }
+          }}
+        />
+
+        {/* EventDetailModal (payment events only) */}
         <EventDetailModal
           event={tapEvent}
           open={!!tapEvent}
