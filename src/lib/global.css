@@ -567,9 +567,12 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   .app-main {
     flex: 1;
     min-width: 0;
+    overflow: hidden;
   }
   .main-content {
     padding: 34px 36px 44px;
+    overflow-y: auto;
+    height: 100vh;
   }
   .mobile-header {
     display: none;
@@ -583,9 +586,6 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   }
   .tab-content--explore {
     max-width: 960px;
-  }
-  .app-tab-bar {
-    display: none;
   }
   .header-filters {
     display: flex;
@@ -715,26 +715,29 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
 
 /* (old desktop-sidebar styles removed — replaced by .nav-rail) */
 
-/* Bottom tab bar */
+/* Bottom tab bar — mobile only */
 .app-tab-bar {
   position: fixed;
   bottom: 8px;
-  left: 12px;
-  right: 12px;
+  left: 14px;
+  right: 14px;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 8px 4px;
-  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  padding: 9px 6px;
+  padding-bottom: calc(9px + env(safe-area-inset-bottom, 0px));
   background: rgba(255,255,255,.93);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 20px;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-radius: 22px;
   border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 8px 24px rgba(26,42,58,.10);
   z-index: 50;
   max-width: none;
   margin: 0;
+}
+@media (min-width: 1024px) {
+  .app-tab-bar { display: none !important; }
 }
 [data-theme="dark"] .app-tab-bar {
   background: rgba(26,32,40,.93);

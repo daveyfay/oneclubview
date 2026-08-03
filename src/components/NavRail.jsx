@@ -207,7 +207,9 @@ export default function NavRail({
         display: "flex",
         alignItems: "center",
         gap: 10,
-        padding: "8px 4px",
+        padding: "12px 4px 8px",
+        borderTop: "1px solid var(--color-border)",
+        marginTop: 8,
       }}>
         <div style={{
           width: 34,
