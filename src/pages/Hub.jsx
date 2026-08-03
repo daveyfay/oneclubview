@@ -12,6 +12,7 @@ import AddClubModal from '../components/modals/AddClubModal';
 import { HubDataProvider } from '../contexts/HubDataContext';
 import { useHubData } from '../hooks/useHubData';
 import ClickSpark from '../components/bits/ClickSpark';
+import DesktopSidebar from '../components/DesktopSidebar';
 
 // Lazy-loaded tabs
 const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
@@ -226,6 +227,14 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
       <div className={"ptr-indicator" + (ptrState === "ready" || ptrState === "refreshing" ? " visible" : "")}>
         {ptrState === "refreshing" ? "Refreshing\u2026" : "\u2193 Pull to refresh"}
       </div>
+      <DesktopSidebar
+        tab={tab} onChangeTab={handleChangeTab}
+        filter={filter} setFilter={setFilter}
+        kids={kids} members={members} weekEvts={weekEvts}
+        darkMode={darkMode} setDarkMode={setDarkMode}
+        setShowProfile={setShowProfile}
+        isAdmin={isAdmin} onShowFab={() => setShowFab(!showFab)}
+      />
       <div className="app-main">
       {/* Header */}
       <div style={{ background: "var(--color-card)", borderBottom: "1px solid var(--color-border)" }}>
