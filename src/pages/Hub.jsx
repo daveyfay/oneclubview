@@ -21,6 +21,7 @@ const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
 const ScheduleTab = lazy(() => import('./tabs/ScheduleTab'));
 const WeekTab = lazy(() => import('./tabs/WeekTab'));
 const MoneyTab = lazy(() => import('./tabs/MoneyTab'));
+const MoneyTab2 = lazy(() => import('./tabs/MoneyTab2'));
 const ExploreTab = lazy(() => import('./tabs/ExploreTab'));
 const FamilyTab = lazy(() => import('./tabs/FamilyTab'));
 const SettingsTab = lazy(() => import('./tabs/SettingsTab'));
@@ -127,7 +128,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
   const overviewIcon = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
   const familyIcon = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>;
   const allTabs = [{ id: "overview", l: "Today", i: overviewIcon }, { id: "week", l: "Schedule", i: ICN.calendar }, { id: "money", l: "Money", i: ICN.wallet }, { id: "explore", l: "Explore", i: ICN.search }, { id: "family", l: "Family", i: familyIcon }];
-  const tabs = isAdmin ? allTabs : allTabs.filter(t => t.id !== "money");
+  const tabs = allTabs;
 
   // Loading skeleton — only shown on first load (no data yet)
   if (loading && kids.length === 0 && clubs.length === 0) return <div style={{ minHeight: "100vh", background: "var(--color-warm)" }}>
@@ -297,7 +298,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
         </div>}>
           {tab === "overview" && <TodayTab filter={filter} onChangeTab={handleChangeTab} onRefresh={onRefresh} />}
           {tab === "week" && <WeekTab filter={filter} />}
-          {tab === "money" && <MoneyTab filter={filter} />}
+          {tab === "money" && <MoneyTab2 filter={filter} />}
           {tab === "explore" && <ExploreTab filter={filter} onRefresh={onRefresh} />}
           {tab === "family" && <FamilyTab />}
         </Suspense>
