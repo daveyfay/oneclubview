@@ -12,7 +12,7 @@ function getHolidayIcon(name) {
   return "\uD83C\uDF34";
 }
 
-export default function WeekGrid({ weekDays, events, holidays, onTapEvent, kids }) {
+export default function WeekGrid({ weekDays, events, holidays, onTapEvent, onTapDay, kids }) {
   // Split 7 days into pages of 4 (page 0 = days 0-3, page 1 = days 3-6)
   // Use overlapping pages so swipe feels natural
   const [page, setPage] = useState(() => {
@@ -78,10 +78,14 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, kids 
           const today = isToday(d);
           const hol = isHoliday(d);
           return (
-            <div key={i} style={{
+            <div key={i} onClick={() => onTapDay && onTapDay(d)} style={{
               textAlign: "center", padding: "8px 4px", borderRadius: 12,
-              background: today ? "var(--color-primary)" : hol ? "#fef3e2" : "transparent"
-            }}>
+              background: today ? "var(--color-primary)" : hol ? "#fef3e2" : "transparent",
+              cursor: "pointer", transition: "transform .1s",
+            }}
+            onTouchStart={ev => { ev.currentTarget.style.transform = "scale(.95)"; }}
+            onTouchEnd={ev => { ev.currentTarget.style.transform = ""; }}
+            >
               <span style={{
                 display: "block", fontSize: 10, fontWeight: 700,
                 color: today ? "rgba(255,255,255,.6)" : "var(--color-muted)",
@@ -108,12 +112,16 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, kids 
             if (!e) {
               if (row === 0 && isHoliday(d) && dayEvts[col].length === 0) {
                 return (
-                  <div key={col} style={{
+                  <div key={col} onClick={() => onTapDay && onTapDay(d)} style={{
                     borderRadius: 10, padding: "8px 4px", textAlign: "center",
                     background: "#fef3e2", border: "1px solid #fde68a",
                     minHeight: 56, display: "flex", flexDirection: "column",
-                    justifyContent: "center", alignItems: "center"
-                  }}>
+                    justifyContent: "center", alignItems: "center",
+                    cursor: "pointer", transition: "transform .1s",
+                  }}
+                  onTouchStart={ev => { ev.currentTarget.style.transform = "scale(.93)"; }}
+                  onTouchEnd={ev => { ev.currentTarget.style.transform = ""; }}
+                  >
                     <span style={{ fontSize: 16 }}>{getHolidayIcon(holName(d))}</span>
                     <span style={{ fontSize: 8, fontWeight: 600, color: "#b8860b", marginTop: 2 }}>
                       {holName(d).split(" ")[0]}
@@ -121,7 +129,16 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, kids 
                   </div>
                 );
               }
-              return <div key={col} style={{ minHeight: 56 }} />;
+              return <div key={col} onClick={() => onTapDay && onTapDay(d)} style={{
+                minHeight: 56, borderRadius: 10, border: "1.5px dashed var(--color-border)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", transition: "all .15s",
+              }}
+              onMouseEnter={ev => { ev.currentTarget.style.borderColor = "var(--color-primary)"; ev.currentTarget.style.background = "var(--color-primary-bg)"; }}
+              onMouseLeave={ev => { ev.currentTarget.style.borderColor = "var(--color-border)"; ev.currentTarget.style.background = ""; }}
+              >
+                <span style={{ fontSize: 18, color: "var(--color-border)", fontWeight: 300 }}>+</span>
+              </div>;
             }
             return (
               <div

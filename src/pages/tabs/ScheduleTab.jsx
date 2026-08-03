@@ -4,6 +4,7 @@ import AlertCallout from '../../components/AlertCallout';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import WeekGrid from '../../components/hub/WeekGrid';
 import EventDetailModal from '../../components/modals/EventDetailModal';
+import AddEventModal from '../../components/modals/AddEventModal';
 import ICN from '../../lib/icons';
 import { COLS } from '../../lib/constants';
 import { track, showToast, isToday, fmtDate } from '../../lib/utils';
@@ -22,8 +23,10 @@ export default function ScheduleTab({ filter }) {
   const [calMonth, setCalMonth] = useState(new Date().getMonth());
   const [calYear, setCalYear] = useState(new Date().getFullYear());
   const [tapEvent, setTapEvent] = useState(null);
+  const [addEventDate, setAddEventDate] = useState(null);
 
   function handleTapEvent(e) { setTapEvent(e); }
+  function handleTapDay(d) { if (isAdmin) setAddEventDate(d); }
 
   if (loading) return (
     <ErrorBoundary label="Schedule">
@@ -262,7 +265,7 @@ export default function ScheduleTab({ filter }) {
         })()}
 
         {/* WEEKLY GRID VIEW */}
-        {weekView === "grid" && <WeekGrid weekDays={wd} events={filtEvts} holidays={[...(holidays || []), ...(userHolidays || [])]} onTapEvent={handleTapEvent} kids={kids} />}
+        {weekView === "grid" && <WeekGrid weekDays={wd} events={filtEvts} holidays={[...(holidays || []), ...(userHolidays || [])]} onTapEvent={handleTapEvent} onTapDay={handleTapDay} kids={kids} />}
 
         {/* SWIMLANE LIST VIEW */}
         {weekView === "list" && <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }} className="hide-scrollbar">
@@ -370,6 +373,14 @@ export default function ScheduleTab({ filter }) {
             await db("manual_events", "PATCH", { filters: ["id=eq." + ev.source_id], body: { colour: col } });
             setTapEvent({ ...ev, colour: col }); load();
           }} />
+
+        {/* Add Event Modal — triggered by tapping empty day in grid */}
+        {addEventDate && <AddEventModal
+          clubs={clubs} userId={user.id} kids={kids} profile={profile}
+          defaultDate={addEventDate}
+          onClose={() => setAddEventDate(null)}
+          onSaved={() => { setAddEventDate(null); window.__hapticSuccess && window.__hapticSuccess(); load(); }}
+        />}
       </div>
     </ErrorBoundary>
   );

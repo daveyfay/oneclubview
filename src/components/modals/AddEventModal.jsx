@@ -5,16 +5,16 @@ import OcvModal from './OcvModal';
 
 const DAYF = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved }) {
+function AddEventModal({ clubs, userId, kids, profile, onClose, onSaved, defaultDate }) {
   const [cid, setCid] = useState(clubs[0]?.club_id || "");
   const [mid, setMid] = useState("self");
   const [title, setTitle] = useState("");
-  const [type, setType] = useState("recurring");
-  const [date, setDate] = useState("");
+  const [type, setType] = useState(defaultDate ? "oneoff" : "recurring");
+  const [date, setDate] = useState(defaultDate ? defaultDate.toISOString().split("T")[0] : "");
   const [time, setTime] = useState("18:00");
   const [endTime, setEndTime] = useState("19:00");
   const [dur, setDur] = useState(60);
-  const [dow, setDow] = useState(1);
+  const [dow, setDow] = useState(defaultDate ? defaultDate.getDay() : 1);
   const [sv, setSv] = useState(false);
   const [driver, setDriver] = useState("");
 
