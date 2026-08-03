@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useHubData } from '../../hooks/useHubData';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 import AlertCallout from '../../components/AlertCallout';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import WeekGrid from '../../components/hub/WeekGrid';
@@ -18,6 +19,7 @@ export default function ScheduleTab({ filter }) {
     getMemberCol, user, profile, load, loading, familyMembers, weekEvts,
   } = useHubData();
 
+  const isDesktop = useIsDesktop();
   const [weekView, setWeekView] = useState("grid");
   const [selectedDay, setSelectedDay] = useState(null);
   const [calMonth, setCalMonth] = useState(new Date().getMonth());
@@ -265,7 +267,7 @@ export default function ScheduleTab({ filter }) {
         })()}
 
         {/* WEEKLY GRID VIEW */}
-        {weekView === "grid" && <WeekGrid weekDays={wd} events={filtEvts} holidays={[...(holidays || []), ...(userHolidays || [])]} onTapEvent={handleTapEvent} onTapDay={handleTapDay} kids={kids} />}
+        {weekView === "grid" && <WeekGrid weekDays={wd} events={filtEvts} holidays={[...(holidays || []), ...(userHolidays || [])]} onTapEvent={handleTapEvent} onTapDay={handleTapDay} kids={kids} columns={isDesktop ? 7 : 4} />}
 
         {/* SWIMLANE LIST VIEW */}
         {weekView === "list" && <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }} className="hide-scrollbar">
