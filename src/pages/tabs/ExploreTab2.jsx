@@ -133,7 +133,7 @@ function ClubsView({ allLocs, primaryLoc, primaryLabel, myClubs, kids, filter, u
       limit: 500,
       order: 'name.asc',
     }).then(r => {
-      setAllClubs((r || []).filter(c => c.latitude));
+      setAllClubs(r || []);
       setLoadingClubs(false);
     });
   }, []);
@@ -150,11 +150,12 @@ function ClubsView({ allLocs, primaryLoc, primaryLabel, myClubs, kids, filter, u
     const local = allClubs
       .filter(c => !myClubIds.has(c.id))
       .map(c => {
+        if (!c.latitude || !c.longitude) return { ...c, _dist: null };
         const dist = calcKm(primaryLoc.lat, primaryLoc.lng, Number(c.latitude), Number(c.longitude));
         return { ...c, _dist: dist };
       })
-      .filter(c => c._dist <= radius)
-      .sort((a, b) => a._dist - b._dist);
+      .filter(c => c._dist === null || c._dist <= radius)
+      .sort((a, b) => (a._dist ?? 999) - (b._dist ?? 999));
     return local;
   }, [allClubs, primaryLoc, myClubIds, radius]);
 

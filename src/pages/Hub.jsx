@@ -217,6 +217,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
         isAdmin={isAdmin} profile={profile}
         familyMembers={familyMembers}
         onShowFab={() => setShowFab(!showFab)}
+        onShowSettings={() => setShowProfile(true)}
       />
       <div className="app-main">
       {/* Mobile Header — hidden on desktop */}
