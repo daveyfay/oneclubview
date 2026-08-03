@@ -505,12 +505,69 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   animation: blurIn .7s cubic-bezier(.22,.61,.36,1) both;
 }
 
-/* Responsive — laptop: constrain app views, let landing go wide */
-@media (min-width: 900px) {
+/* -- Responsive Layout -- */
+
+/* Desktop sidebar */
+.desktop-sidebar {
+  display: none;
+}
+
+/* App shell layout classes */
+.app-header-inner {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 12px 20px 6px;
+}
+.app-tab-bar {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .app-header-inner,
+  .app-tab-bar,
+  .tab-content {
+    max-width: 720px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
   body { display: flex; justify-content: center; }
   #root { width: 100%; position: relative; }
-  .app-shell { max-width: 600px; margin: 0 auto; }
-  .app-shell.app-shell--wide { max-width: 960px; }
+
+  .app-shell {
+    display: flex;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  .app-main {
+    flex: 1;
+    min-width: 0;
+  }
+  .desktop-sidebar {
+    display: flex;
+  }
+  .app-header-inner,
+  .tab-content {
+    max-width: 960px;
+  }
+  .tab-content--money {
+    max-width: 640px;
+  }
+  .tab-content--explore {
+    max-width: 960px;
+  }
+  .app-tab-bar {
+    display: none;
+  }
+  .tab-content {
+    padding-bottom: 40px;
+  }
+  .fab-btn {
+    display: none !important;
+  }
 }
 
 /* Explore tab layout */
@@ -519,7 +576,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
 .explore-content { flex: 1; min-width: 0; }
 .explore-mobile-pills { display: flex; }
 
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
   .explore-sidebar {
     display: block;
     width: 220px;
@@ -533,6 +590,104 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
     overflow-y: auto;
   }
   .explore-mobile-pills { display: none !important; }
+}
+
+/* -- Motion & Micro-interactions -- */
+
+@keyframes tabSlideInLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes tabSlideInRight {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.tab-enter-left { animation: tabSlideInLeft .25s ease-out; }
+.tab-enter-right { animation: tabSlideInRight .25s ease-out; }
+
+@keyframes sidebarSlideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Hover lift for cards — desktop only */
+@media (hover: hover) {
+  .card-hover {
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,.1);
+  }
+}
+
+/* Two-column desktop layouts */
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.schedule-desktop {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 1024px) {
+  .overview-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .overview-grid > .overview-full-width {
+    grid-column: 1 / -1;
+  }
+  .schedule-desktop {
+    grid-template-columns: 1fr 380px;
+  }
+  .schedule-desktop__detail {
+    position: sticky;
+    top: 80px;
+    align-self: start;
+  }
+}
+
+/* Sidebar styles */
+.desktop-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  flex-direction: column;
+  background: var(--color-card);
+  border-right: 1px solid var(--color-border);
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  animation: sidebarSlideIn .3s ease-out;
+}
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-muted);
+  width: 100%;
+  text-align: left;
+  transition: background .2s, color .2s;
+  border-left: 3px solid transparent;
+}
+.sidebar-nav-item--active {
+  border-left-color: var(--color-primary);
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+}
+.sidebar-nav-item:hover:not(.sidebar-nav-item--active) {
+  background: var(--color-warm);
 }
 
 @media (prefers-reduced-motion: reduce) {
