@@ -36,7 +36,7 @@ export default function Hub({ user, profile, onRefresh, onLogout }) {
 function HubInner({ user, profile, onRefresh, onLogout }) {
   const {
     kids, clubs, pays, loading, isAdmin, members,
-    familyMembers, notifications, load, userLoc,
+    familyMembers, notifications, load, userLoc, weekEvts,
   } = useHubData();
 
   const [tab, setTab] = useState("overview");
@@ -60,6 +60,8 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
   const [ptrState, setPtrState] = useState("");
   const ptrStart = useRef(0);
   const ptrDist = useRef(0);
+  const prevTabRef = useRef(tab);
+  const tabDir = useRef("right");
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light");
@@ -107,6 +109,11 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
   }
 
   function handleChangeTab(newTab, subTab) {
+    const tabOrder = ["overview", "week", "money", "explore"];
+    const oldIdx = tabOrder.indexOf(tab);
+    const newIdx = tabOrder.indexOf(newTab);
+    tabDir.current = newIdx >= oldIdx ? "right" : "left";
+    prevTabRef.current = tab;
     setTab(newTab);
     if (newTab === "explore" && subTab) setExploreSubTab(subTab);
     window.scrollTo(0, 0);
@@ -136,7 +143,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
         </div>)}
       </div>
     </div>
-    <div style={{ maxWidth: 520, margin: "0 auto", padding: "16px 20px" }}>
+    <div className="app-header-inner" style={{ padding: "16px 20px" }}>
       <div style={{ background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12 }}>
         <div className="skeleton-shimmer" style={{ width: 80, height: 16, borderRadius: 6, marginBottom: 12 }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
@@ -214,14 +221,15 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
   function ptrTouchEnd() { if (ptrState === "ready") { setPtrState("refreshing"); window.__hapticSuccess && window.__hapticSuccess(); load().finally(() => { setPtrState(""); ptrStart.current = 0; }); } else { setPtrState(""); ptrStart.current = 0; } }
 
   return (
-    <div className={"anim-fade app-shell" + (tab === "explore" ? " app-shell--wide" : "")} style={{ background: "var(--color-warm)", minHeight: "100vh" }} onTouchStart={ptrTouchStart} onTouchMove={ptrTouchMove} onTouchEnd={ptrTouchEnd}>
+    <div className="anim-fade app-shell" style={{ background: "var(--color-warm)", minHeight: "100vh" }} onTouchStart={ptrTouchStart} onTouchMove={ptrTouchMove} onTouchEnd={ptrTouchEnd}>
       {/* Pull-to-refresh indicator */}
       <div className={"ptr-indicator" + (ptrState === "ready" || ptrState === "refreshing" ? " visible" : "")}>
         {ptrState === "refreshing" ? "Refreshing\u2026" : "\u2193 Pull to refresh"}
       </div>
+      <div className="app-main">
       {/* Header */}
       <div style={{ background: "var(--color-card)", borderBottom: "1px solid var(--color-border)" }}>
-        <div style={{ maxWidth: tab === "explore" ? 960 : 520, margin: "0 auto", padding: "12px 20px 6px" }}>
+        <div className="app-header-inner">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
             <Logo />
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -236,12 +244,12 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
             {members.map(m => <button key={m.id} aria-pressed={filter === m.id} onClick={() => setFilter(m.id)} className={"pill " + (filter === m.id ? "pill-active" : "pill-inactive")} style={{ flexShrink: 0 }}>{m.type !== "all" && <span style={{ width: 7, height: 7, borderRadius: "50%", background: m.type === "kid" ? COLS[members.indexOf(m) % COLS.length] : m.type === "adult" ? "#8b5cf6" : "var(--color-primary)", flexShrink: 0 }} />}{m.type === "all" ? "\u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}" : ""} {m.name}{m.age != null && <span style={{ opacity: .5, marginLeft: 2 }}>({m.age})</span>}</button>)}
           </div>
         </div>
-        <div role="tablist" aria-label="Main navigation" style={{ maxWidth: tab === "explore" ? 960 : 520, margin: "0 auto", display: "flex" }}>
-          {tabs.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => { setTab(t.id); track("tab_view", { tab: t.id }); window.__haptic && window.__haptic() }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: "10px 0 8px", fontSize: 11, fontWeight: 600, border: "none", borderBottom: tab === t.id ? "2.5px solid var(--color-primary)" : "2.5px solid transparent", cursor: "pointer", background: "none", color: tab === t.id ? "var(--color-primary)" : "var(--color-muted)", fontFamily: "var(--font-sans)", transition: "color .15s" }}><span style={{ display: "flex" }}>{t.i}</span><span>{t.l}</span></button>)}
+        <div role="tablist" aria-label="Main navigation" className="app-tab-bar" style={{ display: "flex" }}>
+          {tabs.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => { handleChangeTab(t.id); track("tab_view", { tab: t.id }); window.__haptic && window.__haptic() }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: "10px 0 8px", fontSize: 11, fontWeight: 600, border: "none", borderBottom: tab === t.id ? "2.5px solid var(--color-primary)" : "2.5px solid transparent", cursor: "pointer", background: "none", color: tab === t.id ? "var(--color-primary)" : "var(--color-muted)", fontFamily: "var(--font-sans)", transition: "color .15s" }}><span style={{ display: "flex" }}>{t.i}</span><span>{t.l}</span></button>)}
         </div>
       </div>
 
-      <div key={tab} className="tab-content" style={{ maxWidth: tab === "explore" ? "none" : 520, margin: "0 auto", padding: "16px 20px", paddingBottom: 100 }}>
+      <div key={tab} className={"tab-content" + (tab === "explore" ? " tab-content--explore" : tab === "money" ? " tab-content--money" : "") + " tab-enter-" + (tabDir.current === "right" ? "right" : "left")} style={{ margin: "0 auto", padding: "16px 20px", paddingBottom: 100 }}>
 
         {/* ONBOARDING NUDGE */}
         {clubs.length === 0 && kids.length === 0 && <div style={{ background: "var(--color-accent-bg)", border: "1px solid var(--color-warning-border)", borderRadius: 16, padding: 20, marginBottom: 16, textAlign: "center" }}>
@@ -345,6 +353,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
           </button>)}
         </div>
       </div>}
+      </div>{/* end app-main */}
       <ClickSpark sparkColor="#e85d4a" sparkRadius={20} sparkSize={12}>
         <button onClick={() => { setShowFab(!showFab); window.__hapticMedium && window.__hapticMedium() }} className="fab-btn" style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", right: 20, width: 56, height: 56, borderRadius: "50%", background: showFab ? "var(--color-muted)" : "linear-gradient(135deg,var(--color-primary),var(--color-primary-light))", color: "#fff", border: "none", fontSize: 26, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(26,42,58,.3)", zIndex: 72, transition: "transform .2s cubic-bezier(.4,0,.2,1),background .15s", transform: showFab ? "rotate(45deg) scale(.9)" : "none" }}>+</button>
       </ClickSpark>
