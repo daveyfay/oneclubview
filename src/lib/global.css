@@ -501,8 +501,13 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
 
 /* -- Responsive Layout -- */
 
-/* Desktop sidebar */
-.desktop-sidebar {
+/* Nav rail (left) */
+.nav-rail {
+  display: none;
+}
+
+/* Context rail (right) */
+.context-rail {
   display: none;
 }
 
@@ -530,13 +535,44 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
     display: flex;
     max-width: 1280px;
     margin: 0 auto;
+    min-height: 100vh;
+  }
+  .nav-rail {
+    display: flex;
+    flex-direction: column;
+    width: 248px;
+    flex-shrink: 0;
+    background: var(--color-card);
+    border-right: 1px solid var(--color-border);
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .context-rail {
+    display: flex;
+    flex-direction: column;
+    width: 326px;
+    flex-shrink: 0;
+    background: var(--color-card);
+    border-left: 1px solid var(--color-border);
+    padding: 34px 24px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
   }
   .app-main {
     flex: 1;
     min-width: 0;
   }
-  .desktop-sidebar {
-    display: flex;
+  .main-content {
+    padding: 34px 36px 44px;
+  }
+  .mobile-header {
+    display: none;
   }
   .app-header-inner,
   .tab-content {
@@ -641,46 +677,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   }
 }
 
-/* Sidebar styles */
-.desktop-sidebar {
-  width: 260px;
-  flex-shrink: 0;
-  flex-direction: column;
-  background: var(--color-card);
-  border-right: 1px solid var(--color-border);
-  padding: 16px;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  animation: sidebarSlideIn .3s ease-out;
-}
-.sidebar-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-muted);
-  width: 100%;
-  text-align: left;
-  transition: background .2s, color .2s;
-  border-left: 3px solid transparent;
-}
-.sidebar-nav-item--active {
-  border-left-color: var(--color-primary);
-  background: var(--color-primary-bg);
-  color: var(--color-primary);
-}
-.sidebar-nav-item:hover:not(.sidebar-nav-item--active) {
-  background: var(--color-warm);
-}
+/* (old desktop-sidebar styles removed — replaced by .nav-rail) */
 
 /* Bottom tab bar */
 .app-tab-bar {

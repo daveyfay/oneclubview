@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useHubData } from '../../hooks/useHubData';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import { COLS, CC } from '../../lib/constants';
 import { isToday } from '../../lib/utils';
@@ -149,6 +150,8 @@ export default function TodayTab({ filter, onChangeTab, onRefresh }) {
     isAdmin, getMemberCol, members,
   } = useHubData();
 
+  const isDesktop = useIsDesktop();
+
   const [now, setNow] = useState(() => new Date());
 
   // Countdown timer — update every 60s
@@ -275,8 +278,8 @@ export default function TodayTab({ filter, onChangeTab, onRefresh }) {
         })}
       </div>
 
-      {/* 3. Up Next hero card */}
-      {heroEvt && (
+      {/* 3. Up Next hero card — hidden on desktop (shown in ContextRail) */}
+      {!isDesktop && heroEvt && (
         <div className="ocv-rise" style={s.heroCard} onClick={() => handleTapEvent(heroEvt)}>
           {/* Top labels */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -466,8 +469,8 @@ export default function TodayTab({ filter, onChangeTab, onRefresh }) {
         </div>
       )}
 
-      {/* 5. Outstanding fees strip */}
-      {isAdmin && totalDue > 0 && (
+      {/* 5. Outstanding fees strip — hidden on desktop (shown in ContextRail) */}
+      {!isDesktop && isAdmin && totalDue > 0 && (
         <div
           onClick={() => onChangeTab('money')}
           style={{

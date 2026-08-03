@@ -12,7 +12,8 @@ import AddClubModal from '../components/modals/AddClubModal';
 import { HubDataProvider } from '../contexts/HubDataContext';
 import { useHubData } from '../hooks/useHubData';
 import ClickSpark from '../components/bits/ClickSpark';
-import DesktopSidebar from '../components/DesktopSidebar';
+import NavRail from '../components/NavRail';
+import ContextRail from '../components/ContextRail';
 
 // Lazy-loaded tabs
 const TodayTab = lazy(() => import('./tabs/TodayTab'));
@@ -20,6 +21,7 @@ const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
 const ScheduleTab = lazy(() => import('./tabs/ScheduleTab'));
 const MoneyTab = lazy(() => import('./tabs/MoneyTab'));
 const ExploreTab = lazy(() => import('./tabs/ExploreTab'));
+const FamilyTab = lazy(() => import('./tabs/FamilyTab'));
 const SettingsTab = lazy(() => import('./tabs/SettingsTab'));
 
 // Lazy-loaded heavy modals (>200 lines)
@@ -38,7 +40,7 @@ export default function Hub({ user, profile, onRefresh, onLogout }) {
 function HubInner({ user, profile, onRefresh, onLogout }) {
   const {
     kids, clubs, pays, loading, isAdmin, members,
-    familyMembers, notifications, load, userLoc, weekEvts,
+    familyMembers, notifications, load, userLoc, weekEvts, getMemberCol,
   } = useHubData();
 
   const [tab, setTab] = useState("overview");
@@ -122,7 +124,8 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
   }
 
   const overviewIcon = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
-  const allTabs = [{ id: "overview", l: "Today", i: overviewIcon }, { id: "week", l: "Schedule", i: ICN.calendar }, { id: "money", l: "Money", i: ICN.wallet }, { id: "explore", l: "Explore", i: ICN.search }];
+  const familyIcon = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>;
+  const allTabs = [{ id: "overview", l: "Today", i: overviewIcon }, { id: "week", l: "Schedule", i: ICN.calendar }, { id: "money", l: "Money", i: ICN.wallet }, { id: "explore", l: "Explore", i: ICN.search }, { id: "family", l: "Family", i: familyIcon }];
   const tabs = isAdmin ? allTabs : allTabs.filter(t => t.id !== "money");
 
   // Loading skeleton — only shown on first load (no data yet)
@@ -228,17 +231,17 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
       <div className={"ptr-indicator" + (ptrState === "ready" || ptrState === "refreshing" ? " visible" : "")}>
         {ptrState === "refreshing" ? "Refreshing\u2026" : "\u2193 Pull to refresh"}
       </div>
-      <DesktopSidebar
+      <NavRail
         tab={tab} onChangeTab={handleChangeTab}
         filter={filter} setFilter={setFilter}
-        kids={kids} members={members} weekEvts={weekEvts}
-        darkMode={darkMode} setDarkMode={setDarkMode}
-        setShowProfile={setShowProfile}
-        isAdmin={isAdmin} onShowFab={() => setShowFab(!showFab)}
+        kids={kids} members={members}
+        isAdmin={isAdmin} profile={profile}
+        familyMembers={familyMembers}
+        onShowFab={() => setShowFab(!showFab)}
       />
       <div className="app-main">
-      {/* Header */}
-      <div style={{ background: "var(--color-card)", borderBottom: "1px solid var(--color-border)" }}>
+      {/* Mobile Header — hidden on desktop */}
+      <div className="mobile-header" style={{ background: "var(--color-card)", borderBottom: "1px solid var(--color-border)" }}>
         <div className="app-header-inner">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
             <Logo />
@@ -256,6 +259,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
         </div>
       </div>
 
+      <div className="main-content">
       <div key={tab} className={"tab-content" + (tab === "explore" ? " tab-content--explore" : tab === "money" ? " tab-content--money" : "") + " tab-enter-" + (tabDir.current === "right" ? "right" : "left")} style={{ margin: "0 auto", padding: "16px 20px", paddingBottom: 100 }}>
 
         {/* ONBOARDING NUDGE */}
@@ -294,6 +298,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
           {tab === "week" && <ScheduleTab filter={filter} />}
           {tab === "money" && <MoneyTab filter={filter} />}
           {tab === "explore" && <ExploreTab filter={filter} onRefresh={onRefresh} />}
+          {tab === "family" && <FamilyTab />}
         </Suspense>
       </div>
 
@@ -360,7 +365,14 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
           </button>)}
         </div>
       </div>}
+      </div>{/* end main-content */}
       </div>{/* end app-main */}
+      <ContextRail
+        weekEvts={weekEvts} pays={pays}
+        isAdmin={isAdmin} profile={profile}
+        onChangeTab={handleChangeTab}
+        getMemberCol={getMemberCol} kids={kids}
+      />
       <div role="tablist" aria-label="Main navigation" className="app-tab-bar">
         {tabs.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => { handleChangeTab(t.id); track("tab_view", { tab: t.id }); window.__haptic && window.__haptic() }} className={"tab-bar-item" + (tab === t.id ? " tab-bar-item--active" : "")}>
           <span className="tab-bar-icon">{t.i}</span>
