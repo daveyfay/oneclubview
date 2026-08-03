@@ -748,6 +748,24 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   padding-bottom: 6px;
 }
 
+/* Bento grid */
+.bento-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 4px 0;
+}
+.bento-full { grid-column: 1 / -1; }
+.bento-half { grid-column: span 1; }
+@media (min-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .bento-full { grid-column: 1 / -1; }
+  .bento-half { grid-column: span 1; }
+  .bento-wide { grid-column: span 2; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

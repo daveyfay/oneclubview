@@ -15,6 +15,7 @@ import ClickSpark from '../components/bits/ClickSpark';
 import DesktopSidebar from '../components/DesktopSidebar';
 
 // Lazy-loaded tabs
+const HomeTab = lazy(() => import('./tabs/HomeTab'));
 const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
 const ScheduleTab = lazy(() => import('./tabs/ScheduleTab'));
 const MoneyTab = lazy(() => import('./tabs/MoneyTab'));
@@ -289,7 +290,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
         <Suspense fallback={<div style={{ padding: '20px 0' }}>
           <div className="skeleton-shimmer" style={{ height: 200, borderRadius: 16 }} />
         </div>}>
-          {tab === "overview" && <OverviewTab filter={filter} onChangeTab={handleChangeTab} onRefresh={onRefresh} />}
+          {tab === "overview" && <HomeTab filter={filter} onChangeTab={handleChangeTab} onRefresh={onRefresh} />}
           {tab === "week" && <ScheduleTab filter={filter} />}
           {tab === "money" && <MoneyTab filter={filter} />}
           {tab === "explore" && <ExploreTab filter={filter} onRefresh={onRefresh} />}
