@@ -132,54 +132,31 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
 
   // Loading skeleton — only shown on first load (no data yet)
   if (loading && kids.length === 0 && clubs.length === 0) return <div style={{ minHeight: "100vh", background: "var(--color-warm)" }}>
-    <div style={{ background: "var(--color-card)", borderBottom: "1px solid var(--color-border)", padding: "12px 20px 6px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+    <div className="mobile-header" style={{ background: "var(--color-card)", borderBottom: "1px solid var(--color-border)", padding: "12px 20px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div className="skeleton-shimmer" style={{ width: 120, height: 22, borderRadius: 8 }} />
         <div style={{ display: "flex", gap: 10 }}>
           <div className="skeleton-shimmer" style={{ width: 20, height: 20, borderRadius: 6 }} />
-          <div className="skeleton-shimmer" style={{ width: 30, height: 30, borderRadius: 10 }} />
+          <div className="skeleton-shimmer" style={{ width: 36, height: 36, borderRadius: 10 }} />
         </div>
-      </div>
-      <div style={{ display: "flex", gap: 6, paddingBottom: 8 }}>
-        {[80, 60, 55, 45].map((w, i) => <div key={i} className="skeleton-shimmer" style={{ width: w, height: 36, borderRadius: 100 }} />)}
-      </div>
-      <div style={{ display: "flex", gap: 0, marginTop: 4 }}>
-        {["Overview", "Schedule", "Money", "Explore"].map((t, i) => <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "8px 0 6px" }}>
-          <div className="skeleton-shimmer" style={{ width: 20, height: 20, borderRadius: 6 }} />
-          <div className="skeleton-shimmer" style={{ width: 40, height: 10, borderRadius: 4 }} />
-        </div>)}
       </div>
     </div>
-    <div className="app-header-inner" style={{ padding: "16px 20px" }}>
-      <div style={{ background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12 }}>
-        <div className="skeleton-shimmer" style={{ width: 80, height: 16, borderRadius: 6, marginBottom: 12 }} />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          {[0, 1, 2, 3].map(i => <div key={i} style={{ background: "var(--color-primary-bg)", borderRadius: 12, padding: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-            <div className="skeleton-shimmer" style={{ width: 36, height: 28, borderRadius: 6 }} />
-            <div className="skeleton-shimmer" style={{ width: 50, height: 10, borderRadius: 4 }} />
-          </div>)}
+    <div style={{ padding: "24px 22px" }}>
+      <div className="skeleton-shimmer" style={{ width: 100, height: 10, borderRadius: 4, marginBottom: 10 }} />
+      <div className="skeleton-shimmer" style={{ width: 140, height: 34, borderRadius: 8, marginBottom: 8 }} />
+      <div className="skeleton-shimmer" style={{ width: 200, height: 14, borderRadius: 4, marginBottom: 20 }} />
+      <div style={{ display: "flex", gap: 7, marginBottom: 24 }}>
+        {[70, 55, 60].map((w, i) => <div key={i} className="skeleton-shimmer" style={{ width: w, height: 38, borderRadius: 100 }} />)}
+      </div>
+      <div className="skeleton-shimmer" style={{ height: 160, borderRadius: 26, marginBottom: 20 }} />
+      <div className="skeleton-shimmer" style={{ width: 120, height: 10, borderRadius: 4, marginBottom: 14 }} />
+      {[0, 1, 2].map(i => <div key={i} style={{ display: "flex", gap: 12, marginBottom: 14 }}>
+        <div className="skeleton-shimmer" style={{ width: 46, height: 16, borderRadius: 4 }} />
+        <div style={{ flex: 1 }}>
+          <div className="skeleton-shimmer" style={{ width: 140 + i * 20, height: 16, borderRadius: 4, marginBottom: 6 }} />
+          <div className="skeleton-shimmer" style={{ width: 100, height: 12, borderRadius: 4 }} />
         </div>
-      </div>
-      <div style={{ background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12 }}>
-        <div className="skeleton-shimmer" style={{ width: 60, height: 16, borderRadius: 6, marginBottom: 14 }} />
-        {[0, 1, 2].map(i => <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: i < 2 ? "1px solid var(--color-border)" : "none" }}>
-          <div className="skeleton-shimmer" style={{ width: 32, height: 32, borderRadius: 10 }} />
-          <div style={{ flex: 1 }}>
-            <div className="skeleton-shimmer" style={{ width: 80 + i * 20, height: 13, borderRadius: 4, marginBottom: 6 }} />
-            <div className="skeleton-shimmer" style={{ width: 120 + i * 10, height: 10, borderRadius: 4 }} />
-          </div>
-        </div>)}
-      </div>
-      <div style={{ background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12 }}>
-        <div className="skeleton-shimmer" style={{ width: 70, height: 16, borderRadius: 6, marginBottom: 14 }} />
-        {[0, 1].map(i => <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: i < 1 ? "1px solid var(--color-border)" : "none" }}>
-          <div className="skeleton-shimmer" style={{ width: 36, height: 36, borderRadius: 10 }} />
-          <div style={{ flex: 1 }}>
-            <div className="skeleton-shimmer" style={{ width: 100 + i * 30, height: 13, borderRadius: 4, marginBottom: 6 }} />
-            <div className="skeleton-shimmer" style={{ width: 140, height: 10, borderRadius: 4 }} />
-          </div>
-        </div>)}
-      </div>
+      </div>)}
     </div>
   </div>;
 

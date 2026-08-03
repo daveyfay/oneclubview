@@ -326,32 +326,41 @@ function Landing({ onGo, onLogin }) {
             <div style={{ width: 280, borderRadius: 28, border: '4px solid #1a1a1a', overflow: 'hidden', background: '#f8f6f3', boxShadow: '0 20px 60px rgba(0,0,0,.3)' }}>
               <div style={{ width: 70, height: 16, background: '#1a1a1a', borderRadius: '0 0 12px 12px', margin: '0 auto' }} />
               <div style={{ padding: '10px 14px 16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontFamily: 'var(--font-serif)', fontSize: 11, fontWeight: 800, color: 'var(--color-primary)' }}>This Week</span>
-                  <span style={{ fontSize: 9, color: 'var(--color-muted)' }}>The O'Brien Family</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginBottom: 6 }}>
-                  {['Mon','Tue','Wed','Thu','Fri'].map((d,i) => (
-                    <div key={d} style={{ textAlign: 'center', padding: '3px 0', borderRadius: 6, background: i===2 ? 'var(--color-primary)' : 'transparent' }}>
-                      <div style={{ fontSize: 7, fontWeight: 700, color: i===2 ? 'rgba(255,255,255,.7)' : 'var(--color-muted)' }}>{d}</div>
-                      <div style={{ fontSize: 11, fontWeight: 800, color: i===2 ? '#fff' : 'var(--color-text)' }}>{24+i}</div>
-                    </div>
+                <div style={{ fontSize: 7, fontWeight: 700, color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Monday · 26 May</div>
+                <div style={{ fontFamily: 'var(--font-serif)', fontSize: 14, fontWeight: 800, color: 'var(--color-primary)', marginBottom: 2 }}>Today</div>
+                <div style={{ fontSize: 8, color: 'var(--color-muted)', marginBottom: 8 }}>3 activities for The O'Briens</div>
+                <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
+                  {['All', 'Ella', 'Sam'].map((n, i) => (
+                    <span key={n} style={{ fontSize: 7, fontWeight: 700, padding: '2px 7px', borderRadius: 100, background: i === 0 ? 'var(--color-primary)' : 'var(--color-primary-bg)', color: i === 0 ? '#fff' : 'var(--color-muted)' }}>{n}</span>
                   ))}
                 </div>
+                {/* Up Next hero card */}
+                <div style={{ background: 'var(--color-primary)', borderRadius: 10, padding: '8px 10px', marginBottom: 8 }}>
+                  <div style={{ fontSize: 7, fontWeight: 700, color: 'rgba(255,255,255,.5)', marginBottom: 3 }}>UP NEXT</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: '#fff', marginBottom: 2 }}>Swimming Training</div>
+                  <div style={{ fontSize: 8, color: 'rgba(255,255,255,.6)' }}>Ella · 16:00 · Trojan SC</div>
+                </div>
+                {/* Timeline rows */}
                 {[
-                  { c: '#2d5a3f', name: 'Swimming', who: 'Ella', t: '16:00' },
-                  { c: '#e85d4a', name: 'GAA', who: 'Sam', t: '16:30' },
-                  { c: '#8b5cf6', name: 'Piano', who: 'Ella', t: '17:00' },
-                  { c: '#2d7cb5', name: 'Art Camp', who: 'Both', t: '09:00' },
+                  { c: '#e85d4a', name: 'GAA Training', who: 'Sam', t: '16:30' },
+                  { c: '#8b5cf6', name: 'Piano Lesson', who: 'Ella', t: '17:00' },
                 ].map((ev,i) => (
-                  <div key={i} style={{ background: '#fff', borderRadius: 8, padding: '6px 8px', borderLeft: `3px solid ${ev.c}`, marginBottom: 4, boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: ev.c }}>{ev.name}</div>
-                    <div style={{ fontSize: 8, color: 'var(--color-muted)' }}>{ev.who} · {ev.t}</div>
+                  <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', marginBottom: 6 }}>
+                    <div style={{ fontSize: 7, color: 'var(--color-muted)', width: 28, flexShrink: 0, paddingTop: 1 }}>{ev.t}</div>
+                    <div style={{ flex: 1, background: '#fff', borderRadius: 6, padding: '4px 6px', borderLeft: `2px solid ${ev.c}` }}>
+                      <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--color-primary)' }}>{ev.name}</div>
+                      <div style={{ fontSize: 7, color: 'var(--color-muted)' }}>{ev.who}</div>
+                    </div>
                   </div>
                 ))}
-                <div style={{ background: '#fef2f2', borderRadius: 8, padding: '6px 8px', marginTop: 6 }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: '#dc2626' }}>💳 March fees</div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: '#dc2626', textAlign: 'right' }}>€187</div>
+                {/* Bottom tab bar */}
+                <div style={{ display: 'flex', borderTop: '1px solid var(--color-border)', marginTop: 8, paddingTop: 6 }}>
+                  {['Today', 'Week', 'Explore', 'Money', 'Family'].map((t, i) => (
+                    <div key={t} style={{ flex: 1, textAlign: 'center' }}>
+                      <div style={{ width: 8, height: 8, borderRadius: 2, background: i === 0 ? 'var(--color-primary)' : 'var(--color-border)', margin: '0 auto 2px' }} />
+                      <div style={{ fontSize: 5, fontWeight: 600, color: i === 0 ? 'var(--color-primary)' : 'var(--color-muted)' }}>{t}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -515,7 +524,7 @@ function Landing({ onGo, onLogin }) {
                   </div>
                   {/* Tabs */}
                   <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', marginBottom: 6 }}>
-                    {['Overview', 'Schedule', 'Money', 'Explore'].map((t, i) => (
+                    {['Today', 'Week', 'Explore', 'Money', 'Family'].map((t, i) => (
                       <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 1 ? 'var(--color-primary)' : 'var(--color-muted)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 1 ? '1.5px solid var(--color-primary)' : 'none' }}>{t}</span>
                     ))}
                   </div>
@@ -597,7 +606,7 @@ function Landing({ onGo, onLogin }) {
                   </div>
                   {/* Tabs */}
                   <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', marginBottom: 6 }}>
-                    {['Overview', 'Schedule', 'Money', 'Explore'].map((t, i) => (
+                    {['Today', 'Week', 'Explore', 'Money', 'Family'].map((t, i) => (
                       <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 0 ? 'var(--color-primary)' : 'var(--color-muted)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 0 ? '1.5px solid var(--color-primary)' : 'none' }}>{t}</span>
                     ))}
                   </div>
@@ -648,7 +657,7 @@ function Landing({ onGo, onLogin }) {
                   </div>
                 </div>
               </div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-muted)', marginTop: 10 }}>Overview dashboard</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-muted)', marginTop: 10 }}>Today dashboard</div>
             </div>
 
             {/* MOCKUP 3: Camp Finder */}
@@ -663,8 +672,8 @@ function Landing({ onGo, onLogin }) {
                   </div>
                   {/* Tabs */}
                   <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', marginBottom: 6 }}>
-                    {['Overview', 'Schedule', 'Money', 'Explore'].map((t, i) => (
-                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 3 ? 'var(--color-primary)' : 'var(--color-muted)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 3 ? '1.5px solid var(--color-primary)' : 'none' }}>{t}</span>
+                    {['Today', 'Week', 'Explore', 'Money', 'Family'].map((t, i) => (
+                      <span key={t} style={{ flex: 1, fontSize: 6, fontWeight: 600, color: i === 2 ? 'var(--color-primary)' : 'var(--color-muted)', textAlign: 'center', padding: '4px 0 3px', borderBottom: i === 2 ? '1.5px solid var(--color-primary)' : 'none' }}>{t}</span>
                     ))}
                   </div>
                   {/* Sub-tabs */}
