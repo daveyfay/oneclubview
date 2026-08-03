@@ -249,12 +249,9 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
               <button aria-label="Settings" onClick={() => setShowProfile(!showProfile)} style={{ width: 44, height: 44, borderRadius: 10, background: "var(--color-primary)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer" }}>{(profile?.first_name || "U")[0]}</button>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", paddingBottom: 6 }}>
+          <div className="header-filters">
             {members.map(m => <button key={m.id} aria-pressed={filter === m.id} onClick={() => setFilter(m.id)} className={"pill " + (filter === m.id ? "pill-active" : "pill-inactive")} style={{ flexShrink: 0 }}>{m.type !== "all" && <span style={{ width: 7, height: 7, borderRadius: "50%", background: m.type === "kid" ? COLS[members.indexOf(m) % COLS.length] : m.type === "adult" ? "#8b5cf6" : "var(--color-primary)", flexShrink: 0 }} />}{m.type === "all" ? "\u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}" : ""} {m.name}{m.age != null && <span style={{ opacity: .5, marginLeft: 2 }}>({m.age})</span>}</button>)}
           </div>
-        </div>
-        <div role="tablist" aria-label="Main navigation" className="app-tab-bar" style={{ display: "flex" }}>
-          {tabs.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => { handleChangeTab(t.id); track("tab_view", { tab: t.id }); window.__haptic && window.__haptic() }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: "10px 0 8px", fontSize: 11, fontWeight: 600, border: "none", borderBottom: tab === t.id ? "2.5px solid var(--color-primary)" : "2.5px solid transparent", cursor: "pointer", background: "none", color: tab === t.id ? "var(--color-primary)" : "var(--color-muted)", fontFamily: "var(--font-sans)", transition: "color .15s" }}><span style={{ display: "flex" }}>{t.i}</span><span>{t.l}</span></button>)}
         </div>
       </div>
 
@@ -363,6 +360,12 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
         </div>
       </div>}
       </div>{/* end app-main */}
+      <div role="tablist" aria-label="Main navigation" className="app-tab-bar">
+        {tabs.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => { handleChangeTab(t.id); track("tab_view", { tab: t.id }); window.__haptic && window.__haptic() }} className={"tab-bar-item" + (tab === t.id ? " tab-bar-item--active" : "")}>
+          <span className="tab-bar-icon">{t.i}</span>
+          {tab === t.id && <span className="tab-bar-label">{t.l}</span>}
+        </button>)}
+      </div>
       <ClickSpark sparkColor="#e85d4a" sparkRadius={20} sparkSize={12}>
         <button onClick={() => { setShowFab(!showFab); window.__hapticMedium && window.__hapticMedium() }} className="fab-btn" style={{ position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", right: 20, width: 56, height: 56, borderRadius: "50%", background: showFab ? "var(--color-muted)" : "linear-gradient(135deg,var(--color-primary),var(--color-primary-light))", color: "#fff", border: "none", fontSize: 26, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(26,42,58,.3)", zIndex: 72, transition: "transform .2s cubic-bezier(.4,0,.2,1),background .15s", transform: showFab ? "rotate(45deg) scale(.9)" : "none" }}>+</button>
       </ClickSpark>
