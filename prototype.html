@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #ece9e4; -webkit-font-smoothing: antialiased; }
+  a { color: #1a2a3a; }
+  a:hover { color: #e85d4a; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  @keyframes ocvRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes ocvSheet { from { transform: translateY(102%); } to { transform: translateY(0); } }
+  @keyframes ocvFade { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:26px;padding:44px 20px 64px;min-width:max-content;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#1a1a1a;">
+
+  <div style="display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;max-width:520px;">
+    <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8590;">OneClubView · app redesign</div>
+    <div style="font-family:'Fraunces',Georgia,serif;font-size:27px;line-height:1.15;color:#1a2a3a;">One screen that answers “what now?”</div>
+    <div style="font-size:14px;line-height:1.5;color:#5a6470;max-width:440px;text-wrap:pretty;">Fewer cards, bigger type, one clear next action. Tap the tabs, the kid filters, an activity, or “Mark paid”.</div>
+  </div>
+
+  <div style="width:1280px;flex-shrink:0;border-radius:16px;overflow:hidden;background:#f8f6f3;border:1px solid #e4e2de;box-shadow:0 34px 80px rgba(26,42,58,.18),0 4px 12px rgba(0,0,0,.06);">
+    <div style="height:44px;display:flex;align-items:center;gap:9px;padding:0 18px;background:#ffffff;border-bottom:1px solid #e4e2de;">
+      <div style="display:flex;gap:7px;">
+        <span style="width:11px;height:11px;border-radius:50%;background:#e4e2de;display:block;"></span>
+        <span style="width:11px;height:11px;border-radius:50%;background:#e4e2de;display:block;"></span>
+        <span style="width:11px;height:11px;border-radius:50%;background:#e4e2de;display:block;"></span>
+      </div>
+      <div style="flex:1;display:flex;justify-content:center;">
+        <div style="background:#f8f6f3;border:1px solid #e4e2de;border-radius:8px;padding:4px 18px;font-family:'DM Mono',monospace;font-size:11.5px;color:#7c8590;">oneclubview.com/app</div>
+      </div>
+      <div style="width:60px;"></div>
+    </div>
+
+    <div style="display:flex;align-items:stretch;min-height:760px;">
+
+      <div style="width:248px;flex-shrink:0;background:#ffffff;border-right:1px solid #e4e2de;padding:24px 16px;display:flex;flex-direction:column;gap:26px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:0 6px;">
+          <svg width="28" height="28" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="45" fill="#1a2a3a"></circle>
+            <circle cx="50" cy="50" r="30" stroke="#ffffff" stroke-width="7" fill="none"></circle>
+            <circle cx="50" cy="50" r="10" fill="#e85d4a"></circle>
+          </svg>
+          <span style="font-family:'Fraunces',Georgia,serif;font-size:18px;font-weight:700;color:#1a2a3a;letter-spacing:-.02em;">OneClubView</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="4">
+            <button onClick="{{ item.onClick }}" style="{{ item.style }}">
+              <span style="{{ item.markStyle }}"></span>{{ item.label }}
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#98a0a9;padding:0 14px 8px;">Showing</div>
+          <sc-for list="{{ kidNav }}" as="k" hint-placeholder-count="4">
+            <button onClick="{{ k.onClick }}" style="{{ k.style }}">
+              <span style="{{ k.dotStyle }}"></span>{{ k.name }}
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:9px;">
+          <button style="width:100%;border:none;background:#1a2a3a;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;padding:13px;border-radius:12px;cursor:pointer;min-height:46px;">Add an activity</button>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 6px;">
+            <div style="width:32px;height:32px;border-radius:10px;background:#e85d4a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">D</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13.5px;font-weight:600;color:#1a1a1a;">Dave</div>
+              <div style="font-size:12px;color:#7c8590;">Shared with Sarah</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:0;padding:34px 36px 44px;">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8590;margin-bottom:10px;">{{ deskKicker }}</div>
+        <div style="font-family:'Fraunces',Georgia,serif;font-size:44px;line-height:1.02;letter-spacing:-.02em;color:#1a2a3a;margin-bottom:8px;">{{ deskTitle }}</div>
+        <div style="font-size:16px;line-height:1.45;color:#5a6470;margin-bottom:30px;">{{ deskSummary }}</div>
+
+        <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;">
+            <sc-for list="{{ todayList }}" as="ev" hint-placeholder-count="3">
+              <div onClick="{{ ev.open }}" style="display:flex;gap:20px;cursor:pointer;border-bottom:1px solid #e4e2de;padding:18px 4px;">
+                <div style="width:64px;flex-shrink:0;font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:#1a2a3a;">{{ ev.time }}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:19px;font-weight:600;letter-spacing:-.01em;margin-bottom:3px;">{{ ev.name }}</div>
+                  <div style="font-size:14.5px;color:#6b7480;">{{ ev.meta }}</div>
+                </div>
+                <div style="{{ ev.deskDriverChipStyle }}">{{ ev.driverLine }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isWeek }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:start;">
+            <sc-for list="{{ weekDays }}" as="day" hint-placeholder-count="7">
+              <div style="display:flex;flex-direction:column;gap:8px;min-width:0;">
+                <div style="padding:0 2px 4px;border-bottom:1px solid #e4e2de;">
+                  <div style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#7c8590;">{{ day.dow }}</div>
+                  <div style="{{ day.numStyle }}">{{ day.num }}</div>
+                </div>
+                <sc-for list="{{ day.events }}" as="ev" hint-placeholder-count="1">
+                  <div onClick="{{ ev.open }}" style="background:#ffffff;border:1px solid #e4e2de;border-radius:12px;padding:11px 12px;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-width:0;">
+                    <div style="{{ ev.deskBarStyle }}"></div>
+                    <div style="font-size:13.5px;font-weight:700;letter-spacing:-.01em;line-height:1.25;">{{ ev.name }}</div>
+                    <div style="font-family:'DM Mono',monospace;font-size:11.5px;color:#1a2a3a;">{{ ev.time }}</div>
+                    <div style="font-size:11.5px;color:#7c8590;line-height:1.3;">{{ ev.weekMeta }}</div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ day.clash }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:#fff0ee;border:1px solid #f9c9c1;border-radius:10px;padding:8px 10px;font-size:11.5px;font-weight:600;color:#c14a37;line-height:1.35;">{{ day.clashNote }}</div>
+                </sc-if>
+                <sc-if value="{{ day.free }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12.5px;color:#a8afb7;padding:6px 2px;">Free</div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isExplore }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+              <div style="display:flex;gap:6px;background:#ece9e4;border-radius:14px;padding:4px;width:320px;">
+                <sc-for list="{{ exToggles }}" as="tg" hint-placeholder-count="2">
+                  <button onClick="{{ tg.onClick }}" style="{{ tg.style }}">{{ tg.label }}</button>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:7px;flex-wrap:wrap;">
+                <sc-for list="{{ exCats }}" as="cat" hint-placeholder-count="4">
+                  <button onClick="{{ cat.onClick }}" style="{{ cat.style }}">{{ cat.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <sc-for list="{{ exList }}" as="item" hint-placeholder-count="4">
+                <div style="background:#ffffff;border:1px solid #e4e2de;border-radius:18px;padding:20px;display:flex;flex-direction:column;">
+                  <div style="display:flex;gap:14px;align-items:flex-start;">
+                    <div style="{{ item.markStyle }}">{{ item.initial }}</div>
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-size:17px;font-weight:600;letter-spacing:-.01em;margin-bottom:2px;">{{ item.name }}</div>
+                      <div style="font-size:13px;color:#7c8590;">{{ item.place }}</div>
+                    </div>
+                  </div>
+                  <div style="font-size:14px;color:#5a6470;line-height:1.5;margin-top:12px;">{{ item.note }}</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;">
+                    <span style="border-radius:7px;padding:4px 9px;font-size:12px;font-weight:600;background:#e8f0f5;color:#1a2a3a;white-space:nowrap;">{{ item.distChip }}</span>
+                    <span style="{{ item.costChipStyle }}">{{ item.costChip }}</span>
+                    <span style="border-radius:7px;padding:4px 9px;font-size:12px;font-weight:600;background:#f1efec;color:#6b7480;white-space:nowrap;">{{ item.suits }}</span>
+                  </div>
+                  <button onClick="{{ item.onAdd }}" style="{{ item.addBtnStyleDesk }}">{{ item.addBtnLabel }}</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isMoney }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="display:flex;gap:6px;background:#ece9e4;border-radius:14px;padding:4px;margin-bottom:20px;max-width:320px;">
+              <button onClick="{{ segDue }}" style="{{ segDueStyle }}">Due · {{ dueCount }}</button>
+              <button onClick="{{ segPaid }}" style="{{ segPaidStyle }}">Paid · {{ paidCount }}</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <sc-for list="{{ feeList }}" as="fee" hint-placeholder-count="3">
+                <div style="background:#ffffff;border:1px solid #e4e2de;border-radius:18px;padding:20px;">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;">
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-size:17px;font-weight:600;letter-spacing:-.01em;margin-bottom:5px;">{{ fee.title }}</div>
+                      <div style="display:flex;align-items:center;gap:7px;">
+                        <span style="{{ fee.dotStyle }}"></span>
+                        <span style="font-size:13.5px;color:#6b7480;">{{ fee.meta }}</span>
+                      </div>
+                    </div>
+                    <div style="{{ fee.amountStyle }}">{{ fee.amount }}</div>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;">
+                    <div style="{{ fee.dueChipStyle }}">{{ fee.dueLabel }}</div>
+                    <sc-if value="{{ fee.canPay }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ fee.onPay }}" style="border:none;background:#1a2a3a;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:700;padding:10px 18px;border-radius:11px;cursor:pointer;min-height:40px;">Mark paid</button>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isFamily }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <sc-for list="{{ familyRows }}" as="row" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:14px;background:#ffffff;border:1px solid #e4e2de;border-radius:18px;padding:20px;">
+                <div style="{{ row.avatarStyle }}">{{ row.initial }}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:17px;font-weight:600;letter-spacing:-.01em;">{{ row.name }}</div>
+                  <div style="font-size:13.5px;color:#6b7480;margin-top:2px;">{{ row.meta }}</div>
+                </div>
+                <span style="font-size:20px;color:#cbd1d6;">›</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="width:326px;flex-shrink:0;border-left:1px solid #e4e2de;padding:34px 24px;display:flex;flex-direction:column;gap:16px;background:#ffffff;">
+        <sc-if value="{{ showUpNext }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#1a2a3a;border-radius:20px;padding:22px 20px 18px;color:#f4f7fa;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <span style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8fa8bd;">Up next</span>
+              <span style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8fa8bd;">{{ upNextCountdown }}</span>
+            </div>
+            <div style="font-family:'Fraunces',Georgia,serif;font-size:27px;line-height:1.1;margin-bottom:8px;">{{ upNextName }}</div>
+            <div style="font-size:13.5px;color:#c3d3e0;line-height:1.5;">{{ upNextMeta }}</div>
+            <div style="height:1px;background:rgba(244,247,250,.18);margin:16px 0 14px;"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <div style="display:flex;align-items:center;gap:9px;">
+                <div style="width:24px;height:24px;border-radius:8px;background:#e85d4a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;">{{ upNextDriverInitial }}</div>
+                <span style="font-size:13.5px;font-weight:600;">{{ upNextDriverLine }}</span>
+              </div>
+              <span style="font-size:12.5px;color:#8fa8bd;">{{ upNextTravel }}</span>
+            </div>
+          </div>
+        </sc-if>
+
+        <div onClick="{{ goMoney }}" style="{{ dueStripStyle }}">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:15px;font-weight:600;margin-bottom:2px;">{{ dueStripTitle }}</div>
+            <div style="font-size:13px;opacity:.78;">{{ dueStripSub }}</div>
+          </div>
+          <span style="font-size:19px;opacity:.5;">›</span>
+        </div>
+
+        <sc-if value="{{ hasUnassigned }}" hint-placeholder-val="{{ true }}">
+          <div style="border:1px solid #f9c9c1;background:#fff0ee;border-radius:20px;padding:20px;">
+            <div style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#c14a37;margin-bottom:12px;">Needs a driver</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{ unassigned }}" as="u" hint-placeholder-count="1">
+                <div onClick="{{ u.open }}" style="cursor:pointer;">
+                  <div style="font-size:15px;font-weight:600;color:#1a1a1a;">{{ u.name }}</div>
+                  <div style="font-size:13px;color:#c14a37;margin-top:2px;">{{ u.meta }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <button style="width:100%;margin-top:14px;border:none;background:#e85d4a;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:700;padding:11px;border-radius:11px;cursor:pointer;min-height:42px;">I'll take it</button>
+          </div>
+        </sc-if>
+
+        <div style="border:1px solid #e4e2de;border-radius:20px;padding:20px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#7c8590;margin-bottom:10px;">Autumn term</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;">
+            <span style="font-size:13.5px;color:#6b7480;">Paid so far</span>
+            <span style="font-size:13.5px;font-weight:600;">{{ termLine }}</span>
+          </div>
+          <div style="height:7px;border-radius:4px;background:#e8f0f5;overflow:hidden;">
+            <div style="{{ progressStyle }}"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8590;">Mobile</div>
+
+  <div style="width:390px;height:844px;border-radius:46px;background:#f8f6f3;position:relative;overflow:hidden;box-shadow:0 34px 80px rgba(26,42,58,.22),0 4px 12px rgba(0,0,0,.10);border:1px solid rgba(26,42,58,.12);display:flex;flex-direction:column;">
+
+    <div style="height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 30px;font-size:13px;font-weight:600;">
+      <span>14:22</span>
+      <div style="display:flex;align-items:center;gap:5px;">
+        <div style="width:16px;height:9px;border-radius:2px;background:#1a1a1a;"></div>
+        <div style="width:22px;height:10px;border-radius:3px;border:1.5px solid #1a1a1a;"></div>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;overflow-x:hidden;">
+
+      <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:6px 22px 124px;animation:ocvFade .25s ease both;">
+
+          <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8590;margin-bottom:10px;">Mon 3 August</div>
+          <div style="font-family:'Fraunces',Georgia,serif;font-size:38px;line-height:1.05;color:#1a2a3a;margin-bottom:8px;">Today</div>
+          <div style="font-size:15px;line-height:1.45;color:#5a6470;margin-bottom:20px;">{{ todaySummary }}</div>
+
+          <div style="display:flex;gap:7px;margin-bottom:22px;flex-wrap:wrap;">
+            <sc-for list="{{ chips }}" as="chip" hint-placeholder-count="4">
+              <button onClick="{{ chip.onClick }}" style="{{ chip.style }}">
+                <span style="{{ chip.dotStyle }}"></span>{{ chip.name }}
+              </button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ showUpNext }}" hint-placeholder-val="{{ true }}">
+            <div style="background:#1a2a3a;border-radius:26px;padding:24px 22px 20px;color:#f4f7fa;margin-bottom:26px;animation:ocvRise .4s ease both;box-shadow:0 12px 32px rgba(26,42,58,.22);">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                <span style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8fa8bd;">Up next</span>
+                <span style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8fa8bd;">{{ upNextCountdown }}</span>
+              </div>
+              <div style="font-family:'Fraunces',Georgia,serif;font-size:32px;line-height:1.1;margin-bottom:8px;">{{ upNextName }}</div>
+              <div style="font-size:14px;color:#c3d3e0;line-height:1.5;">{{ upNextMeta }}</div>
+              <div style="height:1px;background:rgba(244,247,250,.18);margin:18px 0 15px;"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                <div style="display:flex;align-items:center;gap:9px;">
+                  <div style="width:26px;height:26px;border-radius:9px;background:#e85d4a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#FFF;">{{ upNextDriverInitial }}</div>
+                  <span style="font-size:14px;font-weight:600;">{{ upNextDriverLine }}</span>
+                </div>
+                <span style="font-size:13px;color:#8fa8bd;font-weight:500;">{{ upNextTravel }}</span>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8590;margin-bottom:6px;">Rest of the day</div>
+
+          <div style="display:flex;flex-direction:column;margin-bottom:24px;">
+            <sc-for list="{{ todayList }}" as="ev" hint-placeholder-count="3">
+              <div onClick="{{ ev.open }}" style="display:flex;gap:14px;cursor:pointer;">
+                <div style="width:46px;flex-shrink:0;padding-top:15px;font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:#5a6470;text-align:right;">{{ ev.time }}</div>
+                <div style="width:1px;background:rgba(26,42,58,.14);flex-shrink:0;position:relative;">
+                  <div style="{{ ev.dotStyle }}"></div>
+                </div>
+                <div style="flex:1;min-width:0;padding:12px 0 18px;">
+                  <div style="font-size:17px;font-weight:600;letter-spacing:-.01em;margin-bottom:3px;">{{ ev.name }}</div>
+                  <div style="font-size:13.5px;color:#6b7480;line-height:1.45;">{{ ev.meta }}</div>
+                  <sc-if value="{{ ev.showDriver }}" hint-placeholder-val="{{ false }}">
+                    <div style="{{ ev.driverChipStyle }}">{{ ev.driverLine }}</div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ todayEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:26px 12px;font-size:14.5px;color:#98a0a9;line-height:1.5;">Nothing else on for this filter.</div>
+          </sc-if>
+
+          <div onClick="{{ goMoney }}" style="{{ dueStripStyle }}">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:15px;font-weight:600;margin-bottom:2px;">{{ dueStripTitle }}</div>
+              <div style="font-size:13px;opacity:.78;">{{ dueStripSub }}</div>
+            </div>
+            <span style="font-size:19px;opacity:.5;">›</span>
+          </div>
+
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isWeek }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:6px 22px 124px;animation:ocvFade .25s ease both;">
+
+          <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8590;margin-bottom:10px;">3 – 9 August</div>
+          <div style="font-family:'Fraunces',Georgia,serif;font-size:38px;line-height:1.05;color:#1a2a3a;margin-bottom:8px;">This week</div>
+          <div style="font-size:15px;line-height:1.45;color:#5a6470;margin-bottom:20px;">{{ weekSummary }}</div>
+
+          <div style="display:flex;gap:7px;margin-bottom:24px;flex-wrap:wrap;">
+            <sc-for list="{{ chips }}" as="chip" hint-placeholder-count="4">
+              <button onClick="{{ chip.onClick }}" style="{{ chip.style }}">
+                <span style="{{ chip.dotStyle }}"></span>{{ chip.name }}
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <sc-for list="{{ weekDays }}" as="day" hint-placeholder-count="7">
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="width:44px;flex-shrink:0;padding-top:2px;">
+                  <div style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#7c8590;margin-bottom:1px;">{{ day.dow }}</div>
+                  <div style="{{ day.numStyle }}">{{ day.num }}</div>
+                </div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;">
+                  <sc-for list="{{ day.events }}" as="ev" hint-placeholder-count="1">
+                    <div onClick="{{ ev.open }}" style="display:flex;gap:11px;align-items:stretch;background:#ffffff;border:1px solid #e4e2de;border-radius:14px;padding:11px 13px;cursor:pointer;box-shadow:0 2px 8px rgba(26,42,58,.05);">
+                      <div style="{{ ev.barStyle }}"></div>
+                      <div style="flex:1;min-width:0;">
+                        <div style="font-size:15px;font-weight:600;letter-spacing:-.01em;">{{ ev.name }}</div>
+                        <div style="font-size:12.5px;color:#6b7480;margin-top:2px;">{{ ev.weekMeta }}</div>
+                      </div>
+                      <div style="font-family:'DM Mono',monospace;font-size:12.5px;font-weight:500;color:#1a2a3a;padding-top:2px;">{{ ev.time }}</div>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ day.clash }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:8px;background:#fff0ee;border:1px solid #f9c9c1;border-radius:12px;padding:9px 12px;font-size:12.5px;font-weight:600;color:#c14a37;">
+                      <span style="width:6px;height:6px;border-radius:50%;background:#e85d4a;flex-shrink:0;"></span>{{ day.clashNote }}
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ day.free }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:14px;color:#a8afb7;padding:5px 2px;">Nothing on — a free evening.</div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isExplore }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:6px 22px 124px;animation:ocvFade .25s ease both;">
+
+          <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8590;margin-bottom:10px;">Near Dunboyne</div>
+          <div style="font-family:'Fraunces',Georgia,serif;font-size:38px;line-height:1.05;color:#1a2a3a;margin-bottom:20px;">Explore</div>
+
+          <div style="display:flex;gap:6px;background:#ece9e4;border-radius:14px;padding:4px;margin-bottom:16px;">
+            <sc-for list="{{ exToggles }}" as="tg" hint-placeholder-count="2">
+              <button onClick="{{ tg.onClick }}" style="{{ tg.style }}">{{ tg.label }}</button>
+            </sc-for>
+          </div>
+
+          <div style="font-size:13.5px;color:#6b7480;margin-bottom:14px;">{{ exHeading }}</div>
+
+          <div style="display:flex;gap:7px;margin-bottom:18px;overflow-x:auto;padding-bottom:2px;">
+            <sc-for list="{{ exCats }}" as="cat" hint-placeholder-count="4">
+              <button onClick="{{ cat.onClick }}" style="{{ cat.style }}">{{ cat.label }}</button>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ exList }}" as="item" hint-placeholder-count="4">
+              <div style="background:#ffffff;border:1px solid #e4e2de;border-radius:18px;padding:16px 17px;">
+                <div style="display:flex;gap:13px;align-items:flex-start;">
+                  <div style="{{ item.markStyle }}">{{ item.initial }}</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:16.5px;font-weight:600;letter-spacing:-.01em;margin-bottom:2px;">{{ item.name }}</div>
+                    <div style="font-size:13px;color:#7c8590;">{{ item.place }}</div>
+                  </div>
+                </div>
+                <div style="font-size:13.5px;color:#5a6470;line-height:1.5;margin-top:11px;">{{ item.note }}</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;">
+                  <span style="border-radius:7px;padding:4px 9px;font-size:12px;font-weight:600;background:#e8f0f5;color:#1a2a3a;white-space:nowrap;">{{ item.distChip }}</span>
+                  <span style="{{ item.costChipStyle }}">{{ item.costChip }}</span>
+                  <span style="border-radius:7px;padding:4px 9px;font-size:12px;font-weight:600;background:#f1efec;color:#6b7480;white-space:nowrap;">{{ item.suits }}</span>
+                </div>
+                <button onClick="{{ item.onAdd }}" style="{{ item.addBtnStyle }}">{{ item.addBtnLabel }}</button>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ exEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:34px 10px;font-size:14.5px;color:#98a0a9;line-height:1.5;">Nothing in this category near you yet.</div>
+          </sc-if>
+
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMoney }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:6px 22px 124px;animation:ocvFade .25s ease both;">
+
+          <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8590;margin-bottom:10px;">Fees &amp; payments</div>
+          <div style="font-family:'Fraunces',Georgia,serif;font-size:38px;line-height:1.05;color:#1a2a3a;margin-bottom:22px;">Money</div>
+
+          <div style="background:#ffffff;border:1px solid #e4e2de;border-radius:26px;padding:24px 22px;margin-bottom:22px;box-shadow:0 2px 8px rgba(26,42,58,.05);">
+            <div style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#7c8590;margin-bottom:8px;">Outstanding</div>
+            <div style="{{ outstandingStyle }}">{{ outstanding }}</div>
+            <div style="font-size:14px;color:#5a6470;margin-top:6px;line-height:1.45;">{{ moneySub }}</div>
+            <div style="height:1px;background:rgba(26,42,58,.10);margin:20px 0 16px;"></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;">
+              <span style="font-size:13px;color:#6b7480;">Autumn term</span>
+              <span style="font-size:13px;font-weight:600;">{{ termLine }}</span>
+            </div>
+            <div style="height:7px;border-radius:4px;background:#e8f0f5;overflow:hidden;">
+              <div style="{{ progressStyle }}"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:6px;background:#ece9e4;border-radius:14px;padding:4px;margin-bottom:18px;">
+            <button onClick="{{ segDue }}" style="{{ segDueStyle }}">Due · {{ dueCount }}</button>
+            <button onClick="{{ segPaid }}" style="{{ segPaidStyle }}">Paid · {{ paidCount }}</button>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <sc-for list="{{ feeList }}" as="fee" hint-placeholder-count="3">
+              <div style="background:#ffffff;border:1px solid #e4e2de;border-radius:18px;padding:16px 17px;box-shadow:0 2px 8px rgba(26,42,58,.05);">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;">
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:16px;font-weight:600;letter-spacing:-.01em;margin-bottom:3px;">{{ fee.title }}</div>
+                    <div style="display:flex;align-items:center;gap:7px;">
+                      <span style="{{ fee.dotStyle }}"></span>
+                      <span style="font-size:13px;color:#6b7480;">{{ fee.meta }}</span>
+                    </div>
+                  </div>
+                  <div style="{{ fee.amountStyle }}">{{ fee.amount }}</div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px;">
+                  <div style="{{ fee.dueChipStyle }}">{{ fee.dueLabel }}</div>
+                  <sc-if value="{{ fee.canPay }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ fee.onPay }}" style="border:none;background:#1a2a3a;color:#FFFFFF;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;padding:9px 16px;border-radius:11px;cursor:pointer;min-height:38px;box-shadow:0 4px 12px rgba(26,42,58,.20);">Mark paid</button>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ feeEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:34px 10px;font-size:14.5px;color:#98a0a9;line-height:1.5;">Nothing here yet.</div>
+          </sc-if>
+
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isFamily }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:6px 22px 124px;animation:ocvFade .25s ease both;">
+          <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8590;margin-bottom:10px;">The Fays</div>
+          <div style="font-family:'Fraunces',Georgia,serif;font-size:38px;line-height:1.05;color:#1a2a3a;margin-bottom:22px;">Family</div>
+
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <sc-for list="{{ familyRows }}" as="row" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:13px;background:#ffffff;border:1px solid #e4e2de;border-radius:18px;padding:15px 17px;box-shadow:0 2px 8px rgba(26,42,58,.05);">
+                <div style="{{ row.avatarStyle }}">{{ row.initial }}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:16px;font-weight:600;letter-spacing:-.01em;">{{ row.name }}</div>
+                  <div style="font-size:13px;color:#6b7480;margin-top:2px;">{{ row.meta }}</div>
+                </div>
+                <span style="font-size:19px;color:#cbd1d6;">›</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8590;margin:28px 0 12px;">Sharing</div>
+          <div style="background:#e8f0f5;border:1px solid #e4e2de;border-radius:20px;padding:19px 18px;">
+            <div style="font-size:16px;font-weight:600;margin-bottom:5px;">Both parents see everything</div>
+            <div style="font-size:13.5px;color:#5a6470;line-height:1.5;margin-bottom:14px;">Sarah has full access. Changes to the schedule, driving and fees sync to both phones.</div>
+            <button style="border:1.5px solid #1a2a3a;background:none;color:#1a2a3a;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;padding:10px 16px;border-radius:11px;cursor:pointer;min-height:44px;">Invite another adult</button>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+
+    <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(16,22,30,.44);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:60;animation:ocvFade .18s ease both;"></div>
+    </sc-if>
+    <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;left:0;right:0;bottom:0;z-index:61;background:#ffffff;border-radius:28px 28px 46px 46px;padding:14px 24px 34px;animation:ocvSheet .3s cubic-bezier(.16,1,.3,1) both;box-shadow:0 -12px 40px rgba(26,42,58,.18);">
+        <div style="width:38px;height:4px;border-radius:2px;background:rgba(26,42,58,.18);margin:0 auto 18px;"></div>
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;">
+          <span style="{{ sheetDotStyle }}"></span>
+          <span style="font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#7c8590;">{{ sheetKid }}</span>
+        </div>
+        <div style="font-family:'Fraunces',Georgia,serif;font-size:29px;line-height:1.1;color:#1a2a3a;margin-bottom:16px;">{{ sheetName }}</div>
+        <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:20px;">
+          <sc-for list="{{ sheetRows }}" as="row" hint-placeholder-count="3">
+            <div style="display:flex;gap:14px;align-items:baseline;">
+              <div style="width:78px;flex-shrink:0;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#7c8590;">{{ row.label }}</div>
+              <div style="flex:1;font-size:15px;font-weight:500;line-height:1.4;">{{ row.value }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:9px;">
+          <button onClick="{{ closeSheet }}" style="flex:1;border:none;background:#1a2a3a;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;padding:15px;border-radius:14px;cursor:pointer;min-height:48px;box-shadow:0 4px 12px rgba(26,42,58,.20);">I'm driving</button>
+          <button onClick="{{ closeSheet }}" style="flex:1;border:none;background:#ece9e4;color:#6b7480;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;padding:15px;border-radius:14px;cursor:pointer;min-height:48px;">Skip this week</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="position:absolute;left:14px;right:14px;bottom:12px;z-index:50;display:flex;justify-content:space-around;align-items:center;padding:9px 6px;background:rgba(255,255,255,.93);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid #e4e2de;border-radius:22px;box-shadow:0 8px 24px rgba(26,42,58,.10);">
+      <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="4">
+        <button onClick="{{ tab.onClick }}" style="{{ tab.style }}">
+          <span style="{{ tab.markStyle }}"></span>{{ tab.label }}
+        </button>
+      </sc-for>
+    </div>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:520,&quot;height&quot;:1010},&quot;currency&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;€&quot;,&quot;£&quot;,&quot;$&quot;],&quot;default&quot;:&quot;€&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Region&quot;},&quot;showDriverChips&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Schedule&quot;}}">
+class Component extends DCLogic {
+  state = { tab: 'today', kid: 'all', seg: 'due', sheet: null, paid: {}, exSub: 'clubs', exCat: 'all', added: {} };
+
+  kids() {
+    return [
+      { id: 'ava', name: 'Ava', colour: '#2d7cb5' },
+      { id: 'finn', name: 'Finn', colour: '#e85d4a' },
+      { id: 'nell', name: 'Nell', colour: '#9B5DE5' },
+    ];
+  }
+
+  events() {
+    return [
+      { id: 'e1', day: 0, kid: 'ava', name: 'Swimming', time: '16:30', end: '17:15', place: 'Aura Leisure, Trim', driver: 'Dave', kit: 'Goggles + towel', coach: 'Coach Marie' },
+      { id: 'e2', day: 0, kid: 'finn', name: 'GAA training', time: '18:00', end: '19:15', place: 'Dunboyne GAA, pitch 2', driver: 'Sarah', kit: 'Boots, gumshield', coach: 'Coach Liam' },
+      { id: 'e3', day: 1, kid: 'nell', name: 'Ballet', time: '15:45', end: '16:30', place: 'Trim Dance Studio', driver: 'Dave', kit: 'Leotard + ballet shoes', coach: 'Miss Orla' },
+      { id: 'e4', day: 2, kid: 'ava', name: 'Piano', time: '17:00', end: '17:45', place: 'Mrs Kelly’s, Navan Rd', driver: 'Sarah', kit: 'Grade 3 book', coach: 'Mrs Kelly' },
+      { id: 'e5', day: 2, kid: 'finn', name: 'Soccer', time: '17:15', end: '18:30', place: 'Dunboyne AFC', driver: 'Unassigned', kit: 'Shin pads', coach: 'Coach Pat' },
+      { id: 'e6', day: 4, kid: 'finn', name: 'GAA match', time: '18:30', end: '19:45', place: 'Away — Ratoath', driver: 'Dave', kit: 'Full kit + water', coach: 'Coach Liam' },
+      { id: 'e7', day: 5, kid: 'ava', name: 'Swim gala', time: '10:00', end: '13:00', place: 'NAC, Blanchardstown', driver: 'Sarah', kit: 'Two towels, snacks', coach: 'Coach Marie' },
+      { id: 'e8', day: 5, kid: 'nell', name: 'Art class', time: '11:30', end: '12:30', place: 'Solstice Arts Centre', driver: 'Dave', kit: 'Apron', coach: 'Ríona' },
+    ];
+  }
+
+  fees() {
+    return [
+      { id: 'f1', kid: 'ava', title: 'Swim Club — autumn term', amount: 120, due: 'Due Fri 8 Aug', state: 'due' },
+      { id: 'f2', kid: 'finn', title: 'GAA membership', amount: 65, due: 'Overdue since 1 Aug', state: 'overdue' },
+      { id: 'f3', kid: 'nell', title: 'Ballet — term 2', amount: 90, due: 'Due Fri 15 Aug', state: 'due' },
+      { id: 'f4', kid: 'ava', title: 'Piano lessons — block of 8', amount: 140, due: 'Paid 12 Jul', state: 'paid' },
+      { id: 'f5', kid: 'nell', title: 'Art class — summer', amount: 55, due: 'Paid 2 Jul', state: 'paid' },
+    ];
+  }
+
+  nearbyClubs() {
+    return [
+      { id: 'c1', name: 'Dunboyne AFC', cat: 'soccer', catLabel: 'Soccer', place: 'Dunboyne', dist: '1.2 km', ages: 'Ages 5–17', note: 'Training Wed & Sat mornings', colour: '#2d7cb5' },
+      { id: 'c2', name: 'Trim Swimming Club', cat: 'swimming', catLabel: 'Swimming', place: 'Aura Leisure, Trim', dist: '4.8 km', ages: 'Ages 6–16', note: 'Lane squads, autumn intake open', colour: '#0ea5e9' },
+      { id: 'c3', name: 'Meath Gymnastics', cat: 'gymnastics', catLabel: 'Gymnastics', place: 'Navan', dist: '9.3 km', ages: 'Ages 4–12', note: 'Waiting list — 3 weeks', colour: '#9B5DE5' },
+      { id: 'c4', name: 'Ratoath Musical Society', cat: 'music', catLabel: 'Music', place: 'Ratoath', dist: '6.1 km', ages: 'Ages 7–18', note: 'Auditions in September', colour: '#e85d4a' },
+      { id: 'c5', name: 'Boyne Rovers Athletics', cat: 'athletics', catLabel: 'Athletics', place: 'Navan track', dist: '8.7 km', ages: 'Ages 6–16', note: 'Tuesdays and Fridays', colour: '#1a2a3a' },
+    ];
+  }
+
+  thingsToDo() {
+    return [
+      { id: 't1', name: 'Trim Castle', cat: 'heritage', catLabel: 'Heritage', place: 'Trim', dist: '3.4 km', cost: 5, ages: 'All ages', suits: 'Ava, Finn, Nell', note: 'Norman keep with a river loop walk — about two hours.', colour: '#9B5DE5' },
+      { id: 't2', name: 'Dunboyne playground', cat: 'play', catLabel: 'Play', place: 'Rooske Road', dist: '0.8 km', cost: 0, ages: 'Ages 1–10', suits: 'Nell', note: 'Fenced, with a coffee hatch. Good for a spare hour.', colour: '#22c55e' },
+      { id: 't3', name: 'Causey Farm', cat: 'farm', catLabel: 'Farm', place: 'Girley, Co. Meath', dist: '12 km', cost: 14, ages: 'Ages 2–12', suits: 'Nell, Ava', note: 'Bog jumping, bread making, sheepdog demo.', colour: '#92400e' },
+      { id: 't4', name: 'Boyne Valley cycle trail', cat: 'cycling', catLabel: 'Cycling', place: 'Navan to Drogheda', dist: '7 km to start', cost: 0, ages: 'Ages 8+', suits: 'Ava, Finn', note: 'Flat greenway, 10 km out and back is plenty.', colour: '#65a30d' },
+      { id: 't5', name: 'Falconry experience', cat: 'adventure', catLabel: 'Adventure', place: 'Newgrange', dist: '15 km', cost: 18, ages: 'Ages 6+', suits: 'Ava, Finn', note: 'Book ahead — Saturday slots go early.', colour: '#dc2626' },
+      { id: 't6', name: 'Puppet show — Solstice', cat: 'indoor', catLabel: 'Indoor', place: 'Solstice Arts Centre', dist: '8.5 km', cost: 9, ages: 'Ages 3–9', suits: 'Nell', note: 'Sat 9 Aug, 11:00. Forty minutes, no interval.', colour: '#6366f1' },
+    ];
+  }
+
+  cur() { return this.props.currency ?? '€'; }
+  kidById(id) { return this.kids().find(k => k.id === id); }
+  visible(list) { return this.state.kid === 'all' ? list : list.filter(x => x.kid === this.state.kid); }
+
+  feeState(f) { return this.state.paid[f.id] ? 'paid' : f.state; }
+
+  renderVals() {
+    const t = this.state.tab, kidSel = this.state.kid, showDrivers = this.props.showDriverChips ?? true;
+    const kids = this.kids(), evts = this.events(), fees = this.fees();
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const dayNums = [3, 4, 5, 6, 7, 8, 9];
+
+    // ── filter chips ──
+    const chipBase = 'display:flex;align-items:center;gap:6px;border-radius:100px;padding:8px 15px;min-height:38px;font-family:\'Plus Jakarta Sans\',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .15s;';
+    const mkChip = (id, name, colour) => {
+      const on = kidSel === id;
+      return {
+        name,
+        onClick: () => this.setState({ kid: id }),
+        style: chipBase + (on
+          ? 'background:#1a2a3a;color:#ffffff;border:1.5px solid #1a2a3a;box-shadow:0 2px 8px rgba(26,42,58,.18);'
+          : 'background:#ffffff;color:#5a6470;border:1.5px solid #e4e2de;'),
+        dotStyle: colour
+          ? 'width:7px;height:7px;border-radius:50%;flex-shrink:0;background:' + (on ? '#ffffff' : colour) + ';'
+          : 'display:none;',
+      };
+    };
+    const chips = [mkChip('all', 'Everyone', null)].concat(kids.map(k => mkChip(k.id, k.name, k.colour)));
+
+    // ── today ──
+    const todayAll = this.visible(evts.filter(e => e.day === 0));
+    const upNext = todayAll[0];
+    const rest = todayAll.slice(1);
+    const nDrive = todayAll.filter(e => e.driver === 'Dave').length;
+    const todaySummary = todayAll.length === 0
+      ? 'Nothing scheduled — a rare quiet Monday.'
+      : todayAll.length + (todayAll.length === 1 ? ' activity' : ' activities') + ', ' + nDrive + (nDrive === 1 ? ' run' : ' runs') + ' on you.';
+
+    const todayList = rest.map(e => {
+      const k = this.kidById(e.kid);
+      return {
+        time: e.time,
+        name: e.name,
+        meta: k.name + ' · ' + e.place,
+        open: () => this.setState({ sheet: e.id }),
+        dotStyle: 'position:absolute;left:-4px;top:17px;width:9px;height:9px;border-radius:50%;background:' + k.colour + ';border:2px solid #f8f6f3;',
+        showDriver: showDrivers,
+        driverLine: e.driver === 'Unassigned' ? 'No driver yet — tap to claim' : e.driver + ' driving',
+        driverChipStyle: 'display:inline-block;margin-top:8px;border-radius:8px;padding:4px 9px;font-size:12px;font-weight:600;' +
+          (e.driver === 'Unassigned'
+            ? 'background:#fff0ee;color:#c14a37;'
+            : 'background:#e8f0f5;color:#1a2a3a;'),
+        deskDriverChipStyle: 'flex-shrink:0;align-self:center;white-space:nowrap;border-radius:9px;padding:6px 12px;font-size:13px;font-weight:600;' +
+          (e.driver === 'Unassigned'
+            ? 'background:#fff0ee;color:#c14a37;'
+            : 'background:#e8f0f5;color:#1a2a3a;'),
+      };
+    });
+
+    // ── money ──
+    const visFees = this.visible(fees);
+    const due = visFees.filter(f => this.feeState(f) !== 'paid');
+    const paidF = visFees.filter(f => this.feeState(f) === 'paid');
+    const outstandingTotal = due.reduce((s, f) => s + f.amount, 0);
+    const paidTotal = paidF.reduce((s, f) => s + f.amount, 0);
+    const overdueN = due.filter(f => this.feeState(f) === 'overdue').length;
+    const pct = paidTotal + outstandingTotal === 0 ? 100 : Math.round(paidTotal / (paidTotal + outstandingTotal) * 100);
+
+    const shown = this.state.seg === 'due' ? due : paidF;
+    const feeList = shown.map(f => {
+      const k = this.kidById(f.kid), st = this.feeState(f);
+      return {
+        title: f.title,
+        meta: k.name,
+        amount: this.cur() + f.amount,
+        dueLabel: st === 'paid' ? (this.state.paid[f.id] ? 'Paid just now' : f.due) : f.due,
+        canPay: st !== 'paid',
+        onPay: () => this.setState(s => ({ paid: { ...s.paid, [f.id]: true } })),
+        dotStyle: 'width:7px;height:7px;border-radius:50%;flex-shrink:0;background:' + k.colour + ';',
+        amountStyle: 'font-family:\'Fraunces\',Georgia,serif;font-size:26px;line-height:1;color:' +
+          (st === 'overdue' ? '#E63946' : st === 'paid' ? '#2d4a5f' : '#1a1a1a') + ';',
+        dueChipStyle: 'border-radius:8px;padding:5px 10px;font-size:12.5px;font-weight:600;' +
+          (st === 'overdue' ? 'background:#FEF0F0;color:#E63946;'
+            : st === 'paid' ? 'background:#e8f0f5;color:#1a2a3a;'
+            : 'background:#f1efec;color:#6b7480;'),
+      };
+    });
+
+    const segBase = 'flex:1;border:none;font-family:\'Plus Jakarta Sans\',sans-serif;font-size:13.5px;font-weight:700;padding:10px;border-radius:11px;cursor:pointer;min-height:42px;transition:all .15s;';
+    const segOn = 'background:#ffffff;color:#1a2a3a;box-shadow:0 2px 6px rgba(26,42,58,.10);';
+    const segOff = 'background:none;color:#7c8590;';
+
+    // ── week ──
+    const weekVis = this.visible(evts);
+    const weekDays = dayNames.map((dow, i) => {
+      const de = weekVis.filter(e => e.day === i);
+      const clash = de.length > 1 && de.some(e => e.driver === 'Unassigned');
+      return {
+        dow,
+        num: dayNums[i],
+        numStyle: 'font-family:\'Fraunces\',Georgia,serif;font-size:23px;line-height:1;color:' + (i === 0 ? '#1a2a3a' : '#bcc2c8') + ';',
+        free: de.length === 0,
+        clash,
+        clashNote: 'Two runs at once — nobody assigned to Soccer',
+        events: de.map(e => {
+          const k = this.kidById(e.kid);
+          return {
+            name: e.name,
+            time: e.time,
+            weekMeta: k.name + ' · ' + (e.driver === 'Unassigned' ? 'no driver' : e.driver),
+            open: () => this.setState({ sheet: e.id }),
+            barStyle: 'width:3px;border-radius:2px;flex-shrink:0;background:' + k.colour + ';',
+            deskBarStyle: 'width:22px;height:3px;border-radius:2px;flex-shrink:0;background:' + k.colour + ';',
+          };
+        }),
+      };
+    });
+    const weekSummary = weekVis.length + ' activities across ' + weekDays.filter(d => !d.free).length + ' days · 1 clash to sort.';
+
+    // ── sheet ──
+    const se = evts.find(e => e.id === this.state.sheet);
+    const sk = se ? this.kidById(se.kid) : null;
+
+    // ── tabs ──
+    const tabBase = 'display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:none;font-family:\'Plus Jakarta Sans\',sans-serif;font-size:11px;font-weight:700;padding:6px 9px;border-radius:12px;cursor:pointer;min-height:44px;justify-content:center;transition:color .2s;';
+    const tabs = [['today', 'Today'], ['week', 'Week'], ['explore', 'Explore'], ['money', 'Money'], ['family', 'Family']].map(([id, label]) => {
+      const on = t === id;
+      return {
+        label,
+        onClick: () => this.setState({ tab: id, sheet: null }),
+        style: tabBase + (on ? 'color:#1a2a3a;' : 'color:#a8afb7;'),
+        markStyle: 'width:18px;height:3px;border-radius:2px;background:' + (on ? '#1a2a3a' : 'transparent') + ';',
+      };
+    });
+
+    // ── explore ──
+    const exClubs = this.state.exSub === 'clubs';
+    const exSource = exClubs ? this.nearbyClubs() : this.thingsToDo();
+    const exCats = [{ id: 'all', label: 'All · ' + exSource.length }].concat(
+      Array.from(new Set(exSource.map(x => x.cat))).map(c => ({ id: c, label: exSource.find(x => x.cat === c).catLabel }))
+    ).map(c => {
+      const on = this.state.exCat === c.id;
+      return {
+        label: c.label,
+        onClick: () => this.setState({ exCat: c.id }),
+        style: 'border-radius:100px;padding:8px 15px;min-height:38px;font-family:\'Plus Jakarta Sans\',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;' +
+          (on ? 'background:#1a2a3a;color:#ffffff;border:1.5px solid #1a2a3a;' : 'background:#ffffff;color:#5a6470;border:1.5px solid #e4e2de;'),
+      };
+    });
+    const exList = exSource
+      .filter(x => this.state.exCat === 'all' || x.cat === this.state.exCat)
+      .map(x => {
+        const isAdded = !!this.state.added[x.id];
+        return {
+          name: x.name,
+          note: x.note,
+          place: x.place,
+          catLabel: x.catLabel,
+          markStyle: 'width:42px;height:42px;border-radius:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:\'Fraunces\',Georgia,serif;font-size:17px;font-weight:700;color:#ffffff;background:' + x.colour + ';',
+          initial: x.name[0],
+          distChip: x.dist,
+          costChip: exClubs ? x.catLabel : (x.cost === 0 ? 'Free' : this.cur() + x.cost),
+          costChipStyle: 'border-radius:7px;padding:4px 9px;font-size:12px;font-weight:600;white-space:nowrap;' +
+            (exClubs ? 'background:#f1efec;color:#6b7480;' : x.cost === 0 ? 'background:#e8f0f5;color:#1a2a3a;' : 'background:#fff0ee;color:#c14a37;'),
+          suits: exClubs ? x.ages : 'Suits ' + x.suits,
+          added: isAdded,
+          onAdd: () => this.setState(s => ({ added: { ...s.added, [x.id]: true } })),
+          addLabel: exClubs ? 'Add club' : 'Add to schedule',
+          addBtnLabel: isAdded ? 'On the list' : (exClubs ? 'Add club' : 'Add to schedule'),
+          addBtnStyle: 'width:100%;margin-top:14px;font-family:\'Plus Jakarta Sans\',sans-serif;font-size:13.5px;font-weight:700;padding:12px;border-radius:12px;cursor:pointer;min-height:46px;' +
+            (isAdded
+              ? 'border:none;background:#e8f0f5;color:#1a2a3a;'
+              : 'border:1.5px solid #1a2a3a;background:none;color:#1a2a3a;'),
+          addBtnStyleDesk: 'margin-top:14px;padding:10px 18px;font-family:\'Plus Jakarta Sans\',sans-serif;font-size:13.5px;font-weight:700;border-radius:11px;cursor:pointer;min-height:42px;align-self:flex-start;' +
+            (isAdded
+              ? 'border:none;background:#e8f0f5;color:#1a2a3a;'
+              : 'border:1.5px solid #1a2a3a;background:none;color:#1a2a3a;'),
+        };
+      });
+
+    const exToggle = (id, label) => {
+      const on = this.state.exSub === id;
+      return {
+        label,
+        onClick: () => this.setState({ exSub: id, exCat: 'all' }),
+        style: 'flex:1;border:none;font-family:\'Plus Jakarta Sans\',sans-serif;font-size:13.5px;font-weight:700;padding:10px;border-radius:11px;cursor:pointer;min-height:42px;transition:all .15s;' +
+          (on ? 'background:#ffffff;color:#1a2a3a;box-shadow:0 2px 6px rgba(26,42,58,.10);' : 'background:none;color:#7c8590;'),
+      };
+    };
+    const exToggles = [exToggle('clubs', 'Clubs near you'), exToggle('things', 'Things to do')];
+
+    // ── desktop nav ──
+    const navBase = 'display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:none;font-family:\'Plus Jakarta Sans\',sans-serif;font-size:14.5px;font-weight:600;padding:11px 14px;border-radius:12px;cursor:pointer;min-height:44px;transition:all .15s;';
+    const navItems = [['today', 'Today'], ['week', 'Week'], ['explore', 'Explore'], ['money', 'Money'], ['family', 'Family']].map(([id, label]) => {
+      const on = t === id;
+      return {
+        label,
+        onClick: () => this.setState({ tab: id, sheet: null }),
+        style: navBase + (on ? 'background:#1a2a3a;color:#ffffff;' : 'background:none;color:#5a6470;'),
+        markStyle: 'width:6px;height:6px;border-radius:50%;flex-shrink:0;background:' + (on ? '#e85d4a' : '#cbd1d6') + ';',
+      };
+    });
+    const kidNav = [{ id: 'all', name: 'Everyone', colour: null }].concat(kids).map(k => {
+      const on = kidSel === k.id;
+      return {
+        name: k.name,
+        onClick: () => this.setState({ kid: k.id }),
+        style: 'display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:none;font-family:\'Plus Jakarta Sans\',sans-serif;font-size:13.5px;font-weight:' + (on ? '700' : '500') + ';padding:9px 14px;border-radius:10px;cursor:pointer;min-height:40px;background:' + (on ? '#e8f0f5' : 'none') + ';color:' + (on ? '#1a2a3a' : '#5a6470') + ';',
+        dotStyle: 'width:8px;height:8px;border-radius:50%;flex-shrink:0;background:' + (k.colour || '#bcc2c8') + ';',
+      };
+    });
+    const unassigned = weekVis.filter(e => e.driver === 'Unassigned').map(e => ({
+      name: e.name,
+      meta: this.kidById(e.kid).name + ' · ' + dayNames[e.day] + ' ' + e.time,
+      open: () => this.setState({ sheet: e.id }),
+    }));
+
+    return {
+      navItems, kidNav, unassigned,
+      hasUnassigned: unassigned.length > 0,
+      isExplore: t === 'explore',
+      exToggles, exCats, exList,
+      exEmpty: exList.length === 0,
+      exHeading: exClubs ? 'Clubs within 10 km of Dunboyne' : 'Sorted by distance from home',
+      deskTitle: t === 'today' ? 'Today' : t === 'week' ? 'This week' : t === 'explore' ? 'Explore' : t === 'money' ? 'Money' : 'Family',
+      deskKicker: t === 'today' ? 'Monday 3 August' : t === 'week' ? '3 – 9 August' : t === 'explore' ? 'Near Dunboyne, Co. Meath' : t === 'money' ? 'Fees & payments' : 'The Fays',
+      deskSummary: t === 'today' ? todaySummary : t === 'week' ? weekSummary : t === 'explore' ? (exClubs ? 'Clubs within 10 km, filtered to your kids’ ages.' : 'Somewhere to go this weekend, sorted by distance.') : t === 'money' ? (overdueN > 0 ? overdueN + ' overdue · rest due this month' : 'Nothing overdue this month.') : '3 kids, 2 adults, everything shared.',
+      isToday: t === 'today', isWeek: t === 'week', isMoney: t === 'money', isFamily: t === 'family',
+      chips, tabs,
+      todaySummary, todayList, todayEmpty: rest.length === 0 && !!upNext === false ? true : rest.length === 0,
+      showUpNext: !!upNext,
+      upNextName: upNext ? upNext.name : '',
+      upNextCountdown: 'in 2h 08m',
+      upNextMeta: upNext ? this.kidById(upNext.kid).name + ' · ' + upNext.time + '–' + upNext.end + ' · ' + upNext.place : '',
+      upNextDriverInitial: upNext ? upNext.driver[0] : '',
+      upNextDriverLine: upNext ? (upNext.driver === 'Dave' ? 'You’re driving' : upNext.driver + ' is driving') : '',
+      upNextTravel: '18 min away',
+      goMoney: () => this.setState({ tab: 'money' }),
+      dueStripTitle: outstandingTotal > 0 ? this.cur() + outstandingTotal + ' outstanding' : 'All fees settled',
+      dueStripSub: overdueN > 0 ? overdueN + ' payment overdue · ' + due.length + ' total' : due.length + ' upcoming payments',
+      dueStripStyle: 'display:flex;align-items:center;gap:12px;border-radius:20px;padding:17px 19px;cursor:pointer;' +
+        (overdueN > 0 ? 'background:#fff0ee;border:1px solid #f9c9c1;color:#c14a37;' : 'background:#e8f0f5;border:1px solid rgba(26,42,58,.12);color:#1a2a3a;'),
+
+      weekSummary, weekDays,
+
+      outstanding: this.cur() + outstandingTotal,
+      outstandingStyle: 'font-family:\'Fraunces\',Georgia,serif;font-size:46px;line-height:1;color:' + (overdueN > 0 ? '#e85d4a' : '#1a2a3a') + ';',
+      moneySub: overdueN > 0 ? overdueN + ' overdue · rest due this month' : 'Nothing overdue. Next payment Fri 8 Aug.',
+      termLine: this.cur() + paidTotal + ' paid of ' + this.cur() + (paidTotal + outstandingTotal),
+      progressStyle: 'height:100%;border-radius:4px;width:' + pct + '%;background:#2d4a5f;transition:width .4s ease;',
+      segDue: () => this.setState({ seg: 'due' }),
+      segPaid: () => this.setState({ seg: 'paid' }),
+      segDueStyle: segBase + (this.state.seg === 'due' ? segOn : segOff),
+      segPaidStyle: segBase + (this.state.seg === 'paid' ? segOn : segOff),
+      dueCount: due.length, paidCount: paidF.length,
+      feeList, feeEmpty: feeList.length === 0,
+
+      familyRows: [
+        { id: 'ava', name: 'Ava', meta: '8 · 3rd Class · Swimming, Piano', initial: 'A', colour: '#2d7cb5' },
+        { id: 'finn', name: 'Finn', meta: '11 · 5th Class · GAA, Soccer', initial: 'F', colour: '#e85d4a' },
+        { id: 'nell', name: 'Nell', meta: '5 · Senior Infants · Ballet, Art', initial: 'N', colour: '#9B5DE5' },
+      ].map(r => ({ ...r, avatarStyle: 'width:40px;height:40px;border-radius:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;background:' + r.colour + ';' })),
+
+      sheetOpen: !!se,
+      closeSheet: () => this.setState({ sheet: null }),
+      sheetName: se ? se.name : '',
+      sheetKid: sk ? sk.name : '',
+      sheetDotStyle: 'width:8px;height:8px;border-radius:50%;background:' + (sk ? sk.colour : 'transparent') + ';',
+      sheetRows: se ? [
+        { label: 'When', value: se.time + ' – ' + se.end + ', ' + dayNames[se.day] + ' ' + dayNums[se.day] + ' Aug' },
+        { label: 'Where', value: se.place },
+        { label: 'Driving', value: se.driver === 'Unassigned' ? 'Nobody yet' : se.driver },
+        { label: 'Bring', value: se.kit },
+        { label: 'Coach', value: se.coach },
+      ] : [],
+    };
+  }
+}
+
+</script>
+</body>
+</html>
