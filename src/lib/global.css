@@ -763,6 +763,12 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   .bento-wide { grid-column: span 2; }
 }
 
+@keyframes ocvRise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ocv-rise { animation: ocvRise .4s ease both; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
