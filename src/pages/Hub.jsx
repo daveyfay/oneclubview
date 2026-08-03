@@ -19,6 +19,7 @@ import ContextRail from '../components/ContextRail';
 const TodayTab = lazy(() => import('./tabs/TodayTab'));
 const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
 const ScheduleTab = lazy(() => import('./tabs/ScheduleTab'));
+const WeekTab = lazy(() => import('./tabs/WeekTab'));
 const MoneyTab = lazy(() => import('./tabs/MoneyTab'));
 const ExploreTab = lazy(() => import('./tabs/ExploreTab'));
 const FamilyTab = lazy(() => import('./tabs/FamilyTab'));
@@ -295,7 +296,7 @@ function HubInner({ user, profile, onRefresh, onLogout }) {
           <div className="skeleton-shimmer" style={{ height: 200, borderRadius: 16 }} />
         </div>}>
           {tab === "overview" && <TodayTab filter={filter} onChangeTab={handleChangeTab} onRefresh={onRefresh} />}
-          {tab === "week" && <ScheduleTab filter={filter} />}
+          {tab === "week" && <WeekTab filter={filter} />}
           {tab === "money" && <MoneyTab filter={filter} />}
           {tab === "explore" && <ExploreTab filter={filter} onRefresh={onRefresh} />}
           {tab === "family" && <FamilyTab />}
