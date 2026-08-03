@@ -2,36 +2,35 @@
 
 /* CSS Variables */
 :root {
-  --color-primary: #2D6A4F;
-  --color-primary-light: #52B788;
-  --color-primary-bg: #EDF5F0;
-  --color-accent: #E07A5F;
-  --color-accent-bg: #FDF0EC;
-  --color-gold: #F2CC8F;
-  --color-sage: #EDF5F0;
-  --color-warm: #FAF8F5;
-  --color-card: #FFFEFB;
-  --color-text: #2B2D2E;
-  --color-muted: #8C8A85;
-  --color-border: rgba(45,106,79,.10);
-  --font-serif: 'DM Serif Display', Georgia, serif;
-  --font-sans: 'DM Sans', -apple-system, sans-serif;
+  --color-primary: #1a2a3a;
+  --color-primary-light: #2d4a5f;
+  --color-primary-bg: #e8f0f5;
+  --color-accent: #e85d4a;
+  --color-accent-bg: #fff0ee;
+  --color-sage: #e8f0f5;
+  --color-warm: #f8f6f3;
+  --color-card: #ffffff;
+  --color-text: #1a1a1a;
+  --color-muted: #7c8590;
+  --color-border: #e4e2de;
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
   --font-mono: 'DM Mono', 'SF Mono', 'Courier New', monospace;
-  --shadow: 0 2px 8px rgba(45,106,79,.05), 0 1px 3px rgba(0,0,0,.04);
-  --shadow-lg: 0 8px 24px rgba(45,106,79,.08), 0 2px 6px rgba(0,0,0,.03);
-  --shadow-xl: 0 12px 32px rgba(45,106,79,.12);
-  --radius: 14px;
-  --card-padding: 20px;
+  --shadow: 0 2px 8px rgba(26,42,58,.05);
+  --shadow-lg: 0 8px 24px rgba(26,42,58,.10);
+  --shadow-xl: 0 20px 50px rgba(26,42,58,.12);
+  --radius: 18px;
+  --card-padding: 18px;
   --card-gap: 12px;
   --color-danger: #E63946;
   --color-danger-bg: #FEF0F0;
-  --color-danger-border: #FECACA;
-  --color-success: #52B788;
-  --color-success-bg: #EDF5F0;
-  --color-warning: #E07A5F;
-  --color-warning-bg: #FDF0EC;
-  --color-warning-border: #F5C4B8;
-  --color-surface: #F5F0EB;
+  --color-danger-border: #fecaca;
+  --color-success: #16a34a;
+  --color-success-bg: #f0fdf4;
+  --color-warning: #c4960c;
+  --color-warning-bg: #fef3c7;
+  --color-warning-border: #fde68a;
+  --color-surface: #ece9e4;
 }
 
 /* Reset */
@@ -404,28 +403,26 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
 
 /* Dark mode */
 [data-theme="dark"] {
-  --color-primary: #52B788;
-  --color-primary-light: #74C69D;
-  --color-primary-bg: #1A2F25;
-  --color-accent: #E07A5F;
-  --color-accent-bg: #2A1F1A;
-  --color-gold: #D4A96A;
-  --color-warm: #161B19;
-  --color-card: #1E2422;
-  --color-text: #E8E6E3;
-  --color-muted: #6B6966;
-  --color-border: rgba(82,183,136,.12);
-  --color-sage: #1A2F25;
-  --shadow: 0 2px 8px rgba(0,0,0,.2);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,.3);
-  --shadow-xl: 0 12px 32px rgba(0,0,0,.4);
+  --color-primary: #e8f0f5;
+  --color-primary-light: #c3d3e0;
+  --color-primary-bg: #1e2a36;
+  --color-accent: #e85d4a;
+  --color-accent-bg: #2a1f1a;
+  --color-warm: #0f1419;
+  --color-card: #1a2028;
+  --color-text: #e8e6e3;
+  --color-muted: #6b7480;
+  --color-border: #2a3040;
+  --color-sage: #1e2a36;
+  --shadow: 0 2px 8px rgba(0,0,0,.3);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.4);
   --color-danger: #FF6B6B;
-  --color-danger-bg: #2A1A1A;
-  --color-success: #74C69D;
-  --color-success-bg: #1A2F25;
-  --color-warning: #E07A5F;
-  --color-warning-bg: #2A1F1A;
-  --color-surface: #232B27;
+  --color-danger-bg: #2a1a1a;
+  --color-success: #22c55e;
+  --color-success-bg: #1a2a1a;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #2a2a1a;
+  --color-surface: #232830;
 }
 [data-theme="dark"] input,
 [data-theme="dark"] select,
@@ -696,7 +693,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   align-items: center;
   padding: 8px 4px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-  background: rgba(255,254,251,.92);
+  background: rgba(255,255,255,.93);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 20px;
@@ -707,7 +704,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   margin: 0;
 }
 [data-theme="dark"] .app-tab-bar {
-  background: rgba(30,36,34,.92);
+  background: rgba(26,32,40,.93);
 }
 
 .tab-bar-item {

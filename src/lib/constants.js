@@ -22,7 +22,7 @@ export const USER_COUNTRY = detectCountry();
 export const CC = COUNTRY_CONFIG[USER_COUNTRY] || COUNTRY_CONFIG.IE;
 
 // ── Colour palette for members ──
-export const COLS = ["#2D6A4F", "#E07A5F", "#457B9D", "#9B5DE5", "#F4845F", "#00B4D8", "#E76F51", "#6A994E"];
+export const COLS = ["#2d7cb5", "#e85d4a", "#9B5DE5", "#2d5a3f", "#c4960c", "#1a8a7d", "#e67e22", "#e84393"];
 
 // ── Day names ──
 export const DAYF = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
