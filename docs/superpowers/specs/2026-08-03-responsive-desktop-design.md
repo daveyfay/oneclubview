@@ -19,10 +19,11 @@ New component `src/components/DesktopSidebar.jsx`, fixed left, 260px wide.
 **Contents (top to bottom):**
 - Logo
 - Kid filter pills — colored COLS dots + first names (currently in header on mobile). Tapping filters all tabs by kid. "All" option with multi-colored dot.
-- 5 nav items: Overview, Schedule, Money, Explore, Settings — each with icon (from ICN) + label. Active item gets `var(--color-primary)` text + `var(--color-primary-bg)` background pill.
-- "Next up" mini-card — shows next event today: club name, time, kid color dot, relative countdown ("in 45 min"). Hidden if no events remain today. Uses `weekEvts` from HubDataContext.
+- 4 nav items: Overview, Schedule, Money, Explore — each with icon (from ICN) + label. Active item gets `var(--color-primary)` text + `var(--color-primary-bg)` background pill. Tab IDs: `"overview"`, `"week"`, `"money"`, `"explore"` (note: Schedule tab ID is `"week"` in code).
+- Settings gear icon button — NOT a nav item. Calls `setShowProfile(true)` to open the existing Settings overlay panel. Positioned below the nav items with a divider.
+- "Next up" mini-card — shows next event today. Logic: filter `weekEvts` to today + future times, sort by time, pick first. Shows club name, time, kid color dot, relative countdown ("in 45 min"). Hidden if no events remain today. Countdown uses a `useEffect` with 60-second interval timer that recalculates minutes remaining.
 - Divider line
-- Quick-add button — replaces the floating FAB. Same menu options (Add event, Add payment, Add club, etc.)
+- Quick-add button — replaces the floating FAB on desktop. Same menu options (Add event, Add payment, Add club, etc.). FAB itself hidden via CSS at > 1024px.
 - Dark mode toggle — small icon button at the very bottom
 
 **Behavior:**
@@ -33,7 +34,7 @@ New component `src/components/DesktopSidebar.jsx`, fixed left, 260px wide.
 
 **Data access:**
 - Sidebar lives inside `HubDataProvider` (it's a child of Hub, not a sibling)
-- Receives: `tab`, `setTab`, `filter`, `setFilter`, `kids`, `weekEvts`, `darkMode`, `setDarkMode`, FAB toggle callbacks — all as props from HubInner
+- Receives: `tab`, `setTab`, `filter`, `setFilter`, `kids`, `weekEvts`, `darkMode`, `setDarkMode`, `showProfile`, `setShowProfile`, FAB toggle callbacks — all as props from HubInner
 
 ## 3. Hub.jsx Shell Restructure
 
@@ -60,6 +61,17 @@ New component `src/components/DesktopSidebar.jsx`, fixed left, 260px wide.
 ```
 
 **Critical change:** Remove ALL inline `maxWidth` styles from Hub.jsx. Move width constraints to CSS classes with media query overrides. This fixes the LESSONS.md issue where inline styles override CSS classes.
+
+**All inline maxWidth locations in Hub.jsx:**
+| Line | Element | Current value | Action |
+|------|---------|---------------|--------|
+| 138 | Loading skeleton wrapper | `520` | Replace with `.app-header-inner` class |
+| 174 | Paywall wrapper | `400` | **Keep as-is** — centered card, intentional |
+| 223 | Header inner | `tab === "explore" ? 960 : 520` | Replace with `.app-header-inner` class |
+| 238 | Tab bar | `tab === "explore" ? 960 : 520` | Replace with `.app-tab-bar` class |
+| 243 | Tab content | `tab === "explore" ? "none" : 520` | Replace with `.tab-content` + per-tab class |
+
+Also remove the `app-shell--wide` conditional class toggle on line 216 and its CSS rule in global.css — the per-tab content classes replace it.
 
 **CSS classes:**
 ```css
@@ -121,9 +133,12 @@ New component `src/components/DesktopSidebar.jsx`, fixed left, 260px wide.
 
 **Tab-specific overrides (via class on tab-content):**
 ```css
-.tab-content--settings { max-width: 520px !important; }
-.tab-content--money { max-width: 640px !important; }
+@media (min-width: 1024px) {
+  .tab-content--money { max-width: 640px; }
+  .tab-content--explore { max-width: 960px; }
+}
 ```
+Settings is not a tab — it opens as an overlay, so no tab-content class needed for it.
 
 ## 4. Adaptive Content Layouts Per Tab
 
@@ -167,11 +182,35 @@ Wrap content in a grid container that goes two-column at > 1024px:
 - Right: selected day detail panel (sticky, `position: sticky; top: 80px`)
 - On mobile: day detail still slides below the grid (current behavior)
 
-**WeekGrid 7-day mode:**
-- New prop `columns={7}` (default 4, current behavior)
-- When `columns={7}`: no pagination, no swipe, all 7 days visible
-- Grid: `gridTemplateColumns: repeat(7, 1fr)` instead of `repeat(4, 1fr)`
-- Hide the page indicator dots when showing 7 columns
+**Desktop detection for WeekGrid:**
+
+This is the one exception to the "pure CSS" approach — the WeekGrid column count is a data/logic change (7 days vs paginated 4), not just a style change. Add a small `useIsDesktop` hook in `src/hooks/useIsDesktop.js`:
+
+```js
+import { useState, useEffect } from 'react';
+export function useIsDesktop(breakpoint = 1024) {
+  const [isDesktop, setIsDesktop] = useState(() => window.matchMedia(`(min-width: ${breakpoint}px)`).matches);
+  useEffect(() => {
+    const mql = window.matchMedia(`(min-width: ${breakpoint}px)`);
+    const handler = (e) => setIsDesktop(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, [breakpoint]);
+  return isDesktop;
+}
+```
+
+ScheduleTab calls `useIsDesktop()` and passes `columns={isDesktop ? 7 : 4}` to WeekGrid.
+
+**WeekGrid 7-day mode (`columns` prop):**
+- New prop `columns` (default 4, current behavior)
+- When `columns === 7`:
+  - `pageDays` = all 7 `weekDays` (bypass the page slicing on current line ~24)
+  - All three `gridTemplateColumns: "repeat(4,1fr)"` inline styles (day labels row, activity grid rows) become `repeat(columns,1fr)`
+  - Swipe handlers (`onTouchStart`, `onTouchEnd`) disabled — no pagination needed
+  - Page indicator dots + chevrons hidden
+  - Page state (`useState`) can remain but is unused
+- When `columns === 4`: everything works exactly as today
 
 ### Money (single column, wider)
 
@@ -179,14 +218,9 @@ No layout changes. Just benefits from the wider `max-width: 640px` at the CSS le
 
 ### Explore (existing wide layout)
 
-Already works via `app-shell--wide`. Remove the inline `maxWidth` ternaries from Hub.jsx and let CSS handle it:
+Remove the `app-shell--wide` conditional class and its inline `maxWidth` ternaries from Hub.jsx. Let the `.tab-content--explore` CSS class handle it (defined in Section 3).
 
-```css
-.tab-content--explore { max-width: none; }
-@media (min-width: 1024px) {
-  .tab-content--explore { max-width: 960px; }
-}
-```
+The existing second `@media (min-width: 900px)` block in global.css (lines 485-498) controls Explore's sidebar layout (`.explore-sidebar`, `.explore-mobile-pills`). Move this breakpoint to `1024px` to align with the new breakpoint system.
 
 ### Settings (single column, narrow)
 
@@ -209,7 +243,7 @@ Stays at 520px via `.tab-content--settings`.
 .tab-enter-right { animation: tabSlideInRight .25s ease-out; }
 ```
 
-In Hub.jsx, track the previous tab index vs new tab index to decide direction. Apply the class to the `tab-content` wrapper via a `key` change that triggers remount.
+In Hub.jsx, add a `useRef` for previous tab index. Tab order: `["overview","week","money","explore"]`. On tab change, compare old index vs new to determine direction. Apply the animation class to the `tab-content` wrapper. Use `key={tab}` on the wrapper to trigger remount (which re-runs the entrance animation).
 
 ### Card entrance (all breakpoints)
 
@@ -257,15 +291,7 @@ The active nav item has a colored left border (3px) that transitions position:
 
 ### Reduced motion
 
-All animations respect `prefers-reduced-motion`:
-```css
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-```
+All animations respect `prefers-reduced-motion`. This rule already exists in global.css (lines 501-507) — no new CSS needed. Just ensure new keyframe animations use standard `animation` properties so the existing rule catches them.
 
 ## 6. Files Changed
 
@@ -276,7 +302,8 @@ All animations respect `prefers-reduced-motion`:
 | `src/components/DesktopSidebar.jsx` | **New file** — sidebar nav, kid filter, next-up card, quick-add, dark mode toggle |
 | `src/pages/tabs/OverviewTab.jsx` | Wrap content in `.overview-grid` container |
 | `src/pages/tabs/ScheduleTab.jsx` | Wrap content in `.schedule-grid` container, detect desktop for 7-day grid |
-| `src/components/hub/WeekGrid.jsx` | Accept `columns` prop (4 or 7), hide pagination when 7 |
+| `src/components/hub/WeekGrid.jsx` | Accept `columns` prop (4 or 7), conditional pagination/swipe |
+| `src/hooks/useIsDesktop.js` | **New file** — `useIsDesktop()` hook wrapping `matchMedia` |
 
 ## 7. Not Changing
 
@@ -284,5 +311,6 @@ All animations respect `prefers-reduced-motion`:
 - OcvModal — stays centered overlay
 - Backend / data layer — pure frontend CSS + layout
 - Tab component internals — they just get wrapper divs
-- Explore tab — already responsive
 - Landing page — separate from Hub
+- Paywall screen (Hub.jsx line 174, maxWidth: 400) — intentionally narrow centered card
+- Settings tab — stays as overlay panel, not a real tab
