@@ -44,8 +44,9 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
 
   return (
     <ErrorBoundary label="Overview">
-      <div>
+      <div className="overview-grid">
       {/* SMART ALERTS */}
+      <div className="overview-full-width">
       <AlertCallout
         alerts={(alerts || []).filter(a => !a.adminOnly || isAdmin)}
         max={5}
@@ -61,6 +62,7 @@ export default function OverviewTab({ filter, onChangeTab, onRefresh }) {
           localStorage.setItem("ocv-dismissed-alerts", JSON.stringify(dismissed));
         }}
       />
+      </div>
 
         {/* THIS WEEK STATS */}
         <SpotlightCard className="stagger-card" style={{ animationDelay: "0ms", background: "var(--color-card)", borderRadius: 16, border: "1px solid var(--color-border)", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
