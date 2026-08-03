@@ -12,7 +12,7 @@ function getHolidayIcon(name) {
   return "\uD83C\uDF34";
 }
 
-export default function WeekGrid({ weekDays, events, holidays, onTapEvent, onTapDay, kids }) {
+export default function WeekGrid({ weekDays, events, holidays, onTapEvent, onTapDay, kids, columns = 4 }) {
   // Split 7 days into pages of 4 (page 0 = days 0-3, page 1 = days 3-6)
   // Use overlapping pages so swipe feels natural
   const [page, setPage] = useState(() => {
@@ -21,7 +21,8 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, onTap
     return todayIdx >= 4 ? 1 : 0;
   });
 
-  const pageDays = page === 0 ? weekDays.slice(0, 4) : weekDays.slice(3, 7);
+  const showAll = columns >= 7;
+  const pageDays = showAll ? weekDays : (page === 0 ? weekDays.slice(0, 4) : weekDays.slice(3, 7));
 
   const dayEvts = pageDays.map(d =>
     events.filter(e =>
@@ -71,9 +72,9 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, onTap
   }
 
   return (
-    <div style={{ marginBottom: 14 }} onTouchStart={onTouchStartHandler} onTouchEnd={onTouchEndHandler}>
+    <div style={{ marginBottom: 14 }} onTouchStart={showAll ? undefined : onTouchStartHandler} onTouchEnd={showAll ? undefined : onTouchEndHandler}>
       {/* Day labels row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 4, marginBottom: 6 }}>
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${showAll ? 7 : 4},1fr)`, gap: 4, marginBottom: 6 }}>
         {pageDays.map((d, i) => {
           const today = isToday(d);
           const hol = isHoliday(d);
@@ -106,7 +107,7 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, onTap
 
       {/* Activity grid rows */}
       {Array.from({ length: maxEvts }).map((_, row) => (
-        <div key={row} style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 4, marginBottom: 4 }}>
+        <div key={row} style={{ display: "grid", gridTemplateColumns: `repeat(${showAll ? 7 : 4},1fr)`, gap: 4, marginBottom: 4 }}>
           {pageDays.map((d, col) => {
             const e = dayEvts[col][row];
             if (!e) {
@@ -174,6 +175,7 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, onTap
       ))}
 
       {/* Swipe indicator */}
+      {!showAll && (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 0 4px" }}>
         <svg onClick={() => page === 1 && setPage(0)} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={page === 0 ? "var(--color-border)" : "var(--color-muted)"} strokeWidth="2" strokeLinecap="round" style={{ cursor: page === 1 ? "pointer" : "default" }}><polyline points="15 18 9 12 15 6" /></svg>
         <span style={{ fontSize: 11, color: "var(--color-muted)", fontWeight: 500 }}>
@@ -185,6 +187,7 @@ export default function WeekGrid({ weekDays, events, holidays, onTapEvent, onTap
           <div style={{ width: page === 1 ? 14 : 6, height: 6, borderRadius: 3, background: page === 1 ? "var(--color-primary)" : "var(--color-border)", transition: "width .2s", cursor: "pointer" }} onClick={() => setPage(1)} />
         </div>
       </div>
+      )}
 
       {/* Club colour legend */}
       {legendMap.size > 0 && (
