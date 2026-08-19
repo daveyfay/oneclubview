@@ -31,3 +31,21 @@ Written by /aar-loop after each session's After Action Review. Read this file be
 - Actual: Profile showed Castlebar, Mayo (250km away) because a previous bad browser geolocation reading was auto-saved to profiles.latitude/longitude. All distance-based features (clubs near you, digest suggestions) used the wrong location.
 - Why: HubDataContext line 98 ran db('profiles','PATCH',{body:{latitude,longitude}}) on every app load with whatever the browser returned. Browser geolocation is unreliable -- VPN exit nodes, WiFi triangulation errors, and cold GPS fixes can return coordinates hundreds of km away.
 - tags: location,gps,profiles,reliability,fix-applied
+
+## 2026-08-19 -- When Resend reports a Receiving MX record as "failed", check which domain is registered in Resend before adding the record it asks for. If the root domain runs Google Workspace, register the inbound subdomain as a separate Resend domain instead. Adding the root MX Resend asks for would take all mail away from Google Workspace.
+- Expected: Forwarding a club email to the inbound address would be parsed and added to the app.
+- Actual: The mail bounced with "does not exist" before ever reaching the inbound-email edge function.
+- Why: Only oneclubview.com was registered in Resend, so Resend checked for an MX on the root domain and marked it failed. The correct MX already existed on in.oneclubview.com at the right priority, but Resend had no domain entry for that subdomain. Registering in.oneclubview.com with receiving enabled verified instantly against DNS that had been correct all along. No DNS change was needed or made.
+- tags: resend,dns,mx,inbound-email,google-workspace
+
+## 2026-08-19 -- `supabase functions deploy` defaults verify_jwt to true regardless of the deployed function's current setting. Read the live setting with `supabase functions list` first and pass --no-verify-jwt for every function that has verify_jwt=false, or redeploying will silently start rejecting frontend calls.
+- Expected: Redeploying scrape-local to change a constant would preserve its existing config.
+- Actual: Would have flipped verify_jwt from false to true, breaking every unauthenticated call from the frontend.
+- Why: Deploy flags are not inherited from the deployed function. Of the four functions redeployed, parse-schedule was the only one with verify_jwt=true, so three needed the flag and one did not.
+- tags: supabase,edge-functions,deploy,gotcha
+
+## 2026-08-19 -- Supabase `secrets list` returns a sha256 of each secret's plaintext, not a masked value. Hash a candidate value locally and compare digests to check whether a secret already holds the value you expect, without ever reading it back.
+- Expected: The RESEND_KEY secret held the same Resend key that was hardcoded in inbound-email.
+- Actual: The digests differed, so they were two different keys. Blindly repointing the function at RESEND_KEY would have silently swapped credentials.
+- Why: Validated the method first by hashing the known SUPABASE_URL value and matching its stored digest exactly, which confirmed the digest is sha256 of plaintext before trusting the RESEND_KEY comparison.
+- tags: supabase,secrets,verification,technique
