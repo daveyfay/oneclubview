@@ -4,12 +4,21 @@ import ErrorBoundary from '../../components/ErrorBoundary';
 import { COLS, CC } from '../../lib/constants';
 import { getAge, showToast } from '../../lib/utils';
 
+const FORWARD_ADDRESS = 'add@in.oneclubview.com';
+
 /* ── Family Tab ─────────────────────────────────────────────────
    Who's in the household, and who can see what.
    ───────────────────────────────────────────────────────────── */
 
 export default function FamilyTab() {
   const { kids, clubs, profile, familyMembers, user, getMemberCol } = useHubData();
+
+  const copyAddress = () => {
+    if (!navigator.clipboard) { showToast('Copying is not supported here.', 'err'); return; }
+    navigator.clipboard.writeText(FORWARD_ADDRESS)
+      .then(() => showToast('Address copied'))
+      .catch(() => showToast('Could not copy address.', 'err'));
+  };
 
   // Build kid metadata: age, school class, club names
   const kidRows = useMemo(() => {
@@ -227,6 +236,60 @@ export default function FamilyTab() {
           >
             Invite another adult
           </button>
+        </div>
+
+        {/* -- Forwarding card -- */}
+        <div style={{
+          marginTop: 10,
+          background: 'var(--color-card)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 20,
+          padding: '18px 20px',
+        }}>
+          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>
+            Forward club emails
+          </div>
+          <p style={{ fontSize: 13.5, color: 'var(--color-muted)', lineHeight: 1.5, marginBottom: 14 }}>
+            Send any club email here and we read it for you, pulling out dates and fees and adding them to your week.
+          </p>
+
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            background: 'var(--color-primary-bg)',
+            borderRadius: 14,
+            padding: '11px 12px 11px 14px',
+            marginBottom: 12,
+          }}>
+            <span style={{
+              flex: 1, minWidth: 0,
+              fontFamily: 'var(--font-mono)', fontSize: 13.5,
+              color: 'var(--color-primary)',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {FORWARD_ADDRESS}
+            </span>
+            <button
+              onClick={copyAddress}
+              aria-label={'Copy ' + FORWARD_ADDRESS}
+              style={{
+                flexShrink: 0, minHeight: 36, padding: '8px 15px',
+                borderRadius: 12, border: 'none',
+                background: 'var(--color-primary)', color: '#f4f7fa',
+                fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-sans)',
+                cursor: 'pointer', boxShadow: '0 4px 12px rgba(26,42,58,.20)',
+              }}
+            >
+              Copy
+            </button>
+          </div>
+
+          <p style={{ fontSize: 12.5, color: 'var(--color-muted)', lineHeight: 1.45, margin: 0 }}>
+            Forward from{' '}
+            <strong style={{ color: 'var(--color-text)', fontWeight: 600 }}>
+              {profile?.email || user?.email || 'your account email'}
+            </strong>
+            {' '}so we know the email is from you.
+          </p>
         </div>
       </div>
     </ErrorBoundary>
