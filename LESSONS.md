@@ -49,3 +49,15 @@ Written by /aar-loop after each session's After Action Review. Read this file be
 - Actual: The digests differed, so they were two different keys. Blindly repointing the function at RESEND_KEY would have silently swapped credentials.
 - Why: Validated the method first by hashing the known SUPABASE_URL value and matching its stored digest exactly, which confirmed the digest is sha256 of plaintext before trusting the RESEND_KEY comparison.
 - tags: supabase,secrets,verification,technique
+
+## 2026-08-19 -- When inbound email on a custom domain silently drops, test with the provider's predefined receiving address first (Resend gives every account one, e.g. <anything>@geovoriofi.resend.app). It isolates provider-side domain config from your own webhook, function, and keys in a single request.
+- Expected: Debugging would require guessing between DNS, webhook, edge function, and API keys.
+- Actual: One email to the resend.app address went end to end in 5 seconds, proving webhook + function + Anthropic key + DB writes all work, leaving custom domain receiving as the only fault.
+- Why: Same account, same webhook, same function, same keys. Only the recipient domain changed, so a pass on one and a silent drop on the other pins the fault precisely. It also proved the ANTHROPIC_KEY env swap worked, which could not be verified any other way without burning a rate-limited function.
+- tags: resend,inbound-email,debugging,technique,isolation
+
+## 2026-08-19 -- A Resend-sent email showing last_event "delivered" does NOT mean the recipient system ingested it. For inbound testing, check the receiving side (`GET /emails/receiving` and your own DB), never the sending record.
+- Expected: last_event "delivered" to add@in.oneclubview.com meant inbound was fixed.
+- Actual: SES accepted the SMTP transaction and dropped the message. Resend's received list stayed empty and no row was written. Reported the fix as working when it was not.
+- Why: "delivered" describes the sender's view of an SMTP handoff. SES accepts the connection then applies receipt rules, so acceptance and ingestion are different events. Inbound success is only observable from the receiver's side.
+- tags: resend,ses,inbound-email,verification,gotcha
